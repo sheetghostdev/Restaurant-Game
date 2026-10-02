@@ -178,9 +178,22 @@ func wall_between(a: Vector2i, b: Vector2i) -> bool:
 	var a_out := ta == null or ta.outdoor
 	var b_out := tb == null or tb.outdoor
 	if a_out and b_out:
-		# Outdoor areas (patio, dock) are open to the street.
-		return false
+		# Outdoor service areas (patio) are fenced off from the street; work
+		# areas (loading dock) are open to the alley.
+		return fence_between(a, b)
 	return true
+
+
+## True where an outdoor customer area meets the open street (picket fence).
+func fence_between(a: Vector2i, b: Vector2i) -> bool:
+	if openings.has(edge_key(a, b)):
+		return false
+	var ta := room_type_at(a)
+	var tb := room_type_at(b)
+	if ta != null and tb != null:
+		return false
+	var inner := ta if ta != null else tb
+	return inner != null and inner.outdoor and inner.customer_area
 
 
 func fixture_at(c: Vector2i) -> Fixture:

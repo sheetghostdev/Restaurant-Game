@@ -238,10 +238,10 @@ func _build_walls() -> void:
 					if opening != "":
 						_door(b, a, n, opening)
 						continue
-					if grid.wall_between(a, n):
-						_wall_segment(b, glass, a, n)
-					else:
+					if grid.fence_between(a, n):
 						_fence_segment(fence, a, n)
+					elif grid.wall_between(a, n):
+						_wall_segment(b, glass, a, n)
 	_mi(b.commit(Models.mat_main()), _static)
 	if not fence.is_empty():
 		_mi(fence.commit(Models.mat_main()), _static)
