@@ -155,15 +155,15 @@ func spawn_group(a: CustomerArchetype, force := false) -> CustomerGroup:
 	_next_group += 1
 	g.archetype = a
 	g.manager = self
-	var size := randi_range(a.group_min, a.group_max)
-	if waiting + size > MAX_QUEUE_PEOPLE and not force:
+	var group_size := randi_range(a.group_min, a.group_max)
+	if waiting + group_size > MAX_QUEUE_PEOPLE and not force:
 		# They see the line and walk on by.
-		world.day.record_balk(size)
+		world.day.record_balk(group_size)
 		Events.notify("A %s saw the line and left" % a.display_name.to_lower(), &"warning")
 		return null
 	var from_left := randf() < 0.5
 	var spawn := world.grid.street_point("spawn_a" if from_left else "spawn_b", Vector2i(-3, 12))
-	for i in size:
+	for i in group_size:
 		var app := _appearance_for(a, i)
 		var child: bool = i > 0 and randf() < a.child_chance
 		if child:

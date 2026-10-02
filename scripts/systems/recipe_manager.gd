@@ -72,7 +72,7 @@ static func dish_quality(dish: DishItem) -> float:
 ## Worst component's stage name (for feedback like "Burnt!").
 static func worst_stage(dish: DishItem) -> String:
 	var worst_q := 2.0
-	var name := ""
+	var worst := ""
 	for c in dish.contents:
 		if c.get("sd", false):
 			return "Spoiled"
@@ -81,8 +81,8 @@ static func worst_stage(dish: DishItem) -> String:
 			var q := d.cook_profile.quality(c.get("ck", 0.0))
 			if q < worst_q:
 				worst_q = q
-				name = d.cook_profile.stage_name(c.get("ck", 0.0))
-	return name
+				worst = d.cook_profile.stage_name(c.get("ck", 0.0))
+	return worst
 
 
 static func satisfies(order_recipe: RecipeDef, dish: DishItem) -> bool:

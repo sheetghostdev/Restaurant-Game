@@ -95,8 +95,8 @@ func _process(delta: float) -> void:
 		mi.visible = on
 		if on:
 			var f := 0.75 + 0.25 * sin(_t * (11.0 + i * 3.1) + i) + 0.1 * sin(_t * 27.0 + i * 2.0)
-			var size := (0.55 + intensity * 0.6)
-			mi.scale = Vector3(size * (1.1 - f * 0.2), size * f * 1.2, size * (1.1 - f * 0.2))
+			var flame := (0.55 + intensity * 0.6)
+			mi.scale = Vector3(flame * (1.1 - f * 0.2), flame * f * 1.2, flame * (1.1 - f * 0.2))
 			mi.rotation.y = _t * (1.5 + i * 0.3)
 			mi.rotation.z = sin(_t * 6.0 + i) * 0.12
 

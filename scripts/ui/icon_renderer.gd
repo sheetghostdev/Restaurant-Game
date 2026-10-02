@@ -73,28 +73,28 @@ func _build(key: String) -> Dictionary:
 	var kind := parts[0]
 	var id := StringName(parts[1]) if parts.size() > 1 else &""
 	var n: Node3D
-	var size := 0.55
+	var frame_size := 0.55
 	match kind:
 		"recipe":
 			var r := Content.recipe(id)
 			if r:
 				n = DishPlating.make_recipe_model(r)
-				size = 0.5 if r.container == "plate" else 0.32
+				frame_size = 0.5 if r.container == "plate" else 0.32
 		"item":
 			var d := Content.item(id)
 			if d:
 				n = Models.instance(d.model)
-				size = 0.36
+				frame_size = 0.36
 				if d.cook_profile:
 					n.set_meta(&"content", {"id": d.id, "ck": 0.0})
 		"fixture":
 			var f := Content.fixture(id)
 			if f:
 				n = Models.instance(f.model if f.model != &"" else f.id)
-				size = 1.5 if f.id != &"fridge" else 2.2
+				frame_size = 1.5 if f.id != &"fridge" else 2.2
 		"model":
 			n = Models.instance(id)
-			size = 1.0
+			frame_size = 1.0
 		"staff":
 			var sd: StaffDef = Content.staff.get(id)
 			var rig := CharacterRig.new()
@@ -105,8 +105,8 @@ func _build(key: String) -> Dictionary:
 			app["shirt"] = Color("e8e4dc")
 			rig.build(app)
 			n = rig
-			size = 1.5
-	return {"node": n, "size": size}
+			frame_size = 1.5
+	return {"node": n, "size": frame_size}
 
 
 func _render_next() -> void:

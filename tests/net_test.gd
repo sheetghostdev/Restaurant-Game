@@ -25,15 +25,17 @@ func _ready() -> void:
 func _host() -> void:
 	main.start_host()
 	var w := GameWorld.current
+	# Open and fill the restaurant BEFORE anyone joins, so the client has to
+	# rebuild a busy mid-service world from the late-join snapshot.
+	w.day.open_restaurant()
+	w.customers.spawn_group(Content.archetype(&"work_crew"), true)
+	w.economy.earn(123.0, "net test")
 	var t := 0.0
 	while Net.multiplayer.get_peers().is_empty() and t < 20.0:
 		await get_tree().create_timer(0.25).timeout
 		t += 0.25
 	print("HOST: peers=", Net.multiplayer.get_peers())
 	await get_tree().create_timer(2.0).timeout
-	w.day.open_restaurant()
-	w.customers.spawn_group(Content.archetype(&"work_crew"), true)
-	w.economy.earn(123.0, "net test")
 	# Move a crate so the client sees an item location change.
 	var shelf: Fixture = w.grid.fixtures_of(&"shelf")[0]
 	var crate: Item = shelf.primary_slot().item
@@ -46,7 +48,7 @@ func _host() -> void:
 
 
 func _client() -> void:
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(4.0).timeout
 	main.start_join("127.0.0.1")
 	var t := 0.0
 	while GameWorld.current == null and t < 20.0:

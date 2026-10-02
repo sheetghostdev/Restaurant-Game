@@ -77,18 +77,18 @@ func _update_alerts() -> void:
 	for id in tracked_ingredients():
 		var n := units(id)
 		var key := StringName("low_" + String(id))
-		var name := Content.display_name(id)
+		var label := Content.display_name(id)
 		var sup := Content.supply_for_item(id)
 		var low := maxi(1, int(ceil(sup.quantity * 0.25))) if sup else LOW
 		if n <= 0:
 			if _alerted.get(id, "") != "out":
 				_alerted[id] = "out"
-				Events.alert.emit(key, "OUT of %s!" % name.to_lower(), true)
+				Events.alert.emit(key, "OUT of %s!" % label.to_lower(), true)
 				Audio.play_ui(&"error", -6.0)
 		elif n < low:
 			if _alerted.get(id, "") != "low":
 				_alerted[id] = "low"
-				Events.alert.emit(key, "Low on %s (%d)" % [name.to_lower(), n], true)
+				Events.alert.emit(key, "Low on %s (%d)" % [label.to_lower(), n], true)
 		elif _alerted.has(id):
 			_alerted.erase(id)
 			Events.alert.emit(key, "", false)
