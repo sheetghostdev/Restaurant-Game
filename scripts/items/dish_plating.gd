@@ -121,11 +121,18 @@ static func make_recipe_model(r: RecipeDef) -> Node3D:
 		fake.contents = contents
 		build(fake, root, parts)
 		fake.free()
-	for n in parts:
-		var c: Dictionary = n.get_meta(&"content", {})
-		var d2 := Content.item(c.get("id", &""))
-		if d2 and d2.cook_profile:
-			var col := d2.cook_profile.color_at(c.get("ck", 0.0))
-			for mi in Item._mesh_instances(n):
-				mi.set_instance_shader_parameter(&"mult", Vector3(col.r, col.g, col.b))
 	return root
+
+
+## Applies cooking colours to every part tagged with a "content" meta. Call it
+## after the model is in the scene tree (instance uniforms need a live instance).
+static func apply_colors(root: Node) -> void:
+	if root.has_meta(&"content"):
+		var c: Dictionary = root.get_meta(&"content", {})
+		var d := Content.item(c.get("id", &""))
+		if d and d.cook_profile:
+			var col := d.cook_profile.color_at(c.get("ck", 0.0))
+			for mi in Item._mesh_instances(root):
+				mi.set_instance_shader_parameter(&"mult", Vector3(col.r, col.g, col.b))
+	for ch in root.get_children():
+		apply_colors(ch)

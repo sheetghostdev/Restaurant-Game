@@ -71,6 +71,11 @@ func _build(code: String) -> void:
 	add_child(lbl)
 
 
+func _ready() -> void:
+	if _models:
+		DishPlating.apply_colors(_models)
+
+
 func _process(delta: float) -> void:
 	var cam := get_viewport().get_camera_3d()
 	if cam:

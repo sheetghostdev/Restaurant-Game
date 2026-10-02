@@ -389,6 +389,9 @@ func _on_toast(text: String, kind: StringName, color: Color) -> void:
 		&"error":
 			bg = Color("fde3d9")
 			border = Pal.UI_BAD
+		&"tip":
+			bg = Color("e3f1ec")
+			border = Pal.UI_ACCENT
 	var p := PanelContainer.new()
 	p.add_theme_stylebox_override("panel", UITheme.card(bg, border, 10, 3))
 	var l := UITheme.label(text, 17, "bold")
@@ -402,7 +405,7 @@ func _on_toast(text: String, kind: StringName, color: Color) -> void:
 	p.modulate.a = 0.0
 	var tw2 := p.create_tween()
 	tw2.tween_property(p, "modulate:a", 1.0, 0.2)
-	tw2.tween_interval(4.5)
+	tw2.tween_interval(9.0 if kind == &"tip" else 4.5)
 	tw2.tween_property(p, "modulate:a", 0.0, 0.5)
 	tw2.tween_callback(p.queue_free)
 

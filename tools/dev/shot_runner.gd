@@ -35,6 +35,10 @@ func _ready() -> void:
 		_world().camera.player_focus = 0.9
 	await get_tree().create_timer(delay).timeout
 	_report_bad_transforms(get_tree().root)
+	if "--dump-icons" in OS.get_cmdline_user_args() and IconRenderer.instance:
+		for k in IconRenderer.instance._cache:
+			var tex: Texture2D = IconRenderer.instance._cache[k]
+			tex.get_image().save_png(shot_path.get_base_dir().path_join("icon_%s.png" % String(k).replace(":", "_")))
 	await _shot(shot_path)
 	get_tree().quit()
 

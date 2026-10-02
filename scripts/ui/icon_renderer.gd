@@ -86,9 +86,7 @@ func _build(key: String) -> Dictionary:
 				n = Models.instance(d.model)
 				size = 0.36
 				if d.cook_profile:
-					var c := d.cook_profile.color_at(0.0)
-					for mi in Item._mesh_instances(n):
-						mi.set_instance_shader_parameter(&"mult", Vector3(c.r, c.g, c.b))
+					n.set_meta(&"content", {"id": d.id, "ck": 0.0})
 		"fixture":
 			var f := Content.fixture(id)
 			if f:
@@ -126,11 +124,14 @@ func _render_next() -> void:
 		_stage.remove_child(c)
 		c.queue_free()
 	_stage.add_child(n)
+	DishPlating.apply_colors(n)
 	var s: float = spec["size"]
 	_cam.size = s * 1.25
 	var target := Vector3(0, s * 0.22, 0)
 	_cam.position = target + Vector3(0, 1.0, 0.85).normalized() * 10.0
 	_cam.look_at(target)
+	# Give the viewport a frame to settle (the very first render especially).
+	await get_tree().process_frame
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 	await RenderingServer.frame_post_draw
 	var img := _viewport.get_texture().get_image()

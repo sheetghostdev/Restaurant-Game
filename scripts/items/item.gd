@@ -101,6 +101,13 @@ static func _mesh_instances(root: Node) -> Array[MeshInstance3D]:
 	return out
 
 
+func _enter_tree() -> void:
+	# Instance shader parameters only stick on a live instance, so recolour
+	# whenever the item (re)enters the tree (spawning, moving between slots).
+	if visual:
+		refresh_visual.call_deferred()
+
+
 func bump() -> void:
 	_bump = 1.0
 	set_process(true)
