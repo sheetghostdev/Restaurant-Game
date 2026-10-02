@@ -136,6 +136,7 @@ func detach() -> void:
 
 func on_slot_changed() -> void:
 	_set_floor_body(false)
+	mark_dirty()
 
 
 func place_on_floor(pos: Vector3, yaw := 0.0) -> void:
@@ -145,6 +146,7 @@ func place_on_floor(pos: Vector3, yaw := 0.0) -> void:
 	rotation = Vector3(0, yaw, 0)
 	scale = Vector3.ONE
 	_set_floor_body(def.blocks_when_dropped)
+	mark_dirty()
 
 
 func is_loose() -> bool:

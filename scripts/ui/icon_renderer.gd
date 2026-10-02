@@ -57,6 +57,7 @@ func icon(key: String) -> Texture2D:
 	_cache[key] = tex
 	_queue.push_back(key)
 	if not _busy:
+		_busy = true
 		_render_next.call_deferred()
 	return tex
 
@@ -122,12 +123,13 @@ func _render_next() -> void:
 		_render_next.call_deferred()
 		return
 	for c in _stage.get_children():
+		_stage.remove_child(c)
 		c.queue_free()
 	_stage.add_child(n)
 	var s: float = spec["size"]
 	_cam.size = s * 1.25
-	var target := Vector3(0, s * 0.32, 0)
-	_cam.position = target + Vector3(0, 0.75, 1.0).normalized() * 10.0
+	var target := Vector3(0, s * 0.22, 0)
+	_cam.position = target + Vector3(0, 1.0, 0.85).normalized() * 10.0
 	_cam.look_at(target)
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 	await RenderingServer.frame_post_draw

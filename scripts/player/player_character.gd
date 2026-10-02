@@ -307,14 +307,24 @@ func apply_motion(m: Array) -> void:
 
 
 func get_state() -> Dictionary:
-	return {"i": player_index, "peer": peer_id, "n": player_name, "dev": device}
+	var d := {"i": player_index, "peer": peer_id, "n": player_name}
+	# The input device only matters on the machine that owns the player.
+	if peer_id == Net.my_id():
+		d["dev"] = device
+	return d
 
 
 func set_state(d: Dictionary) -> void:
 	player_index = d.get("i", player_index)
 	peer_id = d.get("peer", peer_id)
 	player_name = d.get("n", player_name)
-	device = d.get("dev", device) if peer_id == Net.my_id() else -1
+	if peer_id == Net.my_id():
+		if d.has("dev"):
+			device = d["dev"]
+		elif device < 0:
+			device = Net.local_device
+	else:
+		device = -1
 	if is_node_ready():
 		_build_look()
 

@@ -24,7 +24,11 @@ func _ready() -> void:
 		main.start_offline(false)
 	await get_tree().create_timer(0.5).timeout
 	await _run_scenario()
+	if "--closeup" in OS.get_cmdline_user_args() and _world():
+		_world().camera.zoom_bias = -0.55
+		_world().camera.player_focus = 0.9
 	await get_tree().create_timer(delay).timeout
+	_report_bad_transforms(get_tree().root)
 	await _shot(shot_path)
 	get_tree().quit()
 
@@ -52,6 +56,49 @@ func _run_scenario() -> void:
 			await get_tree().create_timer(9.0).timeout
 		"kitchen":
 			_stage_kitchen(w)
+		"dining":
+			Engine.time_scale = 3.0
+			w.debug_command("start_service", [])
+			var groups := []
+			for a in ["family", "work_crew", "business", "regular_folks"]:
+				groups.push_back(w.customers.spawn_group(Content.archetype(StringName(a)), true))
+			var t := 0.0
+			while t < 40.0:
+				await get_tree().create_timer(0.5).timeout
+				t += 0.5
+				var ready := 0
+				for g in groups:
+					if g and g.state == CustomerGroup.State.READY:
+						g.take_order(w.players()[0])
+					if g and g.state >= CustomerGroup.State.WAITING_FOOD:
+						ready += 1
+				if ready == groups.size():
+					break
+			# Serve half the orders so some guests eat while others wait.
+			var k := 0
+			for g in groups:
+				if g == null:
+					continue
+				for m in g.members:
+					k += 1
+					if k % 2 == 0:
+						continue
+					for o in m.orders:
+						var r := Content.recipe(o["recipe"])
+						var contents := []
+						for id in r.required:
+							var d := Content.item(id)
+							var ck := 0.0
+							if d.cook_profile:
+								ck = (d.cook_profile.stage_ends[d.cook_profile.perfect_stage - 1] + d.cook_profile.stage_ends[d.cook_profile.perfect_stage]) * 0.5
+							contents.push_back({"id": String(id), "ck": ck})
+						var dish: DishItem = w.spawn_item(&"dishware", {"p": 0 if r.container == "mug" else 1, "m": 1 if r.container == "mug" else 0, "c": contents})
+						var pl: PlayerCharacter = w.players()[0]
+						pl.hold(dish)
+						if not g.serve(pl, dish, m.seat_table):
+							w.despawn(pl.take_held())
+			Engine.time_scale = 1.0
+			w.players()[0].global_position = Vector3(4.5, 0, 4.5)
 		"evening":
 			w.debug_command("start_service", [])
 			w.debug_command("end_service", [])
@@ -87,3 +134,13 @@ func _stage_kitchen(w: GameWorld) -> void:
 	var cm := w.grid.fixtures_of(&"coffee_machine")
 	if cm.size() > 0:
 		w.spawn_item(&"dishware", {"p": 0, "m": 1}, {"slot": [cm[0].net_id, 0]})
+
+
+func _report_bad_transforms(n: Node) -> void:
+	if n is Node3D and n.is_inside_tree():
+		var t := (n as Node3D).transform
+		if not (t.origin.is_finite() and t.basis.x.is_finite() and t.basis.y.is_finite() and t.basis.z.is_finite()):
+			print("BAD TRANSFORM: ", n.get_path(), " ", t)
+			return
+	for c in n.get_children():
+		_report_bad_transforms(c)

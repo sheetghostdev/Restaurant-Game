@@ -110,7 +110,7 @@ static func make_recipe_model(r: RecipeDef) -> Node3D:
 	if r.container == "mug":
 		root.add_child(Models.instance(&"mug"))
 		var fill := Models.instance(&"coffee_fill")
-		fill.position = Vector3(0, 0.104, 0)
+		fill.position = Vector3(0, 0.117, 0)
 		root.add_child(fill)
 		if not contents.is_empty():
 			fill.set_meta(&"content", contents[0])

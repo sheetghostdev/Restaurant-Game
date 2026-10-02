@@ -17,14 +17,13 @@ func _build(code: String) -> void:
 	var spr := Sprite3D.new()
 	spr.texture = UIArt.bubble()
 	spr.pixel_size = 0.0042
-	spr.no_depth_test = true
 	spr.render_priority = 1
 	spr.shaded = false
 	spr.alpha_cut = SpriteBase3D.ALPHA_CUT_DISABLED
 	spr.position = Vector3(0, 0.0, 0)
 	add_child(spr)
 	_models = Node3D.new()
-	_models.position = Vector3(0, 0.07, 0.05)
+	_models.position = Vector3(0, 0.07, 0.12)
 	add_child(_models)
 	if code.begins_with("r:"):
 		var ids := code.substr(2).split(",", false)
@@ -45,7 +44,6 @@ func _build(code: String) -> void:
 	lbl.font = load("res://art/fonts/AlfaSlabOne-Regular.ttf")
 	lbl.font_size = 64
 	lbl.pixel_size = 0.004
-	lbl.no_depth_test = true
 	lbl.render_priority = 2
 	lbl.position = Vector3(0, 0.06, 0.01)
 	lbl.outline_size = 0

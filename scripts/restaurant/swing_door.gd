@@ -49,9 +49,13 @@ func _process(delta: float) -> void:
 			if d < best and absf(local.x) < 0.7:
 				best = d
 				_target = -signf(local.z) * deg_to_rad(80.0)
-	# Springy swing
-	var force := (_target - _angle) * 60.0 - _vel * 9.0
-	_vel += force * delta
-	_angle += _vel * delta
+	# Springy swing, sub-stepped so low frame rates can't blow it up.
+	var remaining := minf(delta, 0.25)
+	while remaining > 0.0:
+		var dt := minf(remaining, 1.0 / 60.0)
+		remaining -= dt
+		var force := (_target - _angle) * 60.0 - _vel * 9.0
+		_vel += force * dt
+		_angle += _vel * dt
 	_left.rotation.y = _angle
 	_right.rotation.y = -_angle

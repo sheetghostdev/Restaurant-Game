@@ -7,7 +7,9 @@ extends Camera3D
 
 @export var pitch_deg := 54.0
 @export var min_distance := 16.0
-@export var margin := 1.6
+@export var margin := 1.0
+## How strongly the framing eases toward the players (0 = always whole building).
+@export var player_focus := 0.28
 
 var building_rect := Rect2(0, 0, 20, 10)
 var targets: Array[Node3D] = []
@@ -54,7 +56,9 @@ func _required_distance(r: Rect2) -> float:
 	var pitch := deg_to_rad(pitch_deg)
 	var half_v := tan(vfov * 0.5)
 	var d_depth := (r.size.y * sin(pitch) * 0.5) / half_v + r.size.y * cos(pitch) * 0.25
-	var d_width := (r.size.x * 0.5) / (half_v * aspect)
+	# The front edge of the rect is closer to the camera than the focus point,
+	# so it appears narrower; pad the width requirement to compensate.
+	var d_width := (r.size.x * 0.5) / (half_v * aspect) * (1.0 + 0.35 * r.size.y / maxf(r.size.x, 1.0))
 	return maxf(d_depth, d_width)
 
 
@@ -74,12 +78,12 @@ func _process(delta: float) -> void:
 		pr = pr.grow(4.2)
 		var d_players := maxf(_required_distance(pr), min_distance)
 		# Stay mostly zoomed out: ease only partway toward the players.
-		target_dist = clampf(lerpf(d_full, d_players, 0.12), min_distance, d_full)
+		target_dist = clampf(lerpf(d_full, d_players, player_focus), min_distance, d_full)
 		var t_amt := 1.0 - (target_dist - min_distance) / maxf(d_full - min_distance, 0.001)
 		var pc := Vector3(pr.get_center().x, 0, pr.get_center().y)
-		target_focus = target_focus.lerp(pc, clampf(t_amt * 1.6, 0.0, 0.35))
+		target_focus = target_focus.lerp(pc, clampf(t_amt * 1.6, 0.0, 0.5))
 	target_dist *= 1.0 + zoom_bias
-	target_dist = maxf(target_dist, min_distance * 0.8)
+	target_dist = maxf(target_dist, min_distance * 0.5)
 	# Keep the focus inside the building framing.
 	target_focus.x = clampf(target_focus.x, full.position.x + 3.0, full.end.x - 3.0) if full.size.x > 6.0 else full.get_center().x
 	target_focus.z = clampf(target_focus.z, full.position.y + 2.0, full.end.y - 2.0) if full.size.y > 4.0 else full.get_center().y

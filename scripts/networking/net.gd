@@ -20,6 +20,8 @@ const MAX_CLIENTS := 5
 
 var online := false
 var player_name := "Chef"
+## Input device for this machine's player when joining someone else's game.
+var local_device := 0
 var _motion_t := 0.0
 var _last_buttons := {}
 var _peer_names := {}

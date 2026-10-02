@@ -79,18 +79,19 @@ func _draw_fixture(cam: Camera3D, f: Fixture) -> void:
 		if w and w.chop > 0.0:
 			var pos := w.global_position + Vector3(0, 0.45, 0)
 			if not cam.is_position_behind(pos):
-				var sp := cam.unproject_position(pos)
-				_ring(sp, 13.0, w.chop / w.def.chop_work, Pal.UI_ACCENT)
+				var sp := cam.unproject_position(pos) + Vector2(24, -16)
+				_ring(sp, 10.0, w.chop / w.def.chop_work, Pal.UI_ACCENT)
 
 
 func _cook_ring(cam: Camera3D, at: Vector3, p: CookProfile, progress: float) -> void:
-	var pos := at + Vector3(0, 0.55, 0)
+	var pos := at + Vector3(0, 0.15, 0)
 	if cam.is_position_behind(pos):
 		return
-	var sp := cam.unproject_position(pos)
-	var r := 15.0
+	# Sit the ring beside the food (up and to the right) so the food stays visible.
+	var sp := cam.unproject_position(pos) + Vector2(26, -30)
+	var r := 11.0
 	var max_p := p.fire_at if p.fire_at > 0.0 else p.stage_ends[p.stage_ends.size() - 2] * 1.2
-	draw_circle(sp, r + 6.0, Color(Pal.UI_INK, 0.85))
+	draw_circle(sp, r + 5.0, Color(Pal.UI_INK, 0.85))
 	var start := 0.0
 	for i in p.stage_ends.size():
 		var end := minf(p.stage_ends[i], max_p)
@@ -100,7 +101,7 @@ func _cook_ring(cam: Camera3D, at: Vector3, p: CookProfile, progress: float) -> 
 		var a1 := -PI / 2.0 + TAU * end / max_p
 		var q := p.stage_quality[i]
 		var col := Pal.UI_GOOD if q >= 0.95 else (Color("e6d07a") if q >= 0.6 else (Color("c9b8a3") if i < p.perfect_stage else Pal.UI_BAD))
-		draw_arc(sp, r, a0, a1, 16, Color(col, 0.55), 7.0, true)
+		draw_arc(sp, r, a0, a1, 16, Color(col, 0.7), 6.0, true)
 		start = end
 	var pa := -PI / 2.0 + TAU * clampf(progress, 0.0, max_p) / max_p
 	draw_arc(sp, r, -PI / 2.0, pa, 40, Color(1, 1, 1, 0.95), 3.0, true)

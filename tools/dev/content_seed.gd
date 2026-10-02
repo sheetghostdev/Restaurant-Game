@@ -233,7 +233,7 @@ func _arch(id: String, name: String, opts: Dictionary) -> void:
 func _customers() -> void:
 	_arch("regular_folks", "Townsfolk", {"group_min": 1, "group_max": 2, "patience": 1.0, "drink_chance": 0.35,
 		"mess": 0.12, "spawn_weight": 1.0, "description": "Ordinary locals. Easygoing."})
-	_arch("family", "Family", {"group_min": 3, "group_max": 5, "child_chance": 0.55, "patience": 0.85, "drink_chance": 0.3,
+	_arch("family", "Family", {"group_min": 3, "group_max": 4, "child_chance": 0.55, "patience": 0.85, "drink_chance": 0.3,
 		"recipe_weights": {"fries": 1.8, "burger": 1.3, "salad": 0.6, "deluxe_burger": 0.5}, "mess": 0.75, "tip": 0.9, "spawn_weight": 0.55,
 		"hour_weights": {12: 1.2, 13: 1.0, 17: 1.4, 18: 1.6, 19: 1.2, -1: 0.45}, "description": "Big tables, lots of fries, lots of crumbs."})
 	_arch("work_crew", "Work Crew", {"group_min": 2, "group_max": 4, "patience": 0.75, "dishes_min": 1, "dishes_max": 2, "drink_chance": 0.5,

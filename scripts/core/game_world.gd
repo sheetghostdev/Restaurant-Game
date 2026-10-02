@@ -177,7 +177,7 @@ func add_local_player(device: int, pname := "") -> PlayerCharacter:
 	if pname == "":
 		pname = Settings.get_value("player_name") if index == 0 else Pal.PLAYER_COLOR_NAMES[index]
 	var pos := _player_spawn(index)
-	var p := spawn_entity(&"player", &"player", {"i": index, "peer": Net.my_id(), "n": pname, "dev": device}, {"pos": [pos.x, 0, pos.z], "yaw": PI}) as PlayerCharacter
+	var p := spawn_entity(&"player", &"player", {"i": index, "peer": Net.my_id(), "n": pname, "dev": device}, {"pos": [pos.x, 0, pos.z], "yaw": 0.0}) as PlayerCharacter
 	Inputs.claim(device, index)
 	Events.player_joined.emit(p)
 	if fx:
@@ -190,7 +190,7 @@ func add_remote_player(peer_id: int, pname: String) -> PlayerCharacter:
 	if index < 0:
 		return null
 	var pos := _player_spawn(index)
-	var p := spawn_entity(&"player", &"player", {"i": index, "peer": peer_id, "n": pname, "dev": 0}, {"pos": [pos.x, 0, pos.z], "yaw": PI}) as PlayerCharacter
+	var p := spawn_entity(&"player", &"player", {"i": index, "peer": peer_id, "n": pname, "dev": 0}, {"pos": [pos.x, 0, pos.z], "yaw": 0.0}) as PlayerCharacter
 	Events.player_joined.emit(p)
 	return p
 
