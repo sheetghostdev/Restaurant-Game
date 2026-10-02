@@ -36,6 +36,7 @@ func _ready() -> void:
 	await t_disasters()
 	await t_staff()
 	await t_automation()
+	await t_regressions()
 	await t_spoilage()
 	await t_close_day()
 	await t_save_load()
@@ -453,6 +454,45 @@ func t_automation() -> void:
 	check(crate.count < 3, "the grabber took it out of the crate")
 	for f in [src, grabber, belt, dst]:
 		w.despawn(f)
+
+
+func t_regressions() -> void:
+	print("[regressions]")
+	if p.held():
+		w.despawn(p.held())
+	# A blocked station refuses (real GRAB press) instead of swallowing the pile.
+	var dwf := fixture(&"dishwasher")
+	var dw := dwf.get_component("Dishwasher") as Dishwasher
+	dw.state = Dishwasher.State.LOADING
+	dw.plates = dw.capacity - 2
+	dw.mugs = 0
+	var pile := w.spawn_item(&"dishware", {"p": 4, "dt": true})
+	p.hold(pile)
+	approach(dwf)
+	p.input_override = true
+	p.set_input(Vector2.ZERO, true, false, false, false)
+	await frames(2)
+	p.set_input(Vector2.ZERO, false, false, false, false)
+	await frames(2)
+	p.input_override = false
+	check(p.held() == pile and pile.plates == 4, "a full dishwasher refuses the pile (still in hand)")
+	check(dw.plates == dw.capacity - 2, "and the dishwasher count is unchanged")
+	w.despawn(pile)
+	dw.plates = 0
+	dwf.mark_dirty()
+	# Automation: a partial rack insert hands the remainder back to the belt.
+	var rack := fixture(&"plate_rack")
+	var dr := rack.get_component("DishRack") as DishRack
+	var before := dr.count
+	dr.count = dr.capacity - 2
+	var clean := w.spawn_item(&"dishware", {"p": 5, "dt": false})
+	clean.detach()   # as a belt or grabber does before handing over
+	var took := Automation.try_insert(rack, clean)
+	check(not took and is_instance_valid(clean) and clean.plates == 3, "a nearly full rack hands back what doesn't fit")
+	check(dr.count == dr.capacity, "and keeps what does")
+	w.despawn(clean)
+	dr.count = before
+	rack.mark_dirty()
 
 
 func t_spoilage() -> void:

@@ -382,17 +382,19 @@ func _leave() -> void:
 	state = State.LEAVING
 	manager.release_tables(self)
 	var exit_cell := manager.exit_cell()
-	for m in members:
+	# Iterate a copy: members that can't path (or already stand on the exit)
+	# leave immediately and are erased from `members`.
+	for m in members.duplicate():
 		m.seated = false
 		if m.bubble == "pay" or m.bubble == "think":
 			m.bubble = ""
 		m.anim = CharacterRig.Anim.IDLE
 		m.speed = archetype.walk_speed * (1.25 if upset else 1.0)
-		var mm := m
+		m.mark_dirty()
+		var mm: Customer = m
 		var cb := func(): _member_left(mm)
 		if not m.walk_to_cell(exit_cell, cb):
 			_member_left(m)
-		m.mark_dirty()
 
 
 func _member_left(m: Customer) -> void:

@@ -378,6 +378,13 @@ func make_save() -> Dictionary:
 			var it := e as Item
 			ents.push_back({"k": "item", "id": id, "def": String(it.def_id), "st": it.get_state(), "loc": {"floor": [it.global_position.x, 0.0, it.global_position.z, 0.0]}})
 			continue
+		if e is Fixture and (e as Fixture).lifted:
+			# Carried in build mode: save it where it would be put down, so it
+			# can't load on top of something placed at its old cell since.
+			var f := e as Fixture
+			var c := build.nearest_free(f.cell, f.def, f)
+			ents.push_back({"k": String(k), "id": id, "def": String(f.def_id), "st": f.get_state(), "loc": {"cell": [c.x, c.y], "rot": f.rot}})
+			continue
 		ents.push_back({"k": String(k), "id": id, "def": String(e.def_id), "st": e.get_state(), "loc": e.get_location()})
 	return {
 		"version": GameConst.SAVE_VERSION,
@@ -502,9 +509,10 @@ func spawn_entity(kind: StringName, def_id: StringName, state: Dictionary, loc: 
 			var pl := ExpansionPlot.new()
 			_register(pl, id)
 			pl.def_id = def_id
+			# Location first: _ready draws the plot outline relative to it.
+			pl.set_location(loc)
 			effects_root.add_child(pl)
 			pl.set_state(state)
-			pl.set_location(loc)
 			e = pl
 		_:
 			push_warning("spawn_entity: unknown kind %s" % kind)

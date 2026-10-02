@@ -11,7 +11,9 @@ static func try_insert(f: Fixture, it: Item) -> bool:
 	for c in f.components:
 		if c.has_method("auto_insert"):
 			if c.auto_insert(it):
-				return true
+				# A partial insert (rack fills up mid-stack) leaves the rest
+				# with the caller, which puts it back where it came from.
+				return _absorbed(it)
 	var s := f.primary_slot()
 	if s == null:
 		return false
@@ -22,16 +24,28 @@ static func try_insert(f: Fixture, it: Item) -> bool:
 			return true
 		return false
 	if s.item.can_receive(it):
+		# Pouring a crate into a fuller one may leave units behind.
 		s.item.receive(it)
-		return true
-	if it.can_receive(s.item):
-		# e.g. a plate arriving at a counter holding finished fries
+		return _absorbed(it)
+	if not (s.item is CrateItem) and it.can_receive(s.item):
+		# e.g. a plate arriving at a counter holding finished fries. (Never a
+		# crate pouring backwards: that would ping-pong units between belts.)
 		var inner := s.item
 		it.receive(inner)
+		if inner.slot == s:
+			return false
 		s.put(it)
 		it.mark_dirty()
 		return true
 	return false
+
+
+## True once `it` is gone (despawned into its target) or placed somewhere real.
+static func _absorbed(it: Item) -> bool:
+	if not is_instance_valid(it) or it.is_queued_for_deletion():
+		return true
+	var parent := it.get_parent()
+	return parent != null and not (GameWorld.current and parent == GameWorld.current.limbo)
 
 
 ## Tries to take one item out of `f` for transport.

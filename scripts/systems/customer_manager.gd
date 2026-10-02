@@ -297,6 +297,8 @@ func _rebuild_clusters() -> void:
 			st.number = i + 1
 			tables[i].mark_dirty()
 		by_cell[tables[i].cell] = tables[i]
+	var fd := world.grid.front_door
+	var entry := Vector2i(fd.x, fd.y)
 	var seen := {}
 	for t in tables:
 		if seen.has(t):
@@ -315,6 +317,9 @@ func _rebuild_clusters() -> void:
 		for tf in cluster["tables"]:
 			var st2 := tf.get_component("SeatingTable") as SeatingTable
 			for side in st2.seated_sides():
+				# Skip chairs nobody can walk to (boxed in, or a walled-up room).
+				if not world.grid.nav.reachable(entry, tf.cell + SeatingTable.SIDES[side]):
+					continue
 				cluster["seats"].push_back({"table": tf, "side": side})
 		_clusters.push_back(cluster)
 

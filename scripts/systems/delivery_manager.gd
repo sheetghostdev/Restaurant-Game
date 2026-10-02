@@ -26,6 +26,7 @@ func _default_order() -> void:
 	for s in Content.supplies.values():
 		if s.default_order > 0:
 			standing_order[s.id] = s.default_order
+	_publish_standing()
 
 
 func save_data() -> Dictionary:
@@ -49,6 +50,7 @@ func load_data(d: Dictionary) -> void:
 		standing_order[StringName(k)] = int(so[k])
 	if standing_order.is_empty():
 		_default_order()
+	_publish_standing()
 	pending.clear()
 	for r in d.get("pending", []):
 		pending.push_back({"at": _clock + 2.0, "vehicle": r.get("vehicle", "truck"), "items": r.get("items", []), "label": r.get("label", "Delivery")})
@@ -65,7 +67,17 @@ func standing_order_cost() -> float:
 
 func set_standing(supply_id: StringName, crates: int) -> void:
 	standing_order[supply_id] = clampi(crates, 0, 9)
-	world.replicator.publish(&"standing", {"o": _so_strings()})
+	_publish_standing()
+
+
+## Relative change, so two players pressing +/- at once both count.
+func adjust_standing(supply_id: StringName, delta: int) -> void:
+	set_standing(supply_id, int(standing_order.get(supply_id, 0)) + delta)
+
+
+func _publish_standing() -> void:
+	if world and world.replicator:
+		world.replicator.publish(&"standing", {"o": _so_strings()})
 
 
 func _so_strings() -> Dictionary:

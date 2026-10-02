@@ -97,11 +97,11 @@ static func _busser(w: Worker) -> Dictionary:
 	var held := w.held()
 	if held:
 		if held is DishItem and (held as DishItem).dirty and held.count() < 6:
-			var more := _dirty_table(w)
+			var more := _dirty_table(w, held as DishItem)
 			if not more.is_empty():
 				return more
 		return _put_away(w, held)
-	var t := _dirty_table(w)
+	var t := _dirty_table(w, null)
 	if not t.is_empty():
 		return t
 	for f in _fixtures(w, "SeatingTable"):
@@ -112,10 +112,10 @@ static func _busser(w: Worker) -> Dictionary:
 	return {}
 
 
-static func _dirty_table(w: Worker) -> Dictionary:
+static func _dirty_table(w: Worker, pile: DishItem) -> Dictionary:
 	for f in _fixtures(w, "SeatingTable"):
 		var st := f.get_component("SeatingTable") as SeatingTable
-		if st.has_dirty_dishes():
+		if st.can_clear_into(pile):
 			return _t(f, GameConst.Verb.GRAB, "Clearing a table")
 	return {}
 
@@ -132,31 +132,56 @@ static func _server(w: Worker) -> Dictionary:
 static func _stocker(w: Worker) -> Dictionary:
 	var held := w.held()
 	var world := w.world
-	if held is CrateItem:
-		var cr := held as CrateItem
-		if cr.count <= 0:
-			# Empties go back to the dock.
-			return {}
-		var want_cold := cr.content_def() != null and cr.content_def().perishable
-		for f in world.grid.all_fixtures():
-			var s: ItemSlot = f.primary_slot()
-			if s == null or s.item != null or not s.accepts_item(cr):
-				continue
-			if f.def.category != "storage":
-				continue
-			if want_cold and not s.cold:
-				continue
-			return _t(f, GameConst.Verb.GRAB, "Stocking shelves")
-		if want_cold:
-			for f2 in world.grid.all_fixtures():
-				var s2: ItemSlot = f2.primary_slot()
-				if s2 and s2.item == null and f2.def.category == "storage" and s2.accepts_item(cr):
-					return _t(f2, GameConst.Verb.GRAB, "Stocking shelves")
-		return {}
 	if held:
-		return {}
-	# Find a delivered crate on the floor.
+		var dest: Fixture = _storage_for(w, held as CrateItem) if held is CrateItem else null
+		if dest:
+			return _t(dest, GameConst.Verb.GRAB, "Stocking shelves")
+		# Empty, or storage filled up on the way: leave it on the dock rather
+		# than holding it forever.
+		return _drop_task(w, "Returning a crate to the dock")
+	# Nearest reachable delivered crate on the floor that has somewhere to go.
+	var from := GameConst.world_to_cell(w.global_position)
+	var crates := []
 	for it in world.items_root.get_children():
-		if it is CrateItem and (it as CrateItem).count > 0:
-			return {"target": it, "verb": GameConst.Verb.GRAB, "label": "Unloading the delivery"}
+		if it is CrateItem and (it as CrateItem).count > 0 and (it as CrateItem).is_loose():
+			crates.push_back(it)
+	crates.sort_custom(func(a, b): return a.global_position.distance_to(w.global_position) < b.global_position.distance_to(w.global_position))
+	for cr in crates:
+		if _storage_for(w, cr) == null:
+			continue
+		if not world.grid.nav.reachable(from, GameConst.world_to_cell(cr.global_position)):
+			continue
+		return {"target": cr, "verb": GameConst.Verb.GRAB, "label": "Unloading the delivery"}
 	return {}
+
+
+## The best empty storage slot for a crate (cold first for perishables).
+static func _storage_for(w: Worker, cr: CrateItem) -> Fixture:
+	if cr == null or cr.count <= 0:
+		return null
+	var world := w.world
+	var want_cold := cr.content_def() != null and cr.content_def().perishable
+	var fallback: Fixture = null
+	for f in world.grid.all_fixtures():
+		if f.def.category != "storage" or f.lifted:
+			continue
+		var s: ItemSlot = f.primary_slot()
+		if s == null or s.item != null or not s.accepts_item(cr):
+			continue
+		if not want_cold or s.is_cold():
+			return f
+		if fallback == null:
+			fallback = f
+	return fallback
+
+
+static func _drop_task(w: Worker, label: String) -> Dictionary:
+	var zone := w.world.grid.delivery_zone
+	var best := GameConst.world_to_cell(w.global_position)
+	var best_d := INF
+	for c in zone:
+		var d := GameConst.cell_center(c).distance_to(w.global_position)
+		if d < best_d and w.world.grid.walkable(c):
+			best_d = d
+			best = c
+	return {"drop_at": best, "label": label}

@@ -94,7 +94,7 @@ func _on_peer_disconnected(id: int) -> void:
 					var it: Item = p.take_held()
 					it.place_on_floor(p.global_position)
 				if p.carried_fixture:
-					w.build.drop_all_carried()
+					w.build.drop_carried(p)
 				w.despawn(p)
 				Events.notify("A player left", &"info")
 
@@ -206,7 +206,7 @@ func _do_request(action: String, args: Array, _from: int) -> void:
 			if wk:
 				w.staff.dismiss(wk)
 		"rush_order": w.deliveries.rush_order(StringName(args[0]), int(args[1]) if args.size() > 1 else 1)
-		"standing": w.deliveries.set_standing(StringName(args[0]), int(args[1]))
+		"standing": w.deliveries.adjust_standing(StringName(args[0]), clampi(int(args[1]), -9, 9))
 		"continue_results": w.day.continue_from_results()
 		"save": Saves.save_game(w)
 		"debug": w.debug_command(String(args[0]), args.slice(1))

@@ -231,12 +231,26 @@ func get_location() -> Dictionary:
 
 
 func set_location(d: Dictionary) -> void:
+	var cid: int = d.get("carried", 0)
 	if d.has("cell"):
 		var c: Array = d["cell"]
-		place_at(Vector2i(int(c[0]), int(c[1])), int(d.get("rot", 0)))
+		var nc := Vector2i(int(c[0]), int(c[1]))
+		var nr := int(d.get("rot", 0))
+		if lifted and carrier_id != 0 and cid != 0:
+			# Still being carried: the model hangs off the carrier, so only
+			# remember where it would land.
+			cell = nc
+			rot = posmod(nr, 4)
+		elif world and not Net.is_authority() and is_inside_tree() and not lifted and nc != cell:
+			# Moved on the server (e.g. cleared out of a new doorway, or lifted
+			# and placed between two state updates): keep occupancy in step.
+			world.grid.vacate(self)
+			place_at(nc, nr)
+			world.grid.occupy(self)
+		else:
+			place_at(nc, nr)
 	# Clients mirror build-mode carrying.
 	if world and not Net.is_authority() and is_inside_tree():
-		var cid: int = d.get("carried", 0)
 		if cid != 0 and not lifted:
 			var p := world.get_entity(cid)
 			if p:

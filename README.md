@@ -193,7 +193,8 @@ More detail:
 ```bash
 # Full-day gameplay test: delivery, prep, cooking, plating, customers, washing,
 # build mode, disasters, staff, automation, spoilage, closing, results,
-# expansions, patio fences, power cut, save/load (106 checks).
+# expansions, patio fences, power cut, save/load, regressions (about 110
+# checks; the exact number depends on what the guests order).
 godot --headless --path . res://tests/test_runner.tscn
 
 # Network test: one host process and one client process on localhost.

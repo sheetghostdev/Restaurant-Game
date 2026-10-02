@@ -76,6 +76,9 @@ func _physics_process(delta: float) -> void:
 		if not recs.is_empty():
 			Net._s_spawn.rpc(recs)
 	if not _despawns.is_empty():
+		# State first: an item dropped by a leaving player (or a fixture it was
+		# carrying) must reach the floor on clients before its holder is freed.
+		_flush_state()
 		Net._s_despawn.rpc(_despawns.duplicate())
 		_despawns.clear()
 	if not _shared_dirty.is_empty():
@@ -84,15 +87,7 @@ func _physics_process(delta: float) -> void:
 		_shared_dirty.clear()
 	_state_t -= delta
 	if _state_t <= 0.0 and not _dirty.is_empty():
-		_state_t = 1.0 / STATE_HZ
-		var batch := []
-		for id in _dirty:
-			var e = _dirty[id]
-			if is_instance_valid(e):
-				batch.push_back([id, e.get_state(), e.get_location()])
-		_dirty.clear()
-		if not batch.is_empty():
-			Net._s_state.rpc(batch)
+		_flush_state()
 	_motion_t -= delta
 	if _motion_t <= 0.0:
 		_motion_t = 1.0 / MOTION_HZ
@@ -110,6 +105,18 @@ func _physics_process(delta: float) -> void:
 				mb.push_back(row)
 		if not mb.is_empty():
 			Net._s_motion.rpc(mb)
+
+
+func _flush_state() -> void:
+	_state_t = 1.0 / STATE_HZ
+	var batch := []
+	for id in _dirty:
+		var e = _dirty[id]
+		if is_instance_valid(e):
+			batch.push_back([id, e.get_state(), e.get_location()])
+	_dirty.clear()
+	if not batch.is_empty():
+		Net._s_state.rpc(batch)
 
 
 ## Full world for a newly joined peer.
@@ -142,6 +149,13 @@ func apply_spawns(records: Array) -> void:
 	# Items last so their holders exist.
 	for r in deferred_items:
 		world.spawn_entity(&"item", StringName(r["def"]), r.get("st", {}), r.get("loc", {}), int(r["id"]))
+	# Late join: fixtures someone is carrying can only attach once both the
+	# fixture and its carrier are in the tree.
+	for r in records:
+		if r["k"] == "fixture" and (r.get("loc", {}) as Dictionary).has("carried"):
+			var f := world.get_entity(int(r["id"]))
+			if f:
+				f.set_location(r["loc"])
 
 
 func apply_despawns(ids: Array) -> void:

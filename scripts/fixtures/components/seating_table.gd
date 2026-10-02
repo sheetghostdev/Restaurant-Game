@@ -12,6 +12,7 @@ const SIDES := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)
 var number := 0
 var messy := false
 var wipe := 0.0
+var _view := {}        ## seated group as clients see it (see _group_view)
 var _crumbs: Node3D
 var _number_label: Label3D
 
@@ -96,27 +97,66 @@ func is_clean() -> bool:
 # Interaction
 # -----------------------------------------------------------------------------
 
+## The seated group reduced to what interaction hints need. Groups only exist
+## on the server, so this is replicated in the table state for clients.
+func _group_view() -> Dictionary:
+	if not Net.is_authority():
+		return _view
+	var g := group()
+	if g == null:
+		return {}
+	var want := []
+	if g.state_waiting_food():
+		for m in g.members:
+			for o in m.orders:
+				if not o.get("served", false):
+					want.push_back(String(o["recipe"]))
+	return {"o": g.can_take_order(), "w": g.state_waiting_food(), "l": g.is_leaving(), "s": g.status_text(), "r": want}
+
+
+func _wants(view: Dictionary, d: DishItem) -> bool:
+	if Net.is_authority():
+		var g := group()
+		return g != null and g.find_member_for(d, fixture) != null
+	for rid in view.get("r", []):
+		var r := Content.recipe(StringName(rid))
+		if r and RecipeManager.satisfies(r, d):
+			return true
+	return false
+
+
+func server_tick(_delta: float) -> void:
+	# Re-send the table when its group's visible state changes.
+	if not Net.is_online():
+		return
+	var v := _group_view()
+	if v != _view:
+		_view = v
+		fixture.mark_dirty()
+
+
 func query(actor: Node, verb: int) -> Dictionary:
 	var held: Item = actor.held()
-	var g := group()
+	var gv := _group_view()
+	var seated := not gv.is_empty()
 	if verb == GameConst.Verb.USE:
-		if g and g.can_take_order():
+		if gv.get("o", false):
 			return {"label": "Take order", "anim": CharacterRig.Anim.THINK}
-		if messy and (g == null or g.is_leaving()):
+		if messy and (not seated or gv.get("l", false)):
 			return {"label": "Wipe table", "hold": true, "anim": CharacterRig.Anim.WIPE, "progress": wipe / 1.2}
 		return {}
 	# GRAB
 	if held is DishItem:
 		var d := held as DishItem
 		if d.dirty:
-			if has_dirty_dishes() and d.count() < d.max_stack():
+			if can_clear_into(d):
 				return {"label": "Clear dishes"}
 			return {}
 		if not d.contents.is_empty() or d.is_mug():
-			if g and g.find_member_for(d, fixture) != null:
+			if seated and _wants(gv, d):
 				var r := d.recipe()
 				return {"label": "Serve %s" % (r.display_name if r else d.display_name())}
-			if g and g.state_waiting_food():
+			if gv.get("w", false):
 				return {"label": "Nobody here ordered that", "blocked": true}
 		return {}
 	if held == null and has_dirty_dishes():
@@ -150,6 +190,15 @@ func perform(actor: Node, verb: int, delta: float) -> bool:
 		return false
 	if held == null and has_dirty_dishes():
 		return _clear_into(actor, null)
+	return false
+
+
+## True if at least one dirty dish here fits onto `pile` (null = empty hands).
+func can_clear_into(pile: DishItem) -> bool:
+	for s in fixture.slots:
+		if s.item is DishItem and (s.item as DishItem).dirty:
+			if pile == null or pile.count() + s.item.count() <= pile.max_stack():
+				return true
 	return false
 
 
@@ -197,9 +246,9 @@ func _process(_delta: float) -> void:
 
 
 func status_text() -> String:
-	var g := group()
-	if g:
-		return g.status_text()
+	var gv := _group_view()
+	if not gv.is_empty():
+		return String(gv.get("s", ""))
 	if messy:
 		return "Needs wiping"
 	if has_dirty_dishes():
@@ -221,9 +270,13 @@ func get_state() -> Dictionary:
 	var d := {"n": number}
 	if messy:
 		d["m"] = true
+	if not _view.is_empty():
+		d["g"] = _view
 	return d
 
 
 func set_state(d: Dictionary) -> void:
 	number = d.get("n", number)
 	messy = d.get("m", false)
+	if not Net.is_authority():
+		_view = d.get("g", {})

@@ -212,13 +212,13 @@ func _build_supplies() -> void:
 		box.add_theme_constant_override("separation", 6)
 		var qty: int = w.deliveries.standing_order.get(id, 0)
 		var minus := UITheme.button("−", func():
-			Net.request("standing", [String(id), int(w.deliveries.standing_order.get(id, 0)) - 1])
+			Net.request("standing", [String(id), -1])
 			_refresh_later())
 		var lbl := UITheme.label("%d" % qty, 24, "display")
 		lbl.custom_minimum_size = Vector2(32, 0)
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		var plus := UITheme.button("+", func():
-			Net.request("standing", [String(id), int(w.deliveries.standing_order.get(id, 0)) + 1])
+			Net.request("standing", [String(id), 1])
 			_refresh_later())
 		var rush := _buy_button("Rush ×1", sd.price * DeliveryManager.RUSH_MARKUP, func(): Net.request("rush_order", [String(id), 1]))
 		box.add_child(minus)

@@ -86,6 +86,11 @@ func rotate_carried(p: PlayerCharacter) -> void:
 	if f == null:
 		return
 	f.rot = (f.rot + 1) % 4
+	# The carried model faces its landing direction (clients do the same in
+	# Fixture.set_location).
+	var holder := f.get_parent() as Node3D
+	if holder:
+		f.rotation = Vector3(0, f.rot * PI * 0.5 - holder.rotation.y, 0)
 	Audio.play_at(&"ui_click", f.global_position)
 	f.mark_dirty()
 
@@ -122,14 +127,18 @@ func _put_down(p: PlayerCharacter, f: Fixture, c: Vector2i) -> void:
 ## Phase changes force anything being carried back onto the grid.
 func drop_all_carried() -> void:
 	for p in world.players():
-		var f: Fixture = p.carried_fixture
-		if f == null:
-			continue
-		var c := _nearest_free(f.cell, f.def, f)
-		_put_down(p, f, c)
+		drop_carried(p)
 
 
-func _nearest_free(start: Vector2i, def: FixtureDef, f: Fixture) -> Vector2i:
+## Force-places whatever `p` is carrying at the nearest free cell.
+func drop_carried(p: PlayerCharacter) -> void:
+	var f: Fixture = p.carried_fixture
+	if f == null:
+		return
+	_put_down(p, f, nearest_free(f.cell, f.def, f))
+
+
+func nearest_free(start: Vector2i, def: FixtureDef, f: Fixture) -> Vector2i:
 	if can_place_at(start, def, f):
 		return start
 	for r in range(1, 12):
@@ -382,6 +391,7 @@ func toggle_opening(a: Vector2i, b: Vector2i) -> bool:
 		if not world.economy.spend(BRICK_COST, "Wall up doorway"):
 			return false
 		g.set_opening(a, b, "")
+	world.customers.mark_tables_dirty()
 	world.replicator.publish(&"layout", g.save_layout())
 	Audio.play_at(&"construct", (GameConst.cell_center(a) + GameConst.cell_center(b)) * 0.5)
 	world.fx.dust((GameConst.cell_center(a) + GameConst.cell_center(b)) * 0.5 + Vector3(0, 0.6, 0))

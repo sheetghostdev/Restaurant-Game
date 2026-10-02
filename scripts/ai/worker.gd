@@ -126,10 +126,18 @@ func server_tick(delta: float) -> void:
 
 
 func _go(t: Dictionary) -> void:
-	var f: Node3D = t.get("target")
-	if f == null or not is_instance_valid(f):
+	if t.has("drop_at"):
+		var dc: Vector2i = t["drop_at"]
+		path = world.grid.nav.find_path(global_position, dc)
+		if path.is_empty() and GameConst.world_to_cell(global_position) != dc:
+			task = {}
+			_think = 2.0
+		return
+	var tv = t.get("target")
+	if tv == null or not is_instance_valid(tv):
 		task = {}
 		return
+	var f: Node3D = tv
 	var cell := StaffBrain.access_cell(world, f, global_position)
 	if cell == Vector2i(-9999, -9999):
 		task = {}
@@ -158,9 +166,26 @@ func _walk(delta: float) -> void:
 
 
 func _do_task(delta: float) -> void:
-	var f: Node3D = task.get("target")
-	if f == null or not is_instance_valid(f):
+	if task.has("drop_at"):
+		var it := held()
+		if it:
+			take_held()
+			it.place_on_floor(global_position + facing * 0.55)
+			it.mark_dirty()
+			Audio.play_at(&"drop_heavy" if it.is_heavy() else &"putdown", it.global_position)
 		task = {}
+		_think = 1.0
+		return
+	# Untyped first: the target may have been freed while we walked.
+	var tv = task.get("target")
+	if tv == null or not is_instance_valid(tv):
+		task = {}
+		return
+	var f: Node3D = tv
+	# Moved, lifted or carried off while we were walking: rethink.
+	if (f is Fixture and (f as Fixture).lifted) or f.global_position.distance_to(global_position) > 1.8:
+		task = {}
+		_think = 0.4
 		return
 	var to := f.global_position - global_position
 	to.y = 0
@@ -169,7 +194,8 @@ func _do_task(delta: float) -> void:
 		rotation.y = atan2(facing.x, facing.z)
 	var verb: int = task.get("verb", GameConst.Verb.GRAB)
 	if f is Item:
-		if f.global_position.distance_to(global_position) > 1.6:
+		# Never pull things out of someone's hands or off a shelf.
+		if f.global_position.distance_to(global_position) > 1.6 or not (f as Item).is_loose():
 			task = {}
 			return
 		if verb == GameConst.Verb.GRAB and not Interact.grab_item_query(self, f).is_empty():

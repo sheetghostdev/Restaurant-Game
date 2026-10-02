@@ -49,6 +49,8 @@ func perform(actor: Node, verb: int, _delta: float) -> bool:
 	var held: Item = actor.held()
 	if verb == GameConst.Verb.GRAB:
 		if held is DishItem and (held as DishItem).dirty and state == State.LOADING:
+			if total() + held.count() > capacity:
+				return false
 			return auto_insert(actor.take_held())
 		if held == null and total() > 0 and state != State.RUNNING:
 			var pile: DishItem = world().spawn_item(&"dishware", {"p": plates, "m": mugs, "dt": state != State.DONE}, {"none": true})

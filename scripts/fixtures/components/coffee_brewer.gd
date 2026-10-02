@@ -48,6 +48,8 @@ func query(actor: Node, verb: int) -> Dictionary:
 func perform(actor: Node, verb: int, _delta: float) -> bool:
 	var held: Item = actor.held()
 	if verb == GameConst.Verb.GRAB and held is FoodItem and held.def_id == &"coffee_beans":
+		if query(actor, verb).get("blocked", false):
+			return false
 		beans = mini(beans + servings_per_bag, capacity)
 		world().despawn(held)
 		Audio.play_at(&"crate_take", fixture.global_position, 0.0, 0.8)

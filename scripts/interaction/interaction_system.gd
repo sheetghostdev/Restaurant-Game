@@ -147,16 +147,19 @@ func _process_actions(p: PlayerCharacter, t: Node, delta: float) -> void:
 	if p.grab_pressed:
 		p.grab_hold_time = 0.0
 		_lift_started[p] = false
+		var gq := _query(t, p, GameConst.Verb.GRAB) if t else {}
 		if held is PackageItem and calm and world.build.try_unpack(p):
 			pass
-		elif t and not _query(t, p, GameConst.Verb.GRAB).is_empty():
+		elif gq.get("blocked", false):
+			# The hint already explains why ("Dishwasher is full"): refuse.
+			_refuse(p, t)
+		elif not gq.is_empty():
 			_perform(t, p, GameConst.Verb.GRAB, 0.0)
 		elif held:
 			# Facing a station that refuses the item: give feedback instead of
 			# dumping it on the floor by accident.
 			if t is Fixture and _facing_directly(p, t):
-				Audio.play_at(&"error", p.global_position, -8.0)
-				(t as Fixture).bump()
+				_refuse(p, t)
 			else:
 				_drop(p)
 	if p.in_grab and held == null and calm and not _lift_started.get(p, false):
@@ -168,9 +171,14 @@ func _process_actions(p: PlayerCharacter, t: Node, delta: float) -> void:
 	# --- USE ---
 	if held is ToolItem and p.in_use:
 		world.disasters.use_tool(p, held, delta)
-	elif p.in_use and t:
+	elif (p.in_use or p.use_pressed) and t:
+		# use_pressed is checked too: a remote tap's press and release can
+		# land in the same server frame.
 		var q := _query(t, p, GameConst.Verb.USE)
-		if not q.is_empty():
+		if q.get("blocked", false):
+			if p.use_pressed:
+				_refuse(p, t)
+		elif not q.is_empty():
 			if q.get("hold", false):
 				if _use_target.get(p) != t:
 					_use_target[p] = t
@@ -208,6 +216,13 @@ func _facing_directly(p: Node, t: Node3D) -> bool:
 
 
 ## Drops the held item in front of the player if there's room.
+## Feedback for an action the target won't take right now.
+func _refuse(p: PlayerCharacter, t: Node) -> void:
+	Audio.play_at(&"error", p.global_position, -8.0)
+	if t is Fixture:
+		(t as Fixture).bump()
+
+
 func _drop(p: PlayerCharacter) -> bool:
 	var it := p.held()
 	if it == null:
