@@ -123,6 +123,13 @@ func t_layout() -> void:
 	check(w.grid.nav.reachable(Vector2i(4, 10), Vector2i(2, 1)), "customers can path from the street to a chair")
 	check(w.day.phase == GameConst.Phase.MORNING, "game starts in morning prep")
 	check(w.all_of_kind(&"plot").size() == 4, "four expansion plots for sale")
+	var from := GameConst.world_to_cell(p.global_position)
+	var signs_ok := true
+	for pl in w.all_of_kind(&"plot"):
+		var at := GameConst.world_to_cell((pl as Node3D).global_position)
+		if not w.grid.nav.reachable(from, at) or w.grid.is_building(at):
+			signs_ok = false
+	check(signs_ok, "every FOR SALE sign is outside and walkable from the kitchen")
 
 
 ## Drives the player with simulated stick/button input and checks that the

@@ -327,6 +327,10 @@ func setup_plots() -> void:
 		world.despawn(p)
 	for e in available_expansions():
 		var sign_at := Vector2(e.rect.get_center().x, e.rect.end.y - 0.5)
+		if world.grid.is_building(Vector2i(int(sign_at.x), e.rect.end.y)):
+			# Lot behind the building: a sign on its near edge would hide
+			# behind the back wall, so stand it in the middle of the lot.
+			sign_at.y = e.rect.get_center().y
 		world.spawn_entity(&"plot", e.id, {}, {"pos": [sign_at.x, 0, sign_at.y], "yaw": 0.0})
 
 

@@ -16,6 +16,13 @@ The game is a polished vertical slice with an architecture meant to keep
 growing: content is data, every system is network-ready, and a headless test
 plays through a whole day.
 
+| | |
+|---|---|
+| ![Lunch service: guests seated, order tickets along the top](docs/screenshots/service.jpg) | ![Three local players prepping in the kitchen](docs/screenshots/coop.jpg) |
+| *Lunch service: tickets show each table's order* | *Local co-op during morning prep* |
+| ![The diner after expanding: patio, dining annex, dish room, walk-in cooler](docs/screenshots/expanded.jpg) | ![Evening build phase with FOR SALE plots behind the building](docs/screenshots/evening.jpg) |
+| *All four expansions built* | *Evening planning, with plots for sale out back* |
+
 ---
 
 ## Running the game
