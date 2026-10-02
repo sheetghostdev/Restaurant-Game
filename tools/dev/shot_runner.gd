@@ -136,6 +136,13 @@ func _run_scenario() -> void:
 			p.global_position = Vector3(12.4, 0, 2.2)
 			p.rotation.y = PI
 			p.facing = Vector3(0, 0, -1)
+		"expanded":
+			w.economy.earn(5000.0, "shot")
+			for e in [&"patio", &"dining_annex", &"dish_room", &"walk_in_cooler"]:
+				w.build.buy_expansion(e)
+			w.staff.hire(&"dish_hand")
+			w.staff.hire(&"stocker")
+			await get_tree().create_timer(1.0).timeout
 		"catalog":
 			var p2: PlayerCharacter = w.players()[0]
 			w.hud.catalog.open_for(p2)

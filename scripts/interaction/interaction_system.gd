@@ -225,7 +225,9 @@ func _drop(p: PlayerCharacter) -> bool:
 
 
 func find_drop_spot(pos: Vector3, fwd: Vector3, heavy: bool) -> Vector3:
-	var tries := [fwd * 0.75, fwd * 0.75 + fwd.cross(Vector3.UP) * 0.45, fwd * 0.75 - fwd.cross(Vector3.UP) * 0.45, fwd * 0.4, Vector3.ZERO]
+	var tries := [fwd * 0.75, fwd * 0.75 + fwd.cross(Vector3.UP) * 0.45, fwd * 0.75 - fwd.cross(Vector3.UP) * 0.45, fwd * 0.4]
+	if not heavy:
+		tries.push_back(Vector3.ZERO)
 	for off in tries:
 		var spot: Vector3 = pos + off
 		var c := GameConst.world_to_cell(spot)
@@ -236,6 +238,16 @@ func find_drop_spot(pos: Vector3, fwd: Vector3, heavy: bool) -> Vector3:
 			continue
 		if heavy:
 			spot = Vector3(clampf(spot.x, c.x + 0.32, c.x + 0.68), 0, clampf(spot.z, c.y + 0.27, c.y + 0.73))
+			# Never drop a solid box on top of whoever is standing there.
+			if spot.distance_to(Vector3(pos.x, 0, pos.z)) < 0.62:
+				continue
+			var blocked := false
+			for a in get_tree().get_nodes_in_group(&"players"):
+				var ap := (a as Node3D).global_position
+				if Vector2(ap.x - spot.x, ap.z - spot.z).length() < 0.55:
+					blocked = true
+			if blocked:
+				continue
 		var clear := true
 		for other in world.items_root.get_children():
 			if other is Item and (other as Item).global_position.distance_to(spot) < (0.55 if heavy else 0.28):
