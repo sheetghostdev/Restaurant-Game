@@ -64,6 +64,11 @@ func _required_distance(r: Rect2) -> float:
 
 func _process(delta: float) -> void:
 	var full := building_rect.grow(margin)
+	# Keep arriving delivery vehicles in shot (the truck is a big moment).
+	for v in get_tree().get_nodes_in_group(&"vehicles"):
+		var vp := (v as Node3D).global_position
+		if absf(vp.x - full.get_center().x) < full.size.x * 0.5 + 8.0 and absf(vp.z - full.get_center().y) < full.size.y * 0.5 + 6.0:
+			full = full.expand(Vector2(vp.x + 2.6, vp.z)).expand(Vector2(vp.x - 2.6, vp.z))
 	var d_full := _required_distance(full)
 	var target_focus := Vector3(full.get_center().x, 0, full.get_center().y)
 	var target_dist := d_full
