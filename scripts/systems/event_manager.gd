@@ -12,6 +12,7 @@ var power_out := false
 var _power_t := 0.0
 var _spray_t := 0.0
 var _inspection_t := -1.0
+var _inspector: Customer
 var _alarm_node: Node3D
 
 
@@ -266,9 +267,53 @@ func start_inspection() -> void:
 	_inspection_t = 25.0
 	Events.notify("A health inspector just walked in! Clean up — 25 seconds!", &"big", Pal.UI_WARN)
 	Audio.play_ui(&"timer_ring")
+	_spawn_inspector()
+
+
+## A visible inspector with a clipboard who wanders into the kitchen.
+func _spawn_inspector() -> void:
+	var door := world.grid.front_door
+	var start := world.grid.street_point("spawn_a", Vector2i(-3, 9))
+	var app := {
+		"skin": Pal.SKIN_TONES[2], "hair": Pal.HAIR_COLORS[5], "hair_style": &"short",
+		"shirt": Color("2e3a4f"), "pants": Color("2b2f38"), "shoes": Pal.RUBBER,
+		"hat": &"cap", "hat_color": Color("2e3a4f"), "glasses": true, "accessory": &"notebook",
+	}
+	var st := {"a": "", "app": {}, "m": 1.0, "b": "?"}
+	for k in app:
+		var v = app[k]
+		st["app"][k] = v.to_html() if v is Color else (String(v) if v is StringName else v)
+	_inspector = world.spawn_entity(&"customer", &"inspector", st, {"pos": [start.x + 0.5, 0, start.y + 0.5], "yaw": 0.0}) as Customer
+	if _inspector == null:
+		return
+	_inspector.speed = 1.8
+	var kitchen := world.grid.cells_of_type(&"kitchen")
+	var target := Vector2i(door.x, door.y)
+	if not kitchen.is_empty():
+		target = kitchen[kitchen.size() / 2]
+		for c in kitchen:
+			if world.grid.walkable(c):
+				target = c
+				if randf() < 0.1:
+					break
+	_inspector.walk_to_cell(target, func():
+		if is_instance_valid(_inspector):
+			_inspector.anim = CharacterRig.Anim.THINK
+			_inspector.mark_dirty())
 
 
 func _grade_inspection() -> void:
+	if _inspector and is_instance_valid(_inspector):
+		var insp := _inspector
+		insp.bubble = ""
+		insp.anim = CharacterRig.Anim.IDLE
+		insp.mark_dirty()
+		var exit := world.grid.street_point("spawn_b", Vector2i(29, 9))
+		if not insp.walk_to_cell(exit, func():
+			if is_instance_valid(insp):
+				world.despawn(insp)):
+			world.despawn(insp)
+	_inspector = null
 	var problems := 0
 	problems += mess_count()
 	for f in world.grid.all_fixtures():
