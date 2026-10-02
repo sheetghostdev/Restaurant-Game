@@ -110,9 +110,19 @@ func _run_scenario() -> void:
 				await get_tree().create_timer(4.0).timeout
 		"fire":
 			w.debug_command("start_service", [])
-			w.disasters.trigger(&"grease_fire")
+			(w.grid.fixtures_of(&"grill")[0].get_component("Flammable") as Flammable).ignite()
 			w.disasters.trigger(&"pipe_leak")
 			w.disasters.trigger(&"dishwasher_breakdown")
+			var p: PlayerCharacter = w.players()[0]
+			var ext: Fixture = w.grid.fixtures_of(&"extinguisher_station")[0]
+			p.hold(ext.primary_slot().take())
+			p.global_position = Vector3(12.4, 0, 2.2)
+			p.rotation.y = PI
+			p.facing = Vector3(0, 0, -1)
+		"catalog":
+			var p2: PlayerCharacter = w.players()[0]
+			w.hud.catalog.open_for(p2)
+			await get_tree().create_timer(1.5).timeout
 
 
 func _stage_kitchen(w: GameWorld) -> void:

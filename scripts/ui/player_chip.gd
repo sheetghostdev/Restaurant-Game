@@ -15,18 +15,19 @@ func _ready() -> void:
 	var sb := UITheme.card(Color("fffaf0"), col, 12, 4)
 	sb.border_width_left = 12
 	add_theme_stylebox_override("panel", sb)
-	custom_minimum_size = Vector2(250, 0)
+	custom_minimum_size = Vector2(270, 0)
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 2)
+	v.add_theme_constant_override("separation", 1)
 	add_child(v)
 	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)
 	_name = UITheme.label(player.player_name, 18, "display", col.darkened(0.25))
 	row.add_child(_name)
 	_held = UITheme.label("", 15, "bold", Pal.UI_INK_SOFT)
 	_held.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_held.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_held.clip_text = true
+	_held.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_held.custom_minimum_size = Vector2(120, 0)
 	row.add_child(_held)
 	_hints = HBoxContainer.new()
 	_hints.add_theme_constant_override("separation", 10)
@@ -56,7 +57,7 @@ func update_hint(h: Dictionary) -> void:
 	if key == _last:
 		return
 	_last = key
-	_held.text = held_text
+	_held.text = ("· " + held_text) if held_text != "" else ""
 	for c in _hints.get_children():
 		c.queue_free()
 	if parts.is_empty():

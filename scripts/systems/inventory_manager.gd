@@ -33,6 +33,11 @@ func refresh() -> void:
 			var f := it as FoodItem
 			if f.is_untouched():
 				c[f.def_id] = c.get(f.def_id, 0) + 1
+	# Beans already loaded into coffee machines count as stock (in bags).
+	for f in world.grid.all_fixtures():
+		var cb := f.get_component("CoffeeBrewer") as CoffeeBrewer
+		if cb and cb.beans > 0:
+			c[&"coffee_beans"] = c.get(&"coffee_beans", 0) + int(ceil(float(cb.beans) / cb.servings_per_bag))
 	counts = c
 	warming = warm
 	_update_alerts()
@@ -73,12 +78,14 @@ func _update_alerts() -> void:
 		var n := units(id)
 		var key := StringName("low_" + String(id))
 		var name := Content.display_name(id)
+		var sup := Content.supply_for_item(id)
+		var low := maxi(1, int(ceil(sup.quantity * 0.25))) if sup else LOW
 		if n <= 0:
 			if _alerted.get(id, "") != "out":
 				_alerted[id] = "out"
 				Events.alert.emit(key, "OUT of %s!" % name.to_lower(), true)
 				Audio.play_ui(&"error", -6.0)
-		elif n <= LOW:
+		elif n < low:
 			if _alerted.get(id, "") != "low":
 				_alerted[id] = "low"
 				Events.alert.emit(key, "Low on %s (%d)" % [name.to_lower(), n], true)

@@ -252,7 +252,7 @@ func _move(delta: float) -> void:
 		_step_dist = 0.0
 		Audio.play_at(&"footstep_%d" % randi_range(1, 3), global_position, -14.0, randf_range(0.9, 1.1))
 		if in_sprint and world and world.fx and horiz.length() > 5.0:
-			world.fx.dust(global_position)
+			world.fx.dust(global_position, true)
 
 
 func _separation() -> Vector3:

@@ -262,7 +262,7 @@ func _build_hint(p: Node, t: Node) -> Dictionary:
 	if t:
 		var g := _query(t, p, GameConst.Verb.GRAB)
 		var u := _query(t, p, GameConst.Verb.USE)
-		if not g.is_empty():
+		if not g.is_empty() and g.get("label", "") != "":
 			h["grab"] = g.get("label", "")
 		if not u.is_empty() and not h.has("use"):
 			h["use"] = u.get("label", "")

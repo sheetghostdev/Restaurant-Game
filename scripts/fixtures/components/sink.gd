@@ -117,7 +117,7 @@ func _process(delta: float) -> void:
 		_sound_t -= delta
 		if _sound_t <= 0.0:
 			_sound_t = 0.3
-			fixture.world.fx.bubbles(fixture.global_position + Vector3(-0.2, 0.8, 0))
+			fixture.world.fx.bubbles(fixture.global_position + Vector3(-0.2, 0.8, 0), true)
 
 
 func status_text() -> String:

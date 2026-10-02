@@ -117,7 +117,7 @@ func _process(delta: float) -> void:
 		_fx_t -= delta
 		if _fx_t <= 0.0:
 			_fx_t = 0.5
-			fixture.world.fx.steam(fixture.global_position + Vector3(0, 1.35, 0))
+			fixture.world.fx.steam(fixture.global_position + Vector3(0, 1.35, 0), 1.0, Color(1, 1, 1, 0.55), true)
 
 
 func status_text() -> String:

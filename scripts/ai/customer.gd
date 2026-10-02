@@ -157,7 +157,7 @@ func _process(delta: float) -> void:
 	position.y = 0.06 if seated else 0.0
 	_update_bubble()
 	if mood < 0.25 and fmod(Time.get_ticks_msec() * 0.001, 1.0) < delta * 2.0 and world:
-		world.fx.steam(global_position + Vector3(0, 1.45, 0), 0.5, Color("ff8a6a"))
+		world.fx.steam(global_position + Vector3(0, 1.45, 0), 0.5, Color("ff8a6a"), true)
 
 
 func _update_bubble() -> void:

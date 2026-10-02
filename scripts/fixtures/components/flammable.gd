@@ -22,8 +22,11 @@ func blocks_function() -> bool:
 	return burning
 
 
-func query(_actor: Node, _verb: int) -> Dictionary:
+func query(actor: Node, _verb: int) -> Dictionary:
 	if burning:
+		var held: Item = actor.held()
+		if held is ToolItem and held.def_id == &"extinguisher":
+			return {"label": "", "blocked": true}
 		return {"label": "On fire! Grab an extinguisher", "blocked": true}
 	return {}
 

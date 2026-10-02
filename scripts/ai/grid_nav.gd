@@ -38,7 +38,7 @@ func rebuild() -> void:
 	_origin = grid.lot.position
 	_w = grid.lot.size.x
 	_h = grid.lot.size.y
-	astar.reserve_space(_w * _h)
+
 	for z in _h:
 		for x in _w:
 			var c := _origin + Vector2i(x, z)

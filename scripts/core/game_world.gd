@@ -124,6 +124,9 @@ func load_save(data: Dictionary) -> void:
 
 func _after_start() -> void:
 	_started = true
+	var amb := Ambience.new()
+	amb.world = self
+	effects_root.add_child(amb)
 	var bounds := grid.building_bounds()
 	camera.set_building_rect(Rect2(bounds.position.x, bounds.position.y, bounds.size.x, bounds.size.y).grow(0.5))
 	camera.snap()

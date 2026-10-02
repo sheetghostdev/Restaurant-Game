@@ -86,7 +86,7 @@ func _process(delta: float) -> void:
 		_fx_t -= delta
 		if _fx_t <= 0.0 and fixture.world:
 			_fx_t = 0.6
-			fixture.world.fx.smoke(fixture.global_position + Vector3(0, 0.95, 0), 0.6)
+			fixture.world.fx.smoke(fixture.global_position + Vector3(0, 0.95, 0), 0.6, true)
 	elif _icon:
 		_icon.visible = false
 

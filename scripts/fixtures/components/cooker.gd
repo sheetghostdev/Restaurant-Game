@@ -74,11 +74,11 @@ func _process(delta: float) -> void:
 		var p := it.def.cook_profile
 		var pos := it.global_position + Vector3(0, 0.12, 0)
 		if it.cook >= p.smoke_from:
-			fixture.world.fx.smoke(pos, 0.8)
+			fixture.world.fx.smoke(pos, 0.8, true)
 		elif p.stage_index(it.cook) == p.perfect_stage:
-			fixture.world.fx.steam(pos)
+			fixture.world.fx.steam(pos, 1.0, Color(1, 1, 1, 0.55), true)
 		else:
-			fixture.world.fx.steam(pos, 0.5)
+			fixture.world.fx.steam(pos, 0.5, Color(1, 1, 1, 0.55), true)
 
 
 func status_text() -> String:
