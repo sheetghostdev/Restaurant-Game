@@ -99,13 +99,15 @@ func _run_scenario() -> void:
 							w.despawn(pl.take_held())
 			Engine.time_scale = 1.0
 			w.players()[0].global_position = Vector3(4.5, 0, 4.5)
-		"evening":
+		"results", "evening":
 			w.debug_command("start_service", [])
 			w.debug_command("end_service", [])
 			await get_tree().create_timer(0.3).timeout
 			w.debug_command("end_service", [])
 			await get_tree().create_timer(0.5).timeout
-			w.debug_command("end_service", [])
+			if scenario == "evening":
+				w.debug_command("end_service", [])
+				await get_tree().create_timer(4.0).timeout
 		"fire":
 			w.debug_command("start_service", [])
 			w.disasters.trigger(&"grease_fire")

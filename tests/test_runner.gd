@@ -26,6 +26,7 @@ func _ready() -> void:
 	p = w.players()[0]
 	check(w != null and p != null, "world and player exist")
 	await t_layout()
+	await t_input_targeting()
 	await t_delivery()
 	await t_prep_and_cook()
 	await t_plating_and_coffee()
@@ -33,6 +34,9 @@ func _ready() -> void:
 	await t_service()
 	await t_dishes()
 	await t_disasters()
+	await t_staff()
+	await t_automation()
+	await t_spoilage()
 	await t_close_day()
 	await t_save_load()
 	print("")
@@ -118,6 +122,34 @@ func t_layout() -> void:
 	check(w.grid.nav.reachable(Vector2i(4, 10), Vector2i(2, 1)), "customers can path from the street to a chair")
 	check(w.day.phase == GameConst.Phase.MORNING, "game starts in morning prep")
 	check(w.all_of_kind(&"plot").size() == 4, "four expansion plots for sale")
+
+
+## Drives the player with simulated stick/button input and checks that the
+## real targeting picks the station in front of them.
+func t_input_targeting() -> void:
+	print("[input & targeting]")
+	var board := fixture(&"cutting_board", 0)
+	p.input_override = true
+	p.global_position = GameConst.cell_center(board.front_cell()) + Vector3(0, 0, 0.6)
+	p.rotation.y = 0.0
+	# Walk "up" (toward -Z) for a short while.
+	for i in 30:
+		p.set_input(Vector2(0, -1), false, false, false, false)
+		await frames(1)
+	p.set_input(Vector2.ZERO, false, false, false, false)
+	await frames(10)
+	check(p.facing.z < -0.9, "player turned to face up the screen")
+	var t := w.interaction.target_of(p)
+	check(t == board, "targeting picks the cutting board in front (%s)" % (t.display_name() if t else "none"))
+	# Press GRAB on the empty board with empty hands: nothing to pick up, no crash.
+	p.set_input(Vector2.ZERO, true, false, false, false)
+	await frames(2)
+	p.set_input(Vector2.ZERO, false, false, false, false)
+	await frames(2)
+	check(p.held() == null, "nothing picked up from an empty board")
+	var h := w.interaction.hint_for(p)
+	check(h.get("target") == board, "hint describes the board")
+	p.input_override = false
 
 
 func t_delivery() -> void:
@@ -353,6 +385,65 @@ func t_disasters() -> void:
 		await frames(1)
 	check(not is_instance_valid(spill) or not spill.is_inside_tree(), "mopped up the spill")
 	grab(fixture(&"mop_station"))
+
+
+func t_staff() -> void:
+	print("[staff]")
+	w.economy.earn(200.0, "test")
+	check(w.staff.hire(&"dish_hand"), "hired a dish hand")
+	var worker := w.staff.workers()[0] as Worker
+	check(worker != null and worker.role == &"dishwasher", "worker spawned with the dishwasher role")
+	var sink := fixture(&"sink")
+	var s := sink.get_component("Sink") as Sink
+	s.dirty_plates += 3
+	sink.mark_dirty()
+	var t := 0.0
+	while (s.dirty_total() > 0 or s.clean_total() > 0 or worker.held() != null) and t < 45.0:
+		await wait(0.5)
+		t += 0.5
+	check(s.dirty_total() == 0, "the dish hand washed the dirty plates (%.0fs)" % t)
+	check(s.clean_total() == 0 and worker.held() == null, "and put them away")
+	w.staff.dismiss(worker)
+	check(w.staff.workers().is_empty(), "dismissed the worker")
+
+
+func t_automation() -> void:
+	print("[automation]")
+	# Grabber pulls potatoes out of a crate on a counter and a conveyor carries
+	# them onto another counter.
+	var cells := [Vector2i(17, 2), Vector2i(17, 3), Vector2i(17, 4), Vector2i(17, 5)]
+	for c in cells:
+		var f := w.grid.fixture_at(c)
+		if f:
+			w.despawn(f)
+	var src := w.spawn_fixture(&"counter", Vector2i(17, 2), 0)
+	var grabber := w.spawn_fixture(&"grabber", Vector2i(17, 3), 0)
+	var belt := w.spawn_fixture(&"conveyor", Vector2i(17, 4), 0)
+	var dst := w.spawn_fixture(&"counter", Vector2i(17, 5), 0)
+	check(src != null and grabber != null and belt != null and dst != null, "built a grabber → conveyor line")
+	var crate := w.spawn_crate(&"supply_potatoes", 3, {"slot": [src.net_id, 0]})
+	var t := 0.0
+	while dst.primary_slot().item == null and t < 20.0:
+		await wait(0.5)
+		t += 0.5
+	var got: Item = dst.primary_slot().item
+	check(got != null and got.def_id == &"potato", "a potato travelled down the line (%.1fs)" % t)
+	check(crate.count < 3, "the grabber took it out of the crate")
+	for f in [src, grabber, belt, dst]:
+		w.despawn(f)
+
+
+func t_spoilage() -> void:
+	print("[spoilage]")
+	var crate := w.spawn_crate(&"supply_lettuce", 4, {"floor": [21.5, 0.0, 7.5, 0.0]})
+	crate.spoil_time = Content.item(&"lettuce").spoil_seconds - 1.0
+	await wait(2.0)
+	check(crate.spoiled, "lettuce left on the dock spoiled")
+	var cold := w.spawn_crate(&"supply_lettuce", 4, {"slot": [fixture(&"fridge", 1).net_id, 0]}) if fixture(&"fridge", 1).primary_slot().item == null else fixture(&"fridge", 1).primary_slot().item as CrateItem
+	var before := cold.spoil_time
+	await wait(2.0)
+	check(cold.is_cold() and is_equal_approx(cold.spoil_time, before), "fridge stock doesn't warm up")
+	w.despawn(crate)
 
 
 func t_close_day() -> void:

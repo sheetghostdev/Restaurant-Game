@@ -35,7 +35,7 @@ var _ticket_key := ""
 
 func _ready() -> void:
 	world = get_parent().get_parent() as GameWorld
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	theme = UITheme.get_theme()
 	icons = IconRenderer.new()

@@ -41,6 +41,9 @@ var use_pressed := false
 var alt_pressed := false
 var grab_released := false
 var grab_hold_time := 0.0
+## When true, local devices are ignored and input comes from set_input()
+## (tests, bots, attract mode).
+var input_override := false
 
 var facing := Vector3(0, 0, 1)
 var carried_fixture: Fixture
@@ -183,6 +186,8 @@ func _physics_process(delta: float) -> void:
 
 
 func _read_local_input() -> void:
+	if input_override:
+		return
 	if world and world.input_blocked(self):
 		set_input(Vector2.ZERO, false, false, false, false)
 		return

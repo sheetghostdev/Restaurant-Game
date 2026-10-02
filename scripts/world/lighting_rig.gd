@@ -19,8 +19,8 @@ const KEYS := {
 	11.0: [Color("fff1de"), 1.6, -58.0, -28.0, Color("efe6da"), 0.42, Color("e8e2d4"), Color("f6eee0"), Color("93aaa6"), 0.35, 0.0, 0.0],
 	15.0: [Color("ffecd2"), 1.55, -50.0, 12.0, Color("efe4d4"), 0.42, Color("eadfcd"), Color("f7ead6"), Color("90a6a2"), 0.4, 0.0, 0.0],
 	18.5: [Color("ffbf80"), 1.3, -30.0, 35.0, Color("e8d0b8"), 0.38, Color("e3c6ad"), Color("f4d2ad"), Color("7d8f9a"), 0.8, 0.5, 0.45],
-	21.0: [Color("9fb2e0"), 0.45, -45.0, 40.0, Color("a9b4d4"), 0.32, Color("3f4c6e"), Color("6a6a8a"), Color("2c3448"), 1.35, 1.5, 1.0],
-	23.0: [Color("8fa3d6"), 0.38, -50.0, 40.0, Color("98a6cc"), 0.3, Color("323c5a"), Color("54587a"), Color("232a3c"), 1.4, 1.6, 1.0],
+	21.0: [Color("9fb2e0"), 0.35, -45.0, 40.0, Color("a3aed0"), 0.26, Color("3f4c6e"), Color("6a6a8a"), Color("2c3448"), 1.35, 1.5, 1.0],
+	23.0: [Color("8fa3d6"), 0.3, -50.0, 40.0, Color("94a2c8"), 0.24, Color("323c5a"), Color("54587a"), Color("232a3c"), 1.4, 1.6, 1.0],
 }
 
 
