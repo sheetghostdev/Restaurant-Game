@@ -41,7 +41,7 @@ func _host() -> void:
 	hp.hold(shelf.primary_slot().take())
 	await get_tree().create_timer(10.0).timeout
 	print("HOST: entities=%d players=%d customers=%d money=%.0f" % [w.entities.size(), w.players().size(), w.all_of_kind(&"customer").size(), w.economy.money])
-	await get_tree().create_timer(4.0).timeout
+	await get_tree().create_timer(10.0).timeout
 	get_tree().quit()
 
 
@@ -76,6 +76,32 @@ func _client() -> void:
 		if not p.is_local() and p.held() is CrateItem:
 			held_by_host = true
 	if not held_by_host: fails += 1; print("CLIENT FAIL: host's held crate not mirrored")
+	# Client-side action: stand at a stocked shelf and press GRAB. The server
+	# must run the interaction and replicate the crate into our hands.
+	var me: PlayerCharacter = null
+	for p in players:
+		if p.is_local():
+			me = p
+	var shelf: Fixture = null
+	for f in w.grid.fixtures_of(&"shelf"):
+		if f.primary_slot().item is CrateItem:
+			shelf = f
+			break
+	if me and shelf:
+		me.input_override = true
+		me.global_position = GameConst.cell_center(shelf.front_cell())
+		me.rotation.y = atan2(-shelf.front_vec().x, -shelf.front_vec().z)
+		me.facing = -shelf.front_vec()
+		await get_tree().create_timer(0.6).timeout
+		me.set_input(Vector2.ZERO, true, false, false, false)
+		await get_tree().create_timer(0.3).timeout
+		me.set_input(Vector2.ZERO, false, false, false, false)
+		await get_tree().create_timer(1.5).timeout
+		if not (me.held() is CrateItem):
+			fails += 1
+			print("CLIENT FAIL: grabbing a crate as the client didn't work (held=%s)" % me.held())
+		else:
+			print("CLIENT: grabbed %s through the server" % me.held().display_name())
 	var moved := false
 	for c in w.all_of_kind(&"customer"):
 		if (c as Node3D).global_position.distance_to(GameConst.cell_center(Vector2i(-5, 9))) > 1.5 and (c as Node3D).global_position.distance_to(GameConst.cell_center(Vector2i(29, 9))) > 1.5:

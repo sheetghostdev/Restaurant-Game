@@ -55,7 +55,7 @@ func status_text() -> String:
 
 
 func _set_wait(seconds: float) -> void:
-	_wait_total = maxf(seconds * archetype.patience, 1.0)
+	_wait_total = maxf(seconds * archetype.patience * (1.0 + manager.ambience_bonus()), 1.0)
 	_wait_left = _wait_total
 	patience = 1.0
 

@@ -1,0 +1,130 @@
+# Content guide
+
+Most new content needs no code. Create a resource under `res://resources/`
+(in the editor: *New Resource → ItemDef / RecipeDef / ...*) and
+`ContentDB` picks it up at startup.
+
+---
+
+## A new ingredient
+
+1. **Item.** `resources/ingredients/cheese.tres` (`ItemDef`):
+   * `id = &"cheese"`, `item_class = "food"`, `model = &"cheese"`, a `color`.
+   * `tags`: the station tags it works with:
+     * `choppable`: needs `chop_into` and `chop_work`
+     * `grillable` / `fryable`: needs a `cook_profile` with `heat` set to `grill` or `fryer`
+     * `plateable`: can go on a plate
+     * `prepared`: discarded at the end of the day (it doesn't keep)
+   * `perishable` and `spoil_seconds`, if it needs cold storage.
+2. **Supply.** `resources/supplies/supply_cheese.tres` (`SupplyDef`): the
+   container style (`crate`, `crate_cold`, `sack`, `carton`), the quantity, the
+   price and `default_order`.
+3. **Model.** Add a case to `ModelsFood.build()` that draws the shape at about
+   0.25 m, resting on y = 0. The cheese model already exists.
+
+It now appears in the catalog's Supplies tab, arrives on the truck, and shows
+up in inventory counts.
+
+## A new recipe
+
+`resources/recipes/cheeseburger.tres` (`RecipeDef`):
+
+```
+id = &"cheeseburger"
+display_name = "Cheeseburger"
+container = "plate"                 # or "mug"
+required = [&"bun", &"patty", &"cheese"]
+optional = [&"lettuce_chopped", &"tomato_sliced"]
+price = 13.0
+menu_weight = 1.0
+eat_time = 12.0
+plating = "burger"                  # burger | fries | salad | drink | generic
+```
+
+Then add its id to the format's `menu`, in `resources/formats/diner.tres`.
+`DishPlating` stacks burger components in the order listed in `BURGER_ORDER`.
+
+## A new appliance or furniture piece
+
+1. **Model.** Add a builder in `ModelsKitchen` or `ModelsFurniture`. Work in a
+   1 × 1 m footprint centred on the origin, with the working face toward +Z.
+   Counters are 0.8 m high.
+2. **Scene.** `scenes/appliances/oven.tscn`:
+   * root `Node3D` with `scripts/fixtures/fixture.gd`
+   * a `Model` (`ProceduralModel`) set to your model key
+   * `ItemSlot` markers where items sit, with `accept` tags
+   * component nodes, for example `Cooker` (heat `oven`), `Flammable`, `Breakable`
+3. **Definition.** `resources/equipment/oven.tres` (`FixtureDef`): the scene,
+   category, price, `collision_height`, `flammable`, `can_break`, `unlock_day`.
+
+It now shows in the catalog and arrives boxed at the dock. Players place it,
+and staff and automation can use it.
+
+If no existing component fits, write a new `FixtureComponent`: implement
+`query`, `perform`, `server_tick`, `get_state` and `set_state`, and call
+`fixture.mark_dirty()` when its state changes.
+
+## A new customer type
+
+`resources/customers/student.tres` (`CustomerArchetype`) has these fields:
+group size, `child_chance`, `patience`, `dishes_min`/`dishes_max`,
+`drink_chance`, `recipe_weights` (recipe id → multiplier), `spend`, `tip`,
+`eat_speed`, `mess`, `strictness`, `reputation_weight`, `spawn_weight`,
+`min_day`, `min_reputation`, `hour_weights` (hour → multiplier, with `-1` as
+the default), `outfit_colors` and `accessory` (`hard_hat`, `tie`, `camera`,
+`beret`, `backpack`, `bow`, `bowtie`). Add its id to the format's `archetypes`.
+
+## A new event
+
+`resources/events/power_cut.tres` (`EventDef`), with `kind` set to one of:
+
+* `crowd`: changes demand. Set `params.hours` with `params.mult`, or
+  `params.all_day`. It is shown in the morning forecast via `warning_text`.
+* `disaster`, `delivery` or `inspection`: scheduled during service between
+  `params.hour_min` and `params.hour_max`. For a new behaviour, add a case to
+  `EventManager.trigger()`.
+
+## A new expansion
+
+`resources/upgrades/expansion_bakery.tres` (`ExpansionDef`) holds a room type,
+a `rect` on the grid, a price, `doors` (each a `Vector4i(ax, az, bx, bz)`
+pair of adjacent cells), `starter_fixtures` and `requires`. Add its id to the
+location's `expansions`. A plot with a FOR SALE sign appears next to the
+building.
+
+## A new room type
+
+`resources/rooms/*.tres` (`RoomTypeDef`) sets the floor style (`planks`,
+`tile_checker`, `concrete`, `cold_tile`, `patio`, `loading`), the floor and
+wall colours, and the flags `outdoor`, `cold` and `customer_area`, plus a
+light colour.
+
+## A new location or layout
+
+`data/layouts/<name>.json` uses the same format as the `layout` section of a
+save file: `lot`, `rooms`, `openings`, `front_door`, `delivery_zone`,
+`street` (customer spawn and exit points, queue start and direction, player
+and staff spawns, the truck path, the pole sign), `ground` rectangles, `props`,
+`fixtures`, and starting `items`. Point a `LocationDef` at it.
+
+---
+
+## Replacing placeholder art
+
+Drop `res://art/models/<key>.tscn` (or a `.res` mesh) and `Models` uses it
+instead of the procedural mesh. The key is the same one used by `ItemDef.model`,
+`FixtureDef.model` or `ProceduralModel.model_key`. Match the conventions:
+items rest on y = 0, and fixtures are 1 × 1 m facing +Z.
+
+## Replacing placeholder audio
+
+Put a `.wav` or `.ogg` with the same name in `res://audio/sfx/` or
+`res://audio/music/`. Names ending in `_loop` should loop seamlessly. The three
+music stems must share length and tempo. To rebuild the placeholders, run
+`python3 tools/audio/generate_audio.py` (it needs numpy, scipy and ffmpeg).
+
+## Regenerating the default content
+
+`godot --headless --path . res://tools/dev/content_seed.tscn` rewrites the
+default `.tres` set from `tools/dev/content_seed.gd`. It overwrites edits made
+in the inspector, so commit first.

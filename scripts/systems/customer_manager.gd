@@ -317,6 +317,15 @@ func clusters() -> Array:
 	return _clusters
 
 
+## Decor in customer areas makes waiting more pleasant (patience bonus).
+func ambience_bonus() -> float:
+	var total := 0.0
+	for f in world.grid.all_fixtures():
+		if f.def and f.def.ambience > 0.0 and world.grid.is_customer_area(f.cell):
+			total += f.def.ambience
+	return minf(total, 0.25)
+
+
 func total_seats() -> int:
 	var n := 0
 	for c in clusters():
