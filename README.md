@@ -115,12 +115,12 @@ burnt or spoiled food.
   sometimes mid-service. The driver takes empty crates left on the dock.
 * **Finite dishware.** Plates and mugs get dirty and must go through the sink
   or the hood dishwasher. If nobody washes up, you can't serve anything.
-* **Customers.** Eight archetypes (townsfolk, families, work crews, business
-  lunches, dates, tourists, tired travelers, food critics), each with different
+* **Customers.** Nine archetypes (townsfolk, families, work crews, business
+  lunches, dates, tourists, tired travelers, the Regular, food critics), each with different
   group size, appetite, patience, timing, spending and mess. Groups seat
   themselves at table clusters (push tables together for bigger groups),
   order, eat, pay and tip based on quality and speed.
-* **Disasters.** Grease fires that spread and need the extinguisher, dishwasher,
+* **Disasters.** Grease fires that spread and need the extinguisher, power cuts, dishwasher,
   fridge and appliance breakdowns, pipe leaks that make the floor slippery,
   conveyor jams, health inspections, surprise deliveries, and crowd events
   (office lunch, street festival, big game, rainy day).
@@ -193,7 +193,7 @@ More detail:
 ```bash
 # Full-day gameplay test: delivery, prep, cooking, plating, customers, washing,
 # build mode, disasters, staff, automation, spoilage, closing, results,
-# expansion, save/load (95 checks).
+# expansion, power cut, save/load (99 checks).
 godot --headless --path . res://tests/test_runner.tscn
 
 # Network test: one host process and one client process on localhost.

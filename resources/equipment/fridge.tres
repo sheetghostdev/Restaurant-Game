@@ -12,5 +12,6 @@ category = "storage"
 price = 150.0
 model = &"fridge"
 can_break = true
+powered = true
 collision_height = 1.9
 description = "Keeps one crate cold. Beef and lettuce spoil without it."

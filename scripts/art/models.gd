@@ -69,13 +69,19 @@ static func mat_unshaded(color: Color, transparent := false) -> StandardMaterial
 	return _materials[key]
 
 
+## Target highlight: an outline shell in the player's colour, followed by a
+## soft additive fill/rim pass.
 static func mat_highlight(color: Color) -> ShaderMaterial:
 	var key := StringName("hl_%s" % color.to_html())
 	if not _materials.has(key):
-		var m := ShaderMaterial.new()
-		m.shader = load("res://shaders/highlight_overlay.gdshader")
-		m.set_shader_parameter("color", color)
-		_materials[key] = m
+		var outline := ShaderMaterial.new()
+		outline.shader = load("res://shaders/highlight_outline.gdshader")
+		outline.set_shader_parameter("color", color)
+		var fill := ShaderMaterial.new()
+		fill.shader = load("res://shaders/highlight_overlay.gdshader")
+		fill.set_shader_parameter("color", color)
+		outline.next_pass = fill
+		_materials[key] = outline
 	return _materials[key]
 
 

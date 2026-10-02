@@ -106,5 +106,5 @@ static func _combine_label(held: Item, target: Item) -> String:
 	if target is CrateItem and held is FoodItem:
 		return "Put back"
 	if target is CrateItem and held is CrateItem:
-		return "Stack crates"
+		return "Pour into crate" if (held as CrateItem).count > 0 else "Stack crates"
 	return "Combine"

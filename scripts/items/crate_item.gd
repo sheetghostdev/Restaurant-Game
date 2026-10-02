@@ -104,7 +104,11 @@ func can_receive(other: Item) -> bool:
 	if other is FoodItem:
 		return count > 0 and other.def_id == content_id and other.is_untouched() and count < capacity and other.spoiled == spoiled
 	if other is CrateItem:
-		return count <= 0 and other.count <= 0 and empties + other.empties + 2 <= 5
+		var o := other as CrateItem
+		if count <= 0 and o.count <= 0:
+			return empties + o.empties + 2 <= 5
+		# Pour a crate of the same ingredient into this one.
+		return count > 0 and o.count > 0 and o.content_id == content_id and o.spoiled == spoiled and count < capacity
 	return false
 
 
@@ -112,29 +116,54 @@ func receive(other: Item) -> void:
 	if other is FoodItem:
 		count += 1
 		world.stats_add(&"ingredients_used", -1, content_id)
+		world.despawn(other)
 	elif other is CrateItem:
-		empties += other.empties + 1
-	world.despawn(other)
+		var o := other as CrateItem
+		if o.count > 0:
+			var moved := mini(o.count, capacity - count)
+			count += moved
+			o.count -= moved
+			spoil_time = maxf(spoil_time, o.spoil_time)
+			o.rebuild_visual()
+			o.mark_dirty()
+		else:
+			empties += o.empties + 1
+			world.despawn(other)
 	rebuild_visual()
 	bump()
 	mark_dirty()
 
 
 func use_query(actor: Node) -> Dictionary:
-	if count > 0 and actor.held() == null:
-		var cd := content_def()
+	if count <= 0:
+		return {}
+	var cd := content_def()
+	var held: Item = actor.held()
+	if held == null:
 		return {"label": "Take %s" % (cd.display_name if cd else "one")}
+	# Holding a plate: drop one unit straight onto it.
+	if held is DishItem and not spoiled and RecipeManager.can_add_food(held as DishItem, content_id):
+		return {"label": "Add %s" % (cd.display_name if cd else "one")}
 	return {}
 
 
 func use_perform(actor: Node, _delta: float) -> bool:
-	if count <= 0 or actor.held() != null:
+	if count <= 0:
 		return false
-	var it := take_one()
-	if it:
-		actor.hold(it)
-		Audio.play_at(&"crate_take", global_position)
-		return true
+	var held: Item = actor.held()
+	if held == null:
+		var it := take_one()
+		if it:
+			actor.hold(it)
+			Audio.play_at(&"crate_take", global_position)
+			return true
+		return false
+	if held is DishItem and not spoiled and RecipeManager.can_add_food(held as DishItem, content_id):
+		var unit := take_one()
+		if unit:
+			held.receive(unit)
+			Audio.play_at(&"crate_take", global_position)
+			return true
 	return false
 
 

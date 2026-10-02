@@ -20,5 +20,5 @@ hourly_demand = {
 19: 1.8,
 20: 0.8
 }
-archetypes = Array[StringName]([&"regular_folks", &"family", &"work_crew", &"business", &"date", &"tourists", &"traveler", &"critic"])
+archetypes = Array[StringName]([&"regular_folks", &"family", &"work_crew", &"business", &"date", &"tourists", &"traveler", &"regular", &"critic"])
 description = "Classic table service: burgers, fries, salads and bottomless coffee."

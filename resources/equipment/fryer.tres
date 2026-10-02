@@ -12,4 +12,5 @@ price = 160.0
 model = &"fryer"
 flammable = true
 can_break = true
+powered = true
 description = "Turns cut potatoes into crispy fries. Grease fires happen."

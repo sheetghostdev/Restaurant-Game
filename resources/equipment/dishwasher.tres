@@ -11,5 +11,6 @@ scene = ExtResource("1_xilbf")
 price = 220.0
 model = &"dishwasher"
 can_break = true
+powered = true
 collision_height = 1.4
 description = "Load up to 10 dishes and press USE. Sometimes breaks down."

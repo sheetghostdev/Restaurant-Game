@@ -8,7 +8,7 @@ var _arch_i := 0
 var _dis_i := 0
 var show_states := false
 
-const DISASTERS := ["grease_fire", "dishwasher_breakdown", "fridge_failure", "machine_breakdown", "pipe_leak", "surprise_delivery", "health_inspection", "equipment_jam"]
+const DISASTERS := ["grease_fire", "dishwasher_breakdown", "fridge_failure", "machine_breakdown", "pipe_leak", "power_outage", "surprise_delivery", "health_inspection", "equipment_jam"]
 
 
 func _ready() -> void:

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/resources/cook_profile.gd" id="1_it1jd"]
 [ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="2_txpd3"]
 
-[sub_resource type="Resource" id="Resource_sqn4v"]
+[sub_resource type="Resource" id="Resource_it1jd"]
 script = ExtResource("1_it1jd")
 heat = &"fryer"
 rate = 0.09090909090909091
@@ -22,4 +22,4 @@ model = &"potato_cut"
 color = Color(0.9490196, 0.75686276, 0.30588236, 1)
 tags = PackedStringArray("fryable", "plateable", "prepared")
 unit_cost = 0.5
-cook_profile = SubResource("Resource_sqn4v")
+cook_profile = SubResource("Resource_it1jd")

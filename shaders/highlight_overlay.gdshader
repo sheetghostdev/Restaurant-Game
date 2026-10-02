@@ -5,7 +5,7 @@ render_mode unshaded, blend_add, depth_draw_never, cull_back;
 // pulsing rim in the targeting player's colour.
 
 uniform vec4 color : source_color = vec4(1.0, 0.85, 0.4, 1.0);
-uniform float fill = 0.10;
+uniform float fill = 0.07;
 uniform float rim = 0.75;
 uniform float pulse_speed = 5.0;
 

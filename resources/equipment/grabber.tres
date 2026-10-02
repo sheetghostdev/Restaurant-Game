@@ -13,5 +13,6 @@ price = 120.0
 unlock_day = 2
 model = &"grabber"
 can_break = true
+powered = true
 collision_height = 0.66
 description = "Takes one item from behind and puts it in front. Pulls single ingredients out of crates."

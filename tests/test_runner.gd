@@ -200,7 +200,14 @@ func t_prep_and_cook() -> void:
 	check(fries.cook > 0.4, "fryer cooks over time (%.2f)" % fries.cook)
 	var stage := fries.def.cook_profile.stage_name(fries.cook)
 	print("     fries stage: ", stage)
-	# Grill a patty from the fridge stock
+	# Stock the fridge with the delivered beef, then grill a patty from it
+	var beef: CrateItem = null
+	for it in w.items_in_world():
+		if it is CrateItem and (it as CrateItem).content_id == &"patty":
+			beef = it
+	grab(beef)
+	grab(fixture(&"fridge", 0))
+	check(beef.slot != null and beef.slot.owner_entity == fixture(&"fridge", 0) and beef.is_cold(), "beef crate stored cold in the fridge")
 	use(fixture(&"fridge", 0))
 	check(held_id() == "patty", "patty from the fridge crate")
 	var grill := fixture(&"grill", 0)
@@ -237,10 +244,11 @@ func t_plating_and_coffee() -> void:
 		var it = sh.primary_slot().item
 		if it is CrateItem and it.content_id == &"bun":
 			bun_shelf = sh
-	use(bun_shelf)
-	check(held_id() == "bun", "took a bun")
 	grab(c2)
-	check(plate2.content_ids().has(&"bun"), "bun added to the plate on the counter")
+	check(p.held() == plate2, "picked the plate back up")
+	use(bun_shelf)
+	check(plate2.content_ids().has(&"bun"), "USE on the bun crate while holding a plate adds a bun")
+	grab(c2)
 	var grill := fixture(&"grill", 0)
 	await wait(2.0)
 	grab(grill)
@@ -372,6 +380,11 @@ func t_disasters() -> void:
 	check(not dw.is_working(), "dishwasher broke down")
 	use(dw, 4.0)
 	check(dw.is_working(), "repaired the dishwasher")
+	w.disasters.trigger(&"power_outage")
+	check(not fixture(&"grill", 0).is_working() and not fixture(&"fridge", 0).is_cooling(), "power cut stops powered machines")
+	check(fixture(&"counter", 0).is_working(), "unpowered fixtures still work")
+	await wait(17.0)
+	check(fixture(&"grill", 0).is_working(), "power comes back")
 	var spill := w.disasters.spawn_mess(&"spill", GameConst.cell_center(Vector2i(12, 6)))
 	check(spill != null and w.disasters.is_slippery(spill.global_position), "spill is slippery")
 	grab(fixture(&"mop_station"))

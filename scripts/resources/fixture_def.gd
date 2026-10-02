@@ -14,6 +14,7 @@ extends Resource
 @export var model: StringName                     ## Catalog / preview model.
 @export var flammable := false
 @export var can_break := false
+@export var powered := false                      ## Stops during a power cut.
 @export var blocks_movement := true
 @export var collision_height := 0.8
 @export var allowed_outdoors := false

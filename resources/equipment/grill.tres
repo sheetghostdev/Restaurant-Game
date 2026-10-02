@@ -12,4 +12,5 @@ price = 140.0
 model = &"grill"
 flammable = true
 can_break = true
+powered = true
 description = "Cooks patties. Watch the colour — and the smoke."

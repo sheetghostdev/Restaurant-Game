@@ -27,6 +27,8 @@ extends Resource
 @export var outfit_colors: PackedColorArray = []
 @export var accessory: StringName                 ## hard_hat, tie, camera, beret, backpack, ...
 @export var hat_color := Color.WHITE
+@export var fixed_look_seed := 0                  ## >0: always looks the same (regulars).
+@export var max_per_day := 0                      ## 0 = unlimited.
 @export_multiline var description := ""
 
 

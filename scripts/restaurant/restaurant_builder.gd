@@ -21,6 +21,7 @@ var _lights: Node3D
 var _doors: Node3D
 var _props: Node3D
 var room_lights: Array[OmniLight3D] = []
+var power_dim := 0.0          ## 1 = power cut (interior lights flicker low)
 var window_glass: Array[MeshInstance3D] = []
 var swing_doors: Array[Node3D] = []
 var _layout_props: Array = []
@@ -533,8 +534,11 @@ func _build_pole_sign() -> void:
 
 ## Time-of-day hook: interior & street lights and window glow.
 func set_light_level(interior: float, street_lights: float, window_glow: float) -> void:
+	var dim := 1.0
+	if power_dim > 0.0:
+		dim = 0.15 + 0.1 * absf(sin(Time.get_ticks_msec() * 0.013))
 	for l in room_lights:
-		l.light_energy = interior
+		l.light_energy = interior * dim
 	for l in get_tree().get_nodes_in_group(&"street_lights"):
 		(l as OmniLight3D).light_energy = street_lights
 	for g in window_glass:

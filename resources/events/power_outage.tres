@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/event_def.gd" id="1_p8c4i"]
+
+[resource]
+script = ExtResource("1_p8c4i")
+id = &"power_outage"
+display_name = "Power Cut"
+min_day = 4
+chance_per_day = 0.15
+description = "Powered machines stop for a while and the lights flicker."

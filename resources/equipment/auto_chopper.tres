@@ -13,4 +13,5 @@ price = 260.0
 unlock_day = 3
 model = &"auto_chopper"
 can_break = true
+powered = true
 description = "Slowly chops whatever is placed on it, no hands needed."

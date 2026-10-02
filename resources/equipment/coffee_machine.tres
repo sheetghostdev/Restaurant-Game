@@ -11,4 +11,5 @@ scene = ExtResource("1_f3ohw")
 price = 120.0
 model = &"coffee_machine"
 can_break = true
+powered = true
 description = "Brews into clean mugs automatically. Refill the bean hopper."

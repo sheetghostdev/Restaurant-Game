@@ -23,6 +23,12 @@ func _ready() -> void:
 		await get_tree().process_frame
 		main.start_offline(false)
 	await get_tree().create_timer(0.5).timeout
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--players=") and _world():
+			var n := int(a.substr(10))
+			for i in range(1, n):
+				var pl := _world().add_local_player(Inputs.PAD_BASE + i)
+				pl.global_position = Vector3(10.5 + i * 1.2, 0, 5.0)
 	await _run_scenario()
 	if "--closeup" in OS.get_cmdline_user_args() and _world():
 		_world().camera.zoom_bias = -0.55
@@ -56,6 +62,13 @@ func _run_scenario() -> void:
 			await get_tree().create_timer(9.0).timeout
 		"kitchen":
 			_stage_kitchen(w)
+		"target":
+			_stage_kitchen(w)
+			var pl: PlayerCharacter = w.players()[0]
+			pl.input_override = true
+			pl.global_position = Vector3(11.5, 0, 4.55)
+			pl.rotation.y = PI
+			pl.facing = Vector3(0, 0, -1)
 		"dining":
 			Engine.time_scale = 3.0
 			w.debug_command("start_service", [])

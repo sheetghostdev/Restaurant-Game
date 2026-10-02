@@ -12,5 +12,6 @@ category = "automation"
 price = 70.0
 unlock_day = 2
 model = &"conveyor"
+powered = true
 collision_height = 0.72
 description = "Moves items toward the fixture it faces. Chain them!"

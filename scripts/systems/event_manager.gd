@@ -8,6 +8,8 @@ var world: GameWorld
 var today: Array = []           ## [{id, hour, done}]
 var forecast: Array[String] = []
 var active_fires := 0
+var power_out := false
+var _power_t := 0.0
 var _spray_t := 0.0
 var _inspection_t := -1.0
 var _alarm_node: Node3D
@@ -59,6 +61,12 @@ func _physics_process(delta: float) -> void:
 			if not ev["done"] and world.day.hour >= ev["hour"]:
 				ev["done"] = true
 				trigger(ev["id"])
+	if Net.is_authority() and power_out:
+		_power_t -= delta
+		if _power_t <= 0.0:
+			set_power(true)
+			Events.notify("Power's back!", &"info")
+			Audio.play_ui(&"repair_done")
 	if Net.is_authority() and _inspection_t >= 0.0:
 		_inspection_t -= delta
 		if _inspection_t < 0.0:
@@ -108,9 +116,25 @@ func trigger(id: StringName) -> bool:
 			Events.notify("Your supplier sent extra stock — mid-rush!", &"warning")
 		&"health_inspection":
 			start_inspection()
+		&"power_outage":
+			set_power(false)
+			_power_t = 16.0
+			Events.notify("Power cut! Machines are down for a moment...", &"big", Pal.UI_WARN)
+			Audio.play_ui(&"breakdown")
 		_:
 			return false
 	return true
+
+
+func set_power(on: bool) -> void:
+	power_out = not on
+	world.builder.power_dim = 0.0 if on else 1.0
+	if Net.is_authority():
+		world.replicator.publish(&"power", {"out": power_out})
+
+
+func apply_shared_power(d: Dictionary) -> void:
+	set_power(not d.get("out", false))
 
 
 func _fixtures_with(component: String, filter: Callable) -> Array:

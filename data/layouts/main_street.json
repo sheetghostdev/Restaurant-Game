@@ -917,22 +917,6 @@
    ],
    "supply": "supply_tomatoes",
    "units": 4
-  },
-  {
-   "cell": [
-    15,
-    0
-   ],
-   "supply": "supply_beef",
-   "units": 6
-  },
-  {
-   "cell": [
-    15,
-    1
-   ],
-   "supply": "supply_lettuce",
-   "units": 4
   }
  ]
 }

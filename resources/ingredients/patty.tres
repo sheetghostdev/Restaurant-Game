@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/resources/cook_profile.gd" id="1_a0l6g"]
 [ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="2_u1n5x"]
 
-[sub_resource type="Resource" id="Resource_uyk2v"]
+[sub_resource type="Resource" id="Resource_a0l6g"]
 script = ExtResource("1_a0l6g")
 rate = 0.07142857142857142
 stage_names = PackedStringArray("Raw", "Rare", "Medium", "Well Done", "Overcooked", "Burnt")
@@ -21,7 +21,7 @@ model = &"patty"
 color = Color(0.8901961, 0.48235294, 0.49411765, 1)
 tags = PackedStringArray("grillable", "plateable", "meat")
 unit_cost = 1.5
-cook_profile = SubResource("Resource_uyk2v")
+cook_profile = SubResource("Resource_a0l6g")
 plate_layer = 1
 perishable = true
 spoil_seconds = 260.0

@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="CustomerArchetype" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/customer_archetype.gd" id="1_prcrd"]
+
+[resource]
+script = ExtResource("1_prcrd")
+id = &"regular"
+display_name = "The Regular"
+group_max = 1
+patience = 1.3
+drink_chance = 1.0
+recipe_weights = {
+"burger": 6.0,
+"deluxe_burger": 0.2,
+"fries": 0.3,
+"salad": 0.2
+}
+tip = 1.6
+reputation_weight = 2.0
+spawn_weight = 0.35
+min_day = 2
+hour_weights = {
+-1: 0.3,
+11: 3.0,
+12: 1.5
+}
+outfit_colors = PackedColorArray()
+accessory = &"bowtie"
+fixed_look_seed = 4242
+max_per_day = 1
+description = "Comes in every day, always orders the burger and a coffee. Loyal — don't let them down."

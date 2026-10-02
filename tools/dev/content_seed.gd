@@ -195,12 +195,12 @@ func _fixtures() -> void:
 	_fixture("counter", "Counter", F + "counter.tscn", "furniture", 30.0, "A sturdy prep surface. Put anything on it.")
 	_fixture("pass_counter", "Pass Counter", F + "pass_counter.tscn", "furniture", 55.0, "A steel counter with a heat lamp gantry — the classic 'order up' spot.")
 	_fixture("cutting_board", "Cutting Board", A + "cutting_board.tscn", "appliance", 40.0, "Hold USE to chop lettuce, tomatoes and potatoes.")
-	_fixture("grill", "Flat-top Grill", A + "grill.tscn", "appliance", 140.0, "Cooks patties. Watch the colour — and the smoke.", {"flammable": true, "can_break": true})
-	_fixture("fryer", "Deep Fryer", A + "fryer.tscn", "appliance", 160.0, "Turns cut potatoes into crispy fries. Grease fires happen.", {"flammable": true, "can_break": true})
-	_fixture("coffee_machine", "Coffee Machine", A + "coffee_machine.tscn", "appliance", 120.0, "Brews into clean mugs automatically. Refill the bean hopper.", {"can_break": true})
-	_fixture("fridge", "Glass Fridge", A + "fridge.tscn", "storage", 150.0, "Keeps one crate cold. Beef and lettuce spoil without it.", {"can_break": true, "collision_height": 1.9})
+	_fixture("grill", "Flat-top Grill", A + "grill.tscn", "appliance", 140.0, "Cooks patties. Watch the colour — and the smoke.", {"flammable": true, "can_break": true, "powered": true})
+	_fixture("fryer", "Deep Fryer", A + "fryer.tscn", "appliance", 160.0, "Turns cut potatoes into crispy fries. Grease fires happen.", {"flammable": true, "can_break": true, "powered": true})
+	_fixture("coffee_machine", "Coffee Machine", A + "coffee_machine.tscn", "appliance", 120.0, "Brews into clean mugs automatically. Refill the bean hopper.", {"can_break": true, "powered": true})
+	_fixture("fridge", "Glass Fridge", A + "fridge.tscn", "storage", 150.0, "Keeps one crate cold. Beef and lettuce spoil without it.", {"can_break": true, "collision_height": 1.9, "powered": true})
 	_fixture("sink", "Sink", A + "sink.tscn", "appliance", 70.0, "Drop dirty dishes in and hold USE to scrub.")
-	_fixture("dishwasher", "Hood Dishwasher", A + "dishwasher.tscn", "appliance", 220.0, "Load up to 10 dishes and press USE. Sometimes breaks down.", {"can_break": true, "collision_height": 1.4})
+	_fixture("dishwasher", "Hood Dishwasher", A + "dishwasher.tscn", "appliance", 220.0, "Load up to 10 dishes and press USE. Sometimes breaks down.", {"can_break": true, "collision_height": 1.4, "powered": true})
 	_fixture("trash_bin", "Trash Bin", A + "trash_bin.tscn", "service", 25.0, "Throw away food or scrape plates. Empty it when full.", {"collision_height": 0.75})
 	_fixture("dumpster", "Dumpster", A + "dumpster.tscn", "service", 60.0, "Outdoor bin for trash bags, empty crates and spoiled stock.", {"allowed_outdoors": true, "collision_height": 1.1})
 	_fixture("plate_rack", "Plate Rack", F + "plate_rack.tscn", "service", 45.0, "Holds clean plates. Comes with 4 plates.")
@@ -216,9 +216,9 @@ func _fixtures() -> void:
 	_fixture("jukebox", "Jukebox", F + "jukebox.tscn", "decor", 180.0, "Customers wait a bit more patiently.", {"ambience": 0.05, "collision_height": 1.2, "unlock_day": 2})
 	_fixture("extinguisher_station", "Extinguisher Stand", F + "extinguisher_station.tscn", "service", 60.0, "Holds a fire extinguisher, which slowly refills here.", {"collision_height": 1.8})
 	_fixture("mop_station", "Mop Bucket", F + "mop_station.tscn", "service", 30.0, "Home of the mop.", {"collision_height": 0.6})
-	_fixture("conveyor", "Conveyor Belt", M + "conveyor.tscn", "automation", 70.0, "Moves items toward the fixture it faces. Chain them!", {"collision_height": 0.72, "unlock_day": 2})
-	_fixture("grabber", "Grabber Arm", M + "grabber.tscn", "automation", 120.0, "Takes one item from behind and puts it in front. Pulls single ingredients out of crates.", {"collision_height": 0.66, "unlock_day": 2, "can_break": true})
-	_fixture("auto_chopper", "Auto-Chopper", A + "auto_chopper.tscn", "automation", 260.0, "Slowly chops whatever is placed on it, no hands needed.", {"unlock_day": 3, "can_break": true})
+	_fixture("conveyor", "Conveyor Belt", M + "conveyor.tscn", "automation", 70.0, "Moves items toward the fixture it faces. Chain them!", {"collision_height": 0.72, "unlock_day": 2, "powered": true})
+	_fixture("grabber", "Grabber Arm", M + "grabber.tscn", "automation", 120.0, "Takes one item from behind and puts it in front. Pulls single ingredients out of crates.", {"collision_height": 0.66, "unlock_day": 2, "can_break": true, "powered": true})
+	_fixture("auto_chopper", "Auto-Chopper", A + "auto_chopper.tscn", "automation", 260.0, "Slowly chops whatever is placed on it, no hands needed.", {"unlock_day": 3, "can_break": true, "powered": true})
 
 
 func _arch(id: String, name: String, opts: Dictionary) -> void:
@@ -252,6 +252,10 @@ func _customers() -> void:
 	_arch("traveler", "Tired Traveler", {"group_min": 1, "group_max": 1, "patience": 0.6, "drink_chance": 0.85, "eat_speed": 1.4,
 		"recipe_weights": {"fries": 1.5, "burger": 1.2, "salad": 0.4}, "spawn_weight": 0.45, "accessory": &"backpack",
 		"description": "Wants something simple, fast."})
+	_arch("regular", "The Regular", {"group_min": 1, "group_max": 1, "patience": 1.3, "drink_chance": 1.0, "tip": 1.6,
+		"recipe_weights": {"burger": 6.0, "fries": 0.3, "salad": 0.2, "deluxe_burger": 0.2}, "reputation_weight": 2.0,
+		"min_day": 2, "spawn_weight": 0.35, "max_per_day": 1, "fixed_look_seed": 4242, "hour_weights": {11: 3.0, 12: 1.5, -1: 0.3},
+		"accessory": &"bowtie", "description": "Comes in every day, always orders the burger and a coffee. Loyal — don't let them down."})
 	_arch("critic", "Food Critic", {"group_min": 1, "group_max": 1, "patience": 0.9, "drink_chance": 0.7, "strictness": 0.35,
 		"reputation_weight": 4.0, "tip": 2.0, "min_reputation": 2.5, "min_day": 3, "spawn_weight": 0.12, "accessory": &"beret",
 		"description": "Rare. Notices everything. One review can change your week."})
@@ -382,6 +386,7 @@ func _events() -> void:
 	_event("office_lunch", "Office Lunch Rush", "crowd", 0.25, 2, {"hours": [12, 13], "mult": 1.5}, "Offices nearby: big lunch crowd expected.")
 	_event("street_festival", "Street Festival", "crowd", 0.15, 3, {"hours": [18, 19, 20], "mult": 1.7}, "Street festival tonight! Huge dinner rush.")
 	_event("rainy_day", "Rainy Day", "crowd", 0.15, 2, {"all_day": 0.75}, "Rain in the forecast: a quieter day.")
+	_event("power_outage", "Power Cut", "disaster", 0.15, 4, {}, "", "Powered machines stop for a while and the lights flicker.")
 	_event("big_game", "Big Game Night", "crowd", 0.12, 4, {"hours": [20], "mult": 2.2}, "The big game ends at 8pm — expect a wave.")
 
 
@@ -397,7 +402,7 @@ func _formats() -> void:
 	f.service_seconds = 420.0
 	f.base_groups = 8.0
 	f.hourly_demand = {11: 0.6, 12: 2.0, 13: 1.7, 14: 0.8, 15: 0.6, 16: 0.7, 17: 1.2, 18: 2.0, 19: 1.8, 20: 0.8}
-	var archs: Array[StringName] = [&"regular_folks", &"family", &"work_crew", &"business", &"date", &"tourists", &"traveler", &"critic"]
+	var archs: Array[StringName] = [&"regular_folks", &"family", &"work_crew", &"business", &"date", &"tourists", &"traveler", &"regular", &"critic"]
 	f.archetypes = archs
 	f.description = "Classic table service: burgers, fries, salads and bottomless coffee."
 	_save(f, "%s/formats/diner.tres" % R)

@@ -55,12 +55,17 @@ func plan_day(day: int, reputation: float) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(day * 7919 + int(reputation * 100))
 	var archs := _eligible_archetypes(day, reputation)
+	var per_day := {}
 	for i in n:
 		var h: int = _weighted_pick(hours, weights, rng)
 		var t: float = h + rng.randf() * 0.95
 		var a := _pick_archetype(archs, h, rng)
 		if a == null:
 			continue
+		if a.max_per_day > 0:
+			per_day[a.id] = per_day.get(a.id, 0) + 1
+			if per_day[a.id] > a.max_per_day:
+				continue
 		schedule.push_back([t, String(a.id)])
 		forecast[h] = forecast.get(h, 0) + 1
 	schedule.sort_custom(func(x, y): return x[0] < y[0])
@@ -186,7 +191,10 @@ func _app_save(app: Dictionary) -> Dictionary:
 
 func _appearance_for(a: CustomerArchetype, index: int) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
-	rng.randomize()
+	if a.fixed_look_seed > 0:
+		rng.seed = a.fixed_look_seed + index
+	else:
+		rng.randomize()
 	var app := CharacterRig.random_appearance(rng)
 	if not a.outfit_colors.is_empty():
 		app["shirt"] = a.outfit_colors[rng.randi_range(0, a.outfit_colors.size() - 1)]

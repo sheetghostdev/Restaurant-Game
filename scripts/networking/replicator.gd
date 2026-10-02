@@ -177,6 +177,7 @@ func apply_shared(key: StringName, data: Dictionary) -> void:
 		&"inventory": world.inventory.apply_shared(data)
 		&"forecast": world.disasters.apply_shared_forecast(data)
 		&"standing": world.deliveries.apply_shared_standing(data)
+		&"power": world.disasters.apply_shared_power(data)
 		&"results": Events.day_results.emit(data)
 		&"layout":
 			world.grid.load_layout(data)

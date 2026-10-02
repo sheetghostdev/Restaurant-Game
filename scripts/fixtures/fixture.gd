@@ -114,6 +114,8 @@ func get_component(type_name: String) -> FixtureComponent:
 
 
 func is_working() -> bool:
+	if def and def.powered and world and world.disasters and world.disasters.power_out:
+		return false
 	for c in components:
 		if c.blocks_function():
 			return false
