@@ -5,6 +5,7 @@ extends Resource
 
 @export var id: StringName
 @export var display_name := ""
+@export var short_name := ""                      ## Shown on order tickets; display_name if empty.
 @export_enum("plate", "mug") var container := "plate"
 @export var required: Array[StringName] = []
 @export var optional: Array[StringName] = []
@@ -16,6 +17,10 @@ extends Resource
 @export_enum("burger", "fries", "salad", "drink", "generic") var plating := "generic"
 @export var prep_steps: PackedStringArray = []
 @export_multiline var description := ""
+
+
+func ticket_name() -> String:
+	return short_name if short_name != "" else display_name
 
 
 ## True if a dish with `contents` (item ids) satisfies this recipe.

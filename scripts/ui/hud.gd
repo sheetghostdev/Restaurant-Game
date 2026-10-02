@@ -31,6 +31,11 @@ var pause_menu: PauseMenu
 var debug_panel: DebugPanel
 var _shown_money := 0.0
 var _ticket_key := ""
+var _ticket_bars := {}       ## table number -> [ProgressBar, StyleBoxFlat, PanelContainer]
+
+const TICKET_W := 196.0
+const TICKET_GAP := 10.0
+const TICKET_ICON := 54.0
 
 
 func _ready() -> void:
@@ -105,7 +110,7 @@ func _build_top_left() -> void:
 func _build_top_right() -> void:
 	var p := UITheme.panel()
 	p.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	p.position = Vector2(-18 - 220, 16)
+	p.position = Vector2(-18, 16)   # right edge 18 px in; grows leftwards
 	p.custom_minimum_size = Vector2(220, 0)
 	p.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	add_child(p)
@@ -123,13 +128,16 @@ func _build_top_right() -> void:
 	v.add_child(_stars)
 
 
+## Order rail along the top, between the clock card and the money card: one
+## card per table, most impatient first.
 func _build_tickets() -> void:
 	_tickets = HBoxContainer.new()
-	_tickets.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_tickets.position = Vector2(-300, 14)
-	_tickets.custom_minimum_size = Vector2(600, 0)
+	_tickets.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_tickets.offset_left = 292
+	_tickets.offset_right = -252   # clear of the money card
+	_tickets.offset_top = 12
 	_tickets.alignment = BoxContainer.ALIGNMENT_CENTER
-	_tickets.add_theme_constant_override("separation", 6)
+	_tickets.add_theme_constant_override("separation", int(TICKET_GAP))
 	_tickets.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_tickets)
 
@@ -225,7 +233,12 @@ func _process(delta: float) -> void:
 	_forecast.visible = d.phase == GameConst.Phase.MORNING or d.phase == GameConst.Phase.EVENING
 	if _forecast.visible and Engine.get_process_frames() % 30 == 0:
 		_refresh_forecast()
-	_toasts.position.y = 120 + (_forecast.size.y + 10 if _forecast.visible else 0)
+	# Tips and toasts sit under the money card, the forecast, or the order
+	# cards, whichever reaches furthest down.
+	var ty := 120.0 + (_forecast.size.y + 10.0 if _forecast.visible else 0.0)
+	if _tickets.get_child_count() > 0:
+		ty = maxf(ty, _tickets.position.y + _tickets.get_combined_minimum_size().y + 12.0)
+	_toasts.position.y = ty
 
 
 func _on_money(_amount: float, delta: float) -> void:
@@ -286,65 +299,150 @@ func _refresh_forecast() -> void:
 
 
 func _refresh_tickets() -> void:
+	# Group dishes by table; the group's patience is shared by its tickets.
+	var tables := {}
+	for t in world.orders.tickets:
+		var n := int(t["table"])
+		if not tables.has(n):
+			tables[n] = {"table": n, "patience": float(t["patience"]), "dishes": {}}
+		var e: Dictionary = tables[n]
+		e["patience"] = minf(e["patience"], float(t["patience"]))
+		var rid := String(t["recipe"])
+		e["dishes"][rid] = int(e["dishes"].get(rid, 0)) + 1
+	var list := tables.values()
+	list.sort_custom(func(a, b): return a["patience"] < b["patience"] or (a["patience"] == b["patience"] and a["table"] < b["table"]))
+	var fit := maxi(1, int((_tickets.size.x + TICKET_GAP) / (TICKET_W + TICKET_GAP)))
+	var shown := list.slice(0, fit if list.size() <= fit else fit - 1)
+	# Rebuild only when the set of tables or dishes changes; otherwise just
+	# move the patience bars.
 	var key := ""
-	for t in world.orders.tickets:
-		key += "%d:%d|" % [t["id"], int(t["patience"] * 10)]
-	if key == _ticket_key:
-		return
-	_ticket_key = key
-	for c in _tickets.get_children():
-		c.queue_free()
-	var shown := 0
-	for t in world.orders.tickets:
-		if shown >= 12:
-			var more := UITheme.label("+%d" % (world.orders.tickets.size() - shown), 22, "display")
+	for e in shown:
+		key += "%d:%s;" % [e["table"], JSON.stringify(e["dishes"])]
+	key += "+%d" % (list.size() - shown.size())
+	if key != _ticket_key:
+		_ticket_key = key
+		_ticket_bars.clear()
+		for c in _tickets.get_children():
+			c.queue_free()
+		for e in shown:
+			_tickets.add_child(_make_ticket(e))
+		if list.size() > shown.size():
+			var more := PanelContainer.new()
+			more.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+			more.add_theme_stylebox_override("panel", UITheme.card(Pal.UI_INK, Pal.UI_INK, 12, 3))
+			var ml := UITheme.label("+%d\ntables" % (list.size() - shown.size()), 22, "display", Pal.UI_PAPER)
+			ml.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			more.add_child(ml)
 			_tickets.add_child(more)
-			break
-		_tickets.add_child(_make_ticket(t))
-		shown += 1
+	for e in shown:
+		_set_ticket_patience(int(e["table"]), float(e["patience"]))
 
 
-func _make_ticket(t: Dictionary) -> Control:
-	var pat: float = t["patience"]
-	var col := Pal.UI_GOOD if pat > 0.5 else (Pal.UI_WARN if pat > 0.25 else Pal.UI_BAD)
+
+func _make_ticket(e: Dictionary) -> Control:
 	var p := PanelContainer.new()
-	var sb := UITheme.card(Color("fffaf0"), Pal.UI_INK, 8, 3)
-	sb.content_margin_left = 4
-	sb.content_margin_right = 4
-	sb.content_margin_top = 2
-	sb.content_margin_bottom = 4
+	p.custom_minimum_size = Vector2(TICKET_W, 0)
+	p.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	var sb := UITheme.card(Color("fffaf0"), Pal.UI_INK, 12, 3)
+	sb.content_margin_left = 0
+	sb.content_margin_right = 0
+	sb.content_margin_top = 0
+	sb.content_margin_bottom = 8
 	p.add_theme_stylebox_override("panel", sb)
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 0)
+	v.add_theme_constant_override("separation", 4)
 	p.add_child(v)
-	var tex := IconRenderer.get_icon("recipe:%s" % t["recipe"])
-	if tex:
+	# Header: big table number on an ink strip
+	var head := PanelContainer.new()
+	var hsb := StyleBoxFlat.new()
+	hsb.bg_color = Pal.UI_INK
+	hsb.corner_radius_top_left = 9
+	hsb.corner_radius_top_right = 9
+	hsb.content_margin_top = 3
+	hsb.content_margin_bottom = 3
+	head.add_theme_stylebox_override("panel", hsb)
+	var n: int = e["table"]
+	var hl := UITheme.label("TABLE %d" % n if n > 0 else "TAKEAWAY", 24, "display", Pal.UI_PAPER)
+	hl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	head.add_child(hl)
+	v.add_child(head)
+	# One row per dish: icon, name, count
+	var dishes: Dictionary = e["dishes"]
+	for rid in dishes:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		var pad := Control.new()
+		pad.custom_minimum_size = Vector2(4, 0)
+		row.add_child(pad)
+		# Icon on a darker tile so the white plate doesn't vanish into the card
+		var tile := PanelContainer.new()
+		var tsb := StyleBoxFlat.new()
+		tsb.bg_color = Color("d9c9ae")
+		tsb.set_corner_radius_all(10)
+		tile.add_theme_stylebox_override("panel", tsb)
 		var tr := TextureRect.new()
-		tr.texture = tex
-		tr.custom_minimum_size = Vector2(54, 54)
+		tr.texture = IconRenderer.get_icon("recipe:%s" % rid)
+		tr.custom_minimum_size = Vector2(TICKET_ICON, TICKET_ICON)
 		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		v.add_child(tr)
-	else:
-		v.add_child(UITheme.label(Content.display_name(StringName(t["recipe"])), 14, "bold"))
-	var tl := UITheme.label("T%d" % t["table"], 15, "display")
-	tl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(tl)
+		tile.add_child(tr)
+		row.add_child(tile)
+		var dish_label := UITheme.label(_short_dish_name(StringName(rid)), 18, "bold")
+		dish_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		dish_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		dish_label.clip_text = true
+		row.add_child(dish_label)
+		var count: int = dishes[rid]
+		if count > 1:
+			var cl := UITheme.label("×%d" % count, 22, "display", Pal.UI_BAD)
+			cl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			row.add_child(cl)
+		var pad2 := Control.new()
+		pad2.custom_minimum_size = Vector2(4, 0)
+		row.add_child(pad2)
+		v.add_child(row)
+	# Patience: a thick bar that turns yellow, then red and pulses
+	var bar_row := MarginContainer.new()
+	bar_row.add_theme_constant_override("margin_left", 10)
+	bar_row.add_theme_constant_override("margin_right", 10)
 	var bar := ProgressBar.new()
-	bar.custom_minimum_size = Vector2(54, 7)
+	bar.custom_minimum_size = Vector2(0, 14)
 	bar.max_value = 1.0
-	bar.value = pat
 	bar.show_percentage = false
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Pal.UI_PAPER_DARK
+	bg.set_corner_radius_all(7)
+	bar.add_theme_stylebox_override("background", bg)
 	var fill := StyleBoxFlat.new()
-	fill.bg_color = col
-	fill.set_corner_radius_all(4)
+	fill.set_corner_radius_all(7)
 	bar.add_theme_stylebox_override("fill", fill)
-	v.add_child(bar)
-	if pat < 0.25:
-		var tw := p.create_tween().set_loops()
-		tw.tween_property(p, "modulate", Color(1, 0.75, 0.75), 0.3)
-		tw.tween_property(p, "modulate", Color.WHITE, 0.3)
+	bar_row.add_child(bar)
+	v.add_child(bar_row)
+	_ticket_bars[n] = [bar, fill, p]
 	return p
+
+
+func _set_ticket_patience(table: int, pat: float) -> void:
+	var refs: Array = _ticket_bars.get(table, [])
+	if refs.is_empty():
+		return
+	var bar: ProgressBar = refs[0]
+	var fill: StyleBoxFlat = refs[1]
+	var p: PanelContainer = refs[2]
+	bar.value = pat
+	fill.bg_color = Pal.UI_GOOD if pat > 0.5 else (Pal.UI_WARN if pat > 0.25 else Pal.UI_BAD)
+	var urgent := pat < 0.25
+	if urgent and not p.has_meta("pulse"):
+		var tw := p.create_tween().set_loops()
+		tw.tween_property(p, "modulate", Color(1, 0.72, 0.72), 0.35)
+		tw.tween_property(p, "modulate", Color.WHITE, 0.35)
+		p.set_meta("pulse", tw)
+
+
+## Short recipe name for tickets ("Classic Burger" -> "Burger").
+static func _short_dish_name(id: StringName) -> String:
+	var r := Content.recipe(id)
+	return r.ticket_name() if r else Content.display_name(id)
 
 
 func _on_alert(id: StringName, text: String, active: bool) -> void:

@@ -34,7 +34,11 @@ func server_tick(delta: float) -> void:
 		_last_stage = -1
 		return
 	var p := it.def.cook_profile
-	it.cook += p.rate * speed * delta
+	var r := p.rate * speed
+	if p.stage_index(it.cook) >= p.perfect_stage:
+		# Past perfect: the difficulty decides how long until it overcooks.
+		r *= Difficulty.factor("overcook")
+	it.cook += r * delta
 	var st := p.stage_index(it.cook)
 	if st != _last_stage:
 		if _last_stage >= 0:

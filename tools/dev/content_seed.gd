@@ -138,10 +138,11 @@ func _supplies() -> void:
 	_supply("supply_coffee", "Coffee Beans", "coffee_beans", 4, 8.0, "carton", false, 1, "4 bags of beans (10 cups each).")
 
 
-func _recipe(id: String, name: String, cont: String, req: Array, opt: Array, price: float, weight: float, eat: float, plating: String, color: Color, steps: Array, day := 1) -> void:
+func _recipe(id: String, name: String, cont: String, req: Array, opt: Array, price: float, weight: float, eat: float, plating: String, color: Color, steps: Array, day := 1, short := "") -> void:
 	var r := RecipeDef.new()
 	r.id = StringName(id)
 	r.display_name = name
+	r.short_name = short
 	r.container = cont
 	var rq: Array[StringName] = []
 	for x in req:
@@ -163,13 +164,13 @@ func _recipe(id: String, name: String, cont: String, req: Array, opt: Array, pri
 
 func _recipes() -> void:
 	_recipe("burger", "Classic Burger", "plate", ["bun", "patty"], ["lettuce_chopped", "tomato_sliced"], 11.0, 1.3, 12.0, "burger", Pal.BUN,
-		["Grill a patty until medium", "Put a bun on a plate", "Add the patty", "(Optional) add lettuce or tomato"])
+		["Grill a patty until medium", "Put a bun on a plate", "Add the patty", "(Optional) add lettuce or tomato"], 1, "Burger")
 	_recipe("deluxe_burger", "Garden Deluxe", "plate", ["bun", "patty", "lettuce_chopped", "tomato_sliced"], [], 15.0, 0.7, 14.0, "burger", Pal.LETTUCE,
-		["Grill a patty", "Chop lettuce, slice tomato", "Stack everything on a bun"], 2)
+		["Grill a patty", "Chop lettuce, slice tomato", "Stack everything on a bun"], 2, "Deluxe Burger")
 	_recipe("fries", "Crispy Fries", "plate", ["fries"], [], 5.0, 1.0, 8.0, "fries", Pal.FRIES,
-		["Cut a potato on the cutting board", "Fry until crispy", "Plate it"])
+		["Cut a potato on the cutting board", "Fry until crispy", "Plate it"], 1, "Fries")
 	_recipe("salad", "Garden Salad", "plate", ["lettuce_chopped", "tomato_sliced"], [], 8.0, 0.6, 9.0, "salad", Pal.LETTUCE,
-		["Chop lettuce", "Slice a tomato", "Plate both"])
+		["Chop lettuce", "Slice a tomato", "Plate both"], 1, "Salad")
 	_recipe("coffee", "Coffee", "mug", ["coffee"], [], 4.0, 1.0, 6.0, "drink", Pal.COFFEE,
 		["Put a clean mug under the coffee machine", "Take it when it's just right"])
 

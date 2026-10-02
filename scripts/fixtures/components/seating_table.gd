@@ -18,12 +18,15 @@ var _number_label: Label3D
 
 
 func _ready() -> void:
+	# Big enough to match a ticket ("TABLE 3") to its table from the camera.
 	_number_label = Label3D.new()
 	_number_label.font = load("res://art/fonts/AlfaSlabOne-Regular.ttf")
-	_number_label.font_size = 48
-	_number_label.pixel_size = 0.004
+	_number_label.font_size = 72
+	_number_label.pixel_size = 0.005
 	_number_label.modulate = Pal.UI_INK
-	_number_label.position = Vector3(0.3, 0.86, -0.3)
+	_number_label.outline_size = 18
+	_number_label.outline_modulate = Pal.UI_PAPER
+	_number_label.position = Vector3(0.3, 0.98, -0.3)
 	_number_label.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
 	fixture.add_child.call_deferred(_number_label)
 	var stand := Models.instance(&"table_number")

@@ -299,7 +299,7 @@ func _clear_doorway(c: Vector2i, new_rect: Rect2i) -> void:
 
 
 func _construction_fx(r: Rect2i) -> void:
-	Audio.play_at(&"construct", Vector3(r.get_center().x, 0, r.get_center().y))
+	Audio.play_at(&"construct", Vector3(Rect2(r).get_center().x, 0, Rect2(r).get_center().y))
 	world.camera.add_shake(0.5)
 	for x in range(r.position.x, r.end.x, 2):
 		for z in range(r.position.y, r.end.y, 2):
@@ -326,11 +326,11 @@ func setup_plots() -> void:
 	for p in world.all_of_kind(&"plot"):
 		world.despawn(p)
 	for e in available_expansions():
-		var sign_at := Vector2(e.rect.get_center().x, e.rect.end.y - 0.5)
+		var sign_at := Vector2(Rect2(e.rect).get_center().x, e.rect.end.y - 0.5)
 		if world.grid.is_building(Vector2i(int(sign_at.x), e.rect.end.y)):
 			# Lot behind the building: a sign on its near edge would hide
 			# behind the back wall, so stand it in the middle of the lot.
-			sign_at.y = e.rect.get_center().y
+			sign_at.y = Rect2(e.rect).get_center().y
 		world.spawn_entity(&"plot", e.id, {}, {"pos": [sign_at.x, 0, sign_at.y], "yaw": 0.0})
 
 

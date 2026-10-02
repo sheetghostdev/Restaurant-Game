@@ -28,7 +28,8 @@ static func _table(b: MeshBuilder) -> void:
 		for z in [-0.36, 0.36]:
 			b.block(Vector3(x, 0, z), Vector3(0.09, TABLE_H - 0.08, 0.09), edge, 0.018)
 	b.block(Vector3(0, TABLE_H - 0.2, 0), Vector3(0.8, 0.1, 0.8), edge, 0.02)
-	b.block(Vector3(0, TABLE_H - 0.09, 0), Vector3(0.96, 0.09, 0.96), edge, 0.03)
+	# Edge band stops 5 mm under the oak top so the two never share a plane
+	b.block(Vector3(0, TABLE_H - 0.09, 0), Vector3(0.96, 0.085, 0.96), edge, 0.03)
 	b.block(Vector3(0, TABLE_H - 0.02, 0), Vector3(0.9, 0.02, 0.9), top.lightened(0.04))
 
 
@@ -39,11 +40,11 @@ static func _chair(b: MeshBuilder) -> void:
 		for z in [-0.17, 0.17]:
 			b.block(Vector3(x, 0, z), Vector3(0.06, 0.42, 0.06), wood, 0.012)
 	b.block(Vector3(0, 0.38, 0), Vector3(0.46, 0.05, 0.44), wood, 0.015)
-	b.block(Vector3(0, 0.42, 0.01), Vector3(0.44, 0.07, 0.42), vinyl, 0.03)
+	b.block(Vector3(0, 0.42, 0.005), Vector3(0.44, 0.07, 0.41), vinyl, 0.03)
 	# Backrest posts and a chunky upholstered back
 	for x in [-0.17, 0.17]:
 		b.block(Vector3(x, 0.42, -0.19), Vector3(0.06, 0.42, 0.06), wood, 0.012)
-	b.box(Vector3(0, 0.72, -0.2), Vector3(0.44, 0.22, 0.08), vinyl, 0.03)
+	b.box(Vector3(0, 0.72, -0.2), Vector3(0.44, 0.22, 0.09), vinyl, 0.03)   # 5 mm proud of the posts
 	b.box(Vector3(0, 0.72, -0.25), Vector3(0.38, 0.16, 0.02), vinyl.darkened(0.12), 0.006)
 
 
@@ -102,7 +103,7 @@ static func _register(b: MeshBuilder) -> void:
 			b.box(Vector3(-0.15 + c * 0.1, 0.035, -0.09 + r * 0.09), Vector3(0.06, 0.02, 0.05), Pal.CHARCOAL, 0.006)
 	b.pop()
 	b.block(Vector3(0, y + 0.14, -0.28), Vector3(0.3, 0.2, 0.08), Pal.MUSTARD.darkened(0.08), 0.02)
-	b.box(Vector3(0, y + 0.3, -0.25), Vector3(0.24, 0.08, 0.02), Color("234a48"))
+	b.box(Vector3(0, y + 0.3, -0.245), Vector3(0.24, 0.08, 0.02), Color("234a48"))
 
 
 static func _plant_pot(b: MeshBuilder) -> void:

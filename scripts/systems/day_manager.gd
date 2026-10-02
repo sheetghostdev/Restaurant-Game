@@ -200,14 +200,17 @@ func record_group(g: CustomerGroup, satisfaction: float, upset: bool) -> void:
 	var weight := g.archetype.reputation_weight
 	if upset:
 		stats["groups_lost"] += 1
-		world.economy.change_reputation(-0.07 * weight)
+		world.economy.change_reputation(-0.07 * weight * Difficulty.factor("rep_loss"))
 		Events.customer_left.emit(false, g.members[0].global_position if not g.members.is_empty() else Vector3.ZERO)
 		return
 	stats["groups_served"] += 1
 	stats["people_served"] += g.members.size()
 	stats["sat_sum"] += satisfaction * g.members.size()
 	stats["sat_n"] += g.members.size()
-	world.economy.change_reputation((satisfaction - 0.62) * 0.09 * weight)
+	var rep := (satisfaction - 0.62) * 0.09 * weight
+	if rep < 0.0:
+		rep *= Difficulty.factor("rep_loss")
+	world.economy.change_reputation(rep)
 	Events.customer_left.emit(true, g.members[0].global_position if not g.members.is_empty() else Vector3.ZERO)
 
 

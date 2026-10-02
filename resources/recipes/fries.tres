@@ -6,6 +6,7 @@
 script = ExtResource("1_ey2l8")
 id = &"fries"
 display_name = "Crispy Fries"
+short_name = "Fries"
 required = Array[StringName]([&"fries"])
 price = 5.0
 eat_time = 8.0

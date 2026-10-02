@@ -79,7 +79,7 @@ func _build(key: String) -> Dictionary:
 			var r := Content.recipe(id)
 			if r:
 				n = DishPlating.make_recipe_model(r)
-				frame_size = 0.5 if r.container == "plate" else 0.32
+				frame_size = 0.44 if r.container == "plate" else 0.3
 		"item":
 			var d := Content.item(id)
 			if d:

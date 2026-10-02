@@ -247,7 +247,7 @@ func server_tick(delta: float) -> void:
 		return
 	if is_cold():
 		return
-	spoil_time += delta
+	spoil_time += delta / Difficulty.factor("spoil")
 	if spoil_time >= def.spoil_seconds:
 		spoil()
 

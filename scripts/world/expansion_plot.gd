@@ -26,7 +26,8 @@ func _ready() -> void:
 	var r := e.rect
 	var origin := global_position
 	var y := -0.015
-	b.block(Vector3(r.get_center().x, y - 0.01, r.get_center().y) - origin, Vector3(r.size.x - 0.1, 0.02, r.size.y - 0.1), Pal.DIRT, 0.0)
+	var rc := Rect2(r).get_center()   # float centre (Rect2i rounds down)
+	b.block(Vector3(rc.x, y - 0.01, rc.y) - origin, Vector3(r.size.x - 0.1, 0.02, r.size.y - 0.1), Pal.DIRT, 0.0)
 	var stripes := 0
 	for x in range(r.position.x, r.end.x):
 		for side in [r.position.y, r.end.y]:
@@ -46,7 +47,7 @@ func _ready() -> void:
 	add_child(sign_node)
 	for k in 2:
 		var cone := Models.instance(&"cone")
-		cone.position = Vector3(r.position.x + 0.6 + k * (r.size.x - 1.2), 0, r.get_center().y) - Vector3(origin.x, 0, origin.z)
+		cone.position = Vector3(r.position.x + 0.6 + k * (r.size.x - 1.2), 0, rc.y) - Vector3(origin.x, 0, origin.z)
 		add_child(cone)
 	_label = Label3D.new()
 	_label.font = load("res://art/fonts/Rubik-Bold.ttf")

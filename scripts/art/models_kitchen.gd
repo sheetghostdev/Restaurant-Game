@@ -107,8 +107,9 @@ static func _cutting_board(b: MeshBuilder) -> void:
 	worktop(b, Pal.STEEL)
 	# Oversized board with juice groove and a chunky knife.
 	b.block(Vector3(0, H, 0.02), Vector3(0.72, 0.045, 0.56), Pal.OAK_LIGHT, 0.018)
-	b.block(Vector3(0, H + 0.045, 0.02), Vector3(0.6, 0.003, 0.44), Pal.OAK)
-	b.block(Vector3(0, H + 0.046, 0.02), Vector3(0.56, 0.004, 0.40), Pal.OAK_LIGHT.lightened(0.05))
+	# Groove and inner face step up 5 mm each (thinner layers flicker)
+	b.block(Vector3(0, H + 0.045, 0.02), Vector3(0.6, 0.005, 0.44), Pal.OAK)
+	b.block(Vector3(0, H + 0.045, 0.02), Vector3(0.56, 0.01, 0.40), Pal.OAK_LIGHT.lightened(0.05))
 	b.push_at(Vector3(0.3, H + 0.05, -0.27), 0.35)
 	b.box(Vector3(0, 0.012, 0.0), Vector3(0.24, 0.012, 0.06), Pal.STEEL.lightened(0.1), 0.004)
 	b.box(Vector3(-0.17, 0.016, 0.0), Vector3(0.12, 0.03, 0.04), Pal.WALNUT, 0.01)
@@ -166,7 +167,7 @@ static func _fryer(b: MeshBuilder) -> void:
 
 
 static func _fryer_oil(b: MeshBuilder) -> void:
-	b.block(Vector3(0, H + 0.062, -0.04), Vector3(0.62, 0.004, 0.54), Color("d9a441"))
+	b.block(Vector3(0, H + 0.062, -0.04), Vector3(0.62, 0.01, 0.54), Color("d9a441"))   # 7 mm above the well
 
 
 static func _coffee_machine(b: MeshBuilder) -> void:
@@ -184,7 +185,7 @@ static func _coffee_machine(b: MeshBuilder) -> void:
 	# Drip tray (mug goes here)
 	b.block(Vector3(0, H, 0.17), Vector3(0.42, 0.04, 0.3), Pal.STEEL_DARK, 0.012)
 	for k in 4:
-		b.box(Vector3(0, H + 0.041, 0.07 + k * 0.065), Vector3(0.38, 0.004, 0.02), Pal.CHARCOAL)
+		b.box(Vector3(0, H + 0.044, 0.07 + k * 0.065), Vector3(0.38, 0.008, 0.02), Pal.CHARCOAL)
 	# Gauge and steam wand
 	b.push_at(Vector3(-0.25, H + 0.4, 0.075), 0.0, Vector3.ONE, PI / 2)
 	b.cyl(Vector3.ZERO, 0.055, 0.02, Pal.STEEL, 10)
@@ -303,7 +304,7 @@ static func _trash_bin(b: MeshBuilder) -> void:
 	var col := Color("3f6f5a")
 	b.cyl(Vector3(0, 0, 0), 0.3, 0.06, Pal.RUBBER, 8, 0.01)
 	b.cyl(Vector3(0, 0.04, 0), 0.29, 0.68, col, 8, 0.03, Color(0, 0, 0, 0), 0.32)
-	b.cyl(Vector3(0, 0.66, 0), 0.335, 0.06, col.darkened(0.15), 8, 0.015)
+	b.cyl(Vector3(0, 0.665, 0), 0.335, 0.06, col.darkened(0.15), 8, 0.015)
 	# Foot pedal
 	b.block(Vector3(0, 0.0, 0.33), Vector3(0.22, 0.05, 0.12), Pal.STEEL_DARK, 0.015)
 	# Recycling stripe

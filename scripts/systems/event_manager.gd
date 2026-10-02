@@ -29,7 +29,12 @@ func plan_day(day: int) -> void:
 		var ev := e as EventDef
 		if ev.min_day > day:
 			continue
-		if randf() >= ev.chance_per_day:
+		var chance := ev.chance_per_day
+		if ev.kind == "disaster":
+			if day < Difficulty.first_disaster_day():
+				continue
+			chance *= Difficulty.factor("disasters")
+		if randf() >= chance:
 			continue
 		if ev.kind == "crowd":
 			var hours: Array = ev.params.get("hours", [])

@@ -78,7 +78,10 @@ func server_tick(delta: float) -> void:
 		Audio.play_at(&"coffee_brew_loop", fixture.global_position, -6.0)
 		return
 	var prof := Content.item(&"coffee").cook_profile
-	c["ck"] = float(c.get("ck", 0.0)) + prof.rate * delta
+	var rate := prof.rate
+	if prof.stage_index(float(c.get("ck", 0.0))) >= prof.perfect_stage:
+		rate *= Difficulty.factor("overcook")   # more time before it overflows
+	c["ck"] = float(c.get("ck", 0.0)) + rate * delta
 	var st := prof.stage_index(c["ck"])
 	if st != _last_stage:
 		if _last_stage >= 0 and st == prof.perfect_stage:

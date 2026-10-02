@@ -43,8 +43,8 @@ func plan_day(day: int, reputation: float) -> void:
 	var loc_demand := world.location.demand if world.location else 1.0
 	var growth := minf(1.0 + (day - 1) * 0.16, 2.6)
 	var rep_mult := 0.75 + reputation * 0.13
-	var n := int(round(fmt.base_groups * growth * rep_mult * loc_demand))
-	n = maxi(n, 4)
+	var n := int(round(fmt.base_groups * growth * rep_mult * loc_demand * Difficulty.factor("groups")))
+	n = maxi(n, 3)
 	var hours: Array[int] = []
 	var weights: Array[float] = []
 	for h in range(fmt.open_hour, fmt.close_hour):

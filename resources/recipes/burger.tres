@@ -6,6 +6,7 @@
 script = ExtResource("1_lj81o")
 id = &"burger"
 display_name = "Classic Burger"
+short_name = "Burger"
 required = Array[StringName]([&"bun", &"patty"])
 optional = Array[StringName]([&"lettuce_chopped", &"tomato_sliced"])
 price = 11.0

@@ -165,6 +165,14 @@ knock doorways through or wall them up. Expansions are rooms bought at plots
 next to the building. They add walls automatically, open doorways, and move
 any fixture that blocks a new door.
 
+### Difficulty
+Three presets in Settings, defined in one table in `scripts/core/difficulty.gd`.
+Systems on the host multiply their base numbers by the preset's factors:
+guest patience, groups per day, how fast food goes from perfect to burnt (and
+coffee to overflowing), disaster chance, reputation lost for unhappy guests,
+and how long perishables last. *Relaxed* also has no disasters before day 3,
+*Normal* none before day 2. *Hectic* is the raw tuning.
+
 ---
 
 ## Art direction

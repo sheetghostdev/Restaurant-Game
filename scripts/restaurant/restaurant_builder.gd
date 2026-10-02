@@ -94,8 +94,11 @@ func _build_plinth_and_ground() -> void:
 	b.box(Vector3(cx, -0.45, cz), Vector3(x1 - x0, 0.8, z1 - z0), Pal.PLINTH, 0.06)
 	b.box(Vector3(cx, -0.12, cz), Vector3(x1 - x0 + 0.04, 0.05, z1 - z0 + 0.04), Pal.PLINTH.lightened(0.25), 0.015)
 	# Ground (grass) top
-	b.box(Vector3(lot.get_center().x, GROUND_Y - 0.05, lot.get_center().y), Vector3(lot.size.x, 0.1, lot.size.y), Pal.GRASS, 0.02)
-	# Ground details from the layout (sidewalks, roads, lots)
+	var lc := Rect2(lot).get_center()
+	b.box(Vector3(lc.x, GROUND_Y - 0.05, lc.y), Vector3(lot.size.x, 0.1, lot.size.y), Pal.GRASS, 0.02)
+	# Ground details from the layout (sidewalks, roads, lots). Each layer sits
+	# ON the grass at its own height (_layer) so no two surfaces of different
+	# colour ever share a plane: coplanar faces flicker (z-fighting).
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1234
 	for g in _ground_rects:
@@ -108,31 +111,41 @@ func _build_plinth_and_ground() -> void:
 						var c := Pal.SIDEWALK.darkened(rng.randf() * 0.04)
 						b.box(Vector3(x + 0.5, GROUND_Y + 0.01, z + 0.5), Vector3(0.96, 0.06, 0.96), c, 0.015)
 			"road":
-				b.box(Vector3(rect.get_center().x, GROUND_Y - 0.03, rect.get_center().y), Vector3(rect.size.x, 0.04, rect.size.y), Pal.ASPHALT)
+				_layer(b, rect, 0.008, Pal.ASPHALT)
 				if rect.size.x > rect.size.y:
 					var mid := rect.get_center().y
 					var x := rect.position.x + 0.5
 					while x < rect.end.x - 0.5:
-						b.box(Vector3(x + 0.4, GROUND_Y - 0.005, mid), Vector3(0.8, 0.01, 0.12), Pal.ROAD_LINE)
+						_layer(b, Rect2(x, mid - 0.06, 0.8, 0.12), 0.014, Pal.ROAD_LINE)
 						x += 1.8
-					b.box(Vector3(rect.get_center().x, GROUND_Y + 0.0, rect.position.y + 0.06), Vector3(rect.size.x, 0.08, 0.12), Pal.CURB)
+					b.box(Vector3(rect.get_center().x, GROUND_Y + 0.0, rect.position.y + 0.06), Vector3(rect.size.x - 0.02, 0.08, 0.12), Pal.CURB)
 				else:
 					var midx := rect.get_center().x
 					var z := rect.position.y + 0.5
 					while z < rect.end.y - 0.5:
-						b.box(Vector3(midx, GROUND_Y - 0.005, z + 0.4), Vector3(0.12, 0.01, 0.8), Pal.ROAD_LINE)
+						_layer(b, Rect2(midx - 0.06, z, 0.12, 0.8), 0.014, Pal.ROAD_LINE)
 						z += 1.8
 			"asphalt":
-				b.box(Vector3(rect.get_center().x, GROUND_Y - 0.03, rect.get_center().y), Vector3(rect.size.x, 0.04, rect.size.y), Pal.ASPHALT.lightened(0.06))
+				_layer(b, rect, 0.008, Pal.ASPHALT.lightened(0.06))
 			"dirt":
-				b.box(Vector3(rect.get_center().x, GROUND_Y - 0.02, rect.get_center().y), Vector3(rect.size.x, 0.04, rect.size.y), Pal.DIRT)
+				_layer(b, rect, 0.005, Pal.DIRT)
 			"parking":
-				b.box(Vector3(rect.get_center().x, GROUND_Y - 0.03, rect.get_center().y), Vector3(rect.size.x, 0.04, rect.size.y), Pal.ASPHALT.lightened(0.04))
+				_layer(b, rect, 0.008, Pal.ASPHALT.lightened(0.04))
 				var px := rect.position.x
 				while px <= rect.end.x:
-					b.box(Vector3(px, GROUND_Y - 0.005, rect.get_center().y), Vector3(0.08, 0.01, rect.size.y - 0.4), Pal.ROAD_LINE)
+					_layer(b, Rect2(px - 0.04, rect.position.y + 0.2, 0.08, rect.size.y - 0.4), 0.014, Pal.ROAD_LINE)
 					px += 2.5
 	_mi(b.commit(Models.mat_main()), _static, false)
+
+
+## A flat slab lying on the grass whose top is `top` above it. Slabs are inset
+## 1 cm from the lot edge so their sides never share a plane with the grass.
+func _layer(b: MeshBuilder, rect: Rect2, top: float, col: Color) -> void:
+	var lot := Rect2(grid.lot.position, grid.lot.size).grow(-0.01)
+	var r := rect.intersection(lot)
+	if r.size.x <= 0.0 or r.size.y <= 0.0:
+		return
+	b.block(Vector3(r.get_center().x, GROUND_Y, r.get_center().y), Vector3(r.size.x, top, r.size.y), col)
 
 
 # -----------------------------------------------------------------------------
@@ -151,7 +164,10 @@ func _build_floors() -> void:
 		var rect: Rect2i = room["rect"]
 		rng.seed = hash(room["id"])
 		# Grout / base slab under the tiles
-		b.box(Vector3(rect.get_center().x, FLOOR_Y - 0.06, rect.get_center().y), Vector3(rect.size.x, 0.1, rect.size.y), rt.floor_b.darkened(0.25))
+		# (Rect2i.get_center() rounds to whole cells: use the exact float centre,
+		# or slabs of odd-sized rooms slide half a cell under their neighbours.)
+		var rc := Rect2(rect).get_center()
+		b.box(Vector3(rc.x, FLOOR_Y - 0.06, rc.y), Vector3(rect.size.x, 0.1, rect.size.y), rt.floor_b.darkened(0.25))
 		for x in range(rect.position.x, rect.end.x):
 			for z in range(rect.position.y, rect.end.y):
 				_floor_cell(b, rt, Vector2i(x, z), rng)
@@ -163,8 +179,8 @@ func _build_floors() -> void:
 					b.box(Vector3(rect.position.x + 0.1, FLOOR_Y + 0.002, z + 0.25 + k * 0.5), Vector3(0.16, 0.012, 0.48), col)
 	# Delivery pads
 	for c in grid.delivery_zone:
-		b.box(Vector3(c.x + 0.5, FLOOR_Y + 0.004, c.y + 0.5), Vector3(0.9, 0.006, 0.9), Pal.HAZARD.darkened(0.05))
-		b.box(Vector3(c.x + 0.5, FLOOR_Y + 0.008, c.y + 0.5), Vector3(0.76, 0.006, 0.76), Pal.CONCRETE)
+		b.block(Vector3(c.x + 0.5, FLOOR_Y, c.y + 0.5), Vector3(0.9, 0.007, 0.9), Pal.HAZARD.darkened(0.05))
+		b.block(Vector3(c.x + 0.5, FLOOR_Y, c.y + 0.5), Vector3(0.76, 0.014, 0.76), Pal.CONCRETE)
 	_mi(b.commit(Models.mat_main()), _static, false)
 
 
@@ -219,6 +235,7 @@ func _build_walls() -> void:
 	var glass := MeshBuilder.new()
 	var fence := MeshBuilder.new()
 	var done := {}
+	var posts := {}   ## grid vertex -> height of the tallest wall meeting there
 	for room in grid.rooms:
 		var rect: Rect2i = room["rect"]
 		for x in range(rect.position.x - 1, rect.end.x + 1):
@@ -237,17 +254,49 @@ func _build_walls() -> void:
 					var opening := grid.opening_type(a, n)
 					if opening != "":
 						_door(b, a, n, opening)
+						_note_posts(posts, a, n)
 						continue
 					if grid.fence_between(a, n):
 						_fence_segment(fence, a, n)
 					elif grid.wall_between(a, n):
 						_wall_segment(b, glass, a, n)
+						_note_posts(posts, a, n)
+	for v in posts:
+		_corner_post(b, v, posts[v])
 	_mi(b.commit(Models.mat_main()), _static)
 	if not fence.is_empty():
 		_mi(fence.commit(Models.mat_main()), _static)
 	if not glass.is_empty():
 		var gm := _mi(glass.commit(Models.mat_emissive(Color("cfeaf2"), 0.25)), _static, false)
 		window_glass.push_back(gm)
+
+
+## Records the two grid vertices at the ends of the wall on edge a|n.
+func _note_posts(posts: Dictionary, a: Vector2i, n: Vector2i) -> void:
+	var h := WALL_LOW if _is_low(a, n) else WALL_TALL
+	var ends: Array[Vector2i] = []
+	if a.x == n.x:
+		var z := maxi(a.y, n.y)
+		ends = [Vector2i(a.x, z), Vector2i(a.x + 1, z)]
+	else:
+		var x := maxi(a.x, n.x)
+		ends = [Vector2i(x, a.y), Vector2i(x, a.y + 1)]
+	for v in ends:
+		posts[v] = maxf(posts.get(v, 0.0), h)
+
+
+## Fills the square where walls meet at grid vertex `v`. Wall pieces stop at
+## these posts rather than overlapping: overlapping faces of different colours
+## (cream inside, teal outside) flicker. One quarter per neighbouring cell, so
+## each side shows that room's wall colour.
+func _corner_post(b: MeshBuilder, v: Vector2i, h: float) -> void:
+	var q := WALL_T * 0.5
+	for dx in [-1, 0]:
+		for dz in [-1, 0]:
+			var cell: Vector2i = v + Vector2i(dx, dz)
+			var base := Vector3(v.x + (dx + 0.5) * q, 0, v.y + (dz + 0.5) * q)
+			b.block(base, Vector3(q, h, q), _wall_color_for(cell))
+	b.block(Vector3(v.x, h, v.y), Vector3(WALL_T + 0.02, 0.045, WALL_T + 0.02), Pal.WALL_CAP, 0.012)
 
 
 ## True if this wall should be cut low so the camera can see past it.
@@ -273,7 +322,7 @@ func _wall_segment(b: MeshBuilder, glass: MeshBuilder, a: Vector2i, n: Vector2i)
 	var col_n := _wall_color_for(n)
 	var along_x := a.x == n.x   # edge between z and z+1 -> wall runs along X
 	var center: Vector3
-	var length := 1.0 + WALL_T
+	var length := 1.0 - WALL_T   # between the corner posts
 	if along_x:
 		center = Vector3(a.x + 0.5, 0, maxi(a.y, n.y))
 	else:
@@ -288,7 +337,6 @@ func _wall_segment(b: MeshBuilder, glass: MeshBuilder, a: Vector2i, n: Vector2i)
 		if rt and not rt.outdoor and rt.id != &"storage" and rt.id != &"cooler":
 			var coord := inner.x if along_x else inner.y
 			window = posmod(coord, 3) == 1
-	var size_full := Vector3(length if along_x else WALL_T, h, WALL_T if along_x else length)
 	var half := Vector3(length if along_x else WALL_T * 0.5, h, WALL_T * 0.5 if along_x else length)
 	var off := side_a * WALL_T * 0.25
 	if window:
@@ -301,15 +349,18 @@ func _wall_segment(b: MeshBuilder, glass: MeshBuilder, a: Vector2i, n: Vector2i)
 			var c: Vector3 = center + side_a * s * (WALL_T * 0.5 + 0.012)
 			var inside_cell := a if s > 0.0 else n
 			if _is_indoor(inside_cell) and h > 0.2:
-				var bb := Vector3(length - 0.02 if along_x else 0.03, 0.12, 0.03 if along_x else length - 0.02)
+				# Runs across the posts (it stands proud of the wall face).
+				var bl := 1.0 + WALL_T - 0.02
+				var bb := Vector3(bl if along_x else 0.03, 0.12, 0.03 if along_x else bl)
 				b.block(c, bb, Pal.BASEBOARD, 0.006)
-	# Section-cut cap
-	b.block(center + Vector3(0, h, 0), Vector3(size_full.x + 0.02, 0.045, size_full.z + 0.02), Pal.WALL_CAP, 0.012)
-	_add_wall_collider(center, size_full, low)
+	# Section-cut cap (the posts carry their own)
+	b.block(center + Vector3(0, h, 0), Vector3(length if along_x else WALL_T + 0.02, 0.045, WALL_T + 0.02 if along_x else length), Pal.WALL_CAP, 0.012)
+	_add_wall_collider(center, Vector3(1.0 + WALL_T if along_x else WALL_T, h, WALL_T if along_x else 1.0 + WALL_T), low)
 
 
 func _window_wall(b: MeshBuilder, glass: MeshBuilder, center: Vector3, along_x: bool, side_a: Vector3, col_a: Color, col_n: Color) -> void:
-	var length := 1.0 + WALL_T
+	var length := 1.0 - WALL_T   # wall between the corner posts
+	var span := 1.0 + WALL_T     # frame proportions (post centre to post centre + overlap)
 	var sill := 0.95
 	var head := 1.95
 	var off := side_a * WALL_T * 0.25
@@ -319,14 +370,18 @@ func _window_wall(b: MeshBuilder, glass: MeshBuilder, center: Vector3, along_x: 
 	b.block(center - off, half_lo, col_n)
 	b.block(center + off + Vector3(0, head, 0), half_hi, col_a)
 	b.block(center - off + Vector3(0, head, 0), half_hi, col_n)
-	# Side posts of the opening
-	var post := Vector3(0.22 if along_x else WALL_T, head - sill, WALL_T if along_x else 0.22)
+	# Jambs of the opening, from the frame out to the corner posts (two halves,
+	# like the wall, so each side keeps its own colour)
 	var axis := Vector3(1, 0, 0) if along_x else Vector3(0, 0, 1)
+	var jamb_w := length * 0.5 - (span * 0.5 - 0.22)
+	var jamb := Vector3(jamb_w if along_x else WALL_T * 0.5, head - sill, WALL_T * 0.5 if along_x else jamb_w)
 	for s in [-1.0, 1.0]:
-		b.block(center + axis * s * (length * 0.5 - 0.11) + Vector3(0, sill, 0), post, col_a)
+		var jc: Vector3 = center + axis * s * (length * 0.5 - jamb_w * 0.5) + Vector3(0, sill, 0)
+		b.block(jc + off, jamb, col_a)
+		b.block(jc - off, jamb, col_n)
 	# Chunky window frame + sill
 	var fw := Pal.WINDOW_FRAME
-	var frame_len := length - 0.44
+	var frame_len := span - 0.44
 	var fsz := Vector3(frame_len if along_x else WALL_T + 0.08, 0.07, WALL_T + 0.08 if along_x else frame_len)
 	b.block(center + Vector3(0, sill - 0.02, 0), fsz + (Vector3(0.1, 0, 0.06) if along_x else Vector3(0.06, 0, 0.1)), fw, 0.02)
 	b.block(center + Vector3(0, head - 0.06, 0), fsz, fw, 0.02)
@@ -355,12 +410,15 @@ func _door(b: MeshBuilder, a: Vector2i, n: Vector2i, type: String) -> void:
 		var p: Vector3 = center + axis * s * 0.52
 		b.block(p, Vector3(0.12 if along_x else WALL_T + 0.1, post_h, WALL_T + 0.1 if along_x else 0.12), frame_col, 0.02)
 	if not low:
-		# Lintel + wall above the door
-		var above := Vector3(1.0 + WALL_T if along_x else WALL_T, WALL_TALL - 2.15, WALL_T if along_x else 1.0 + WALL_T)
-		var ca := _wall_color_for(a)
-		b.block(center + Vector3(0, 2.15, 0), above, ca)
+		# Lintel + wall above the door, between the corner posts
+		var length := 1.0 - WALL_T
+		var above := Vector3(length if along_x else WALL_T * 0.5, WALL_TALL - 2.15, WALL_T * 0.5 if along_x else length)
+		var side_a := Vector3(a.x + 0.5, 0, a.y + 0.5) - center
+		var off := Vector3(signf(side_a.x), 0, signf(side_a.z)) * WALL_T * 0.25
+		b.block(center + off + Vector3(0, 2.15, 0), above, _wall_color_for(a))
+		b.block(center - off + Vector3(0, 2.15, 0), above, _wall_color_for(n))
 		b.block(center + Vector3(0, 2.1, 0), Vector3(1.16 if along_x else WALL_T + 0.1, 0.12, WALL_T + 0.1 if along_x else 1.16), frame_col, 0.02)
-		b.block(center + Vector3(0, WALL_TALL, 0), Vector3(above.x + 0.02, 0.045, above.z + 0.02), Pal.WALL_CAP, 0.012)
+		b.block(center + Vector3(0, WALL_TALL, 0), Vector3(length if along_x else WALL_T + 0.02, 0.045, WALL_T + 0.02 if along_x else length), Pal.WALL_CAP, 0.012)
 		if type == "roller":
 			b.box(center + Vector3(0, 1.98, 0), Vector3(1.0 if along_x else 0.3, 0.26, 0.3 if along_x else 1.0), Pal.STEEL, 0.06)
 	else:

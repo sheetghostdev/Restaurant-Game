@@ -72,7 +72,7 @@ func is_perishable() -> bool:
 func server_tick(delta: float) -> void:
 	if not is_perishable() or is_cold():
 		return
-	spoil_time += delta
+	spoil_time += delta / Difficulty.factor("spoil")
 	var cd := content_def()
 	if spoil_time >= cd.spoil_seconds:
 		spoil()

@@ -1,6 +1,6 @@
 class_name SettingsPanel
 extends VBoxContainer
-## Volume sliders, display toggles and a controls reference.
+## Volume sliders, difficulty, display toggles and a controls reference.
 
 
 static func make() -> SettingsPanel:
@@ -27,6 +27,25 @@ func _build() -> void:
 		s.value_changed.connect(func(v): Settings.set_value(key, v))
 		h.add_child(s)
 		add_child(h)
+	# Difficulty (the host's choice applies to everyone in an online game)
+	var dh := HBoxContainer.new()
+	var dl := UITheme.label("Difficulty", 18, "bold")
+	dl.custom_minimum_size = Vector2(110, 0)
+	dh.add_child(dl)
+	var opt := OptionButton.new()
+	for i in Difficulty.NAMES.size():
+		opt.add_item(Difficulty.NAMES[i], i)
+	opt.selected = Difficulty.level()
+	opt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dh.add_child(opt)
+	add_child(dh)
+	var blurb := UITheme.label(Difficulty.BLURBS[Difficulty.level()], 15, "regular", Pal.UI_INK_SOFT)
+	blurb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	blurb.custom_minimum_size = Vector2(460, 0)
+	add_child(blurb)
+	opt.item_selected.connect(func(i: int):
+		Settings.set_value("difficulty", i)
+		blurb.text = Difficulty.BLURBS[i])
 	var fs := CheckBox.new()
 	fs.text = "Fullscreen"
 	fs.button_pressed = Settings.get_value("fullscreen")

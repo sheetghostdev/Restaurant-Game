@@ -6,6 +6,7 @@
 script = ExtResource("1_4jsld")
 id = &"deluxe_burger"
 display_name = "Garden Deluxe"
+short_name = "Deluxe Burger"
 required = Array[StringName]([&"bun", &"patty", &"lettuce_chopped", &"tomato_sliced"])
 price = 15.0
 menu_weight = 0.7

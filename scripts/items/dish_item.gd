@@ -185,7 +185,7 @@ func _build_model() -> void:
 		for c in contents:
 			if c["id"] == &"coffee":
 				var fill := Models.instance(&"coffee_fill")
-				fill.position = Vector3(0, 0.117, 0)
+				fill.position = Vector3(0, 0.122, 0)   # just above the mug's cap
 				visual.add_child(fill)
 				_parts.push_back(fill)
 				fill.set_meta(&"content", c)

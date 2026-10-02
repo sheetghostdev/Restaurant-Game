@@ -33,6 +33,9 @@ plays through a whole day.
   `godot --path .` from the repo root.
 * Renderer: Forward+ (soft shadows, SSAO, tilt-shift depth of field). The
   Compatibility renderer also works, with fewer effects.
+* **Difficulty:** Settings → Difficulty (main menu or pause menu).
+  *Relaxed* has patient guests and rare disasters, *Normal* is the default,
+  and *Hectic* is the full rush. In online games the host's setting applies.
 
 Command-line shortcuts, for development:
 
@@ -148,6 +151,10 @@ burnt or spoiled food.
   pieces, baked AO, a display plinth, a cutaway building with "section cut"
   wall caps, tilt-shift blur, and lighting that follows the time of day. There
   is layered adaptive music (prep → service → rush) and 60+ sound effects.
+* **Order cards.** One card per table along the top of the screen, most
+  impatient first: the table number, each dish with its picture and name,
+  and a patience bar that turns yellow, then red. The same big number stands
+  on the table itself.
 * **Debug panel (F1).** Spawn customers or deliveries, add money, advance time,
   start or end service, trigger disasters, show the nav grid and AI states,
   reset the restaurant.
@@ -180,7 +187,8 @@ res://
   audio/             sfx/*.wav, music/*.ogg (procedurally generated placeholders)
   art/               fonts (OFL), models/ (drop-in overrides for procedural meshes)
   tests/             Headless gameplay test, two-process network test
-  tools/             Content seed, screenshot runner, script checker, audio generator
+  tools/             Content seed, screenshot runner, script checker, z-fight scan,
+                     audio generator
   docs/              Architecture, design and content guides
 ```
 
@@ -200,8 +208,8 @@ More detail:
 ```bash
 # Full-day gameplay test: delivery, prep, cooking, plating, customers, washing,
 # build mode, disasters, staff, automation, spoilage, closing, results,
-# expansions, patio fences, power cut, save/load, regressions (about 110
-# checks; the exact number depends on what the guests order).
+# expansions, patio fences, power cut, save/load, difficulty, regressions
+# (about 114 checks; the exact number depends on what the guests order).
 godot --headless --path . res://tests/test_runner.tscn
 
 # Network test: one host process and one client process on localhost.
@@ -213,6 +221,10 @@ godot --headless --path . res://tools/dev/check_all.tscn
 
 # Screenshots of staged scenarios (needs a display or Xvfb).
 godot --path . res://tools/dev/shot_runner.tscn -- --shot=out.png --scenario=dining
+
+# Dump every visible triangle to look for overlapping surfaces that flicker
+# (z-fighting); see the script header for the output format.
+godot --headless --path . res://tools/dev/zfight_scan.tscn -- --out=tris.bin --expanded
 ```
 
 Run `godot --headless --path . --import` once before the first headless run, so

@@ -135,7 +135,7 @@ static func _crate_label(b: MeshBuilder) -> void:
 static func _plate(b: MeshBuilder, dirty: bool) -> void:
 	b.cyl(Vector3.ZERO, 0.16, 0.012, Pal.PLATE_RIM, 12)
 	b.cyl(Vector3(0, 0.008, 0), 0.2, 0.026, Pal.PLATE, 12, 0.01, Pal.PLATE_RIM, 0.215)
-	b.cyl(Vector3(0, 0.024, 0), 0.15, 0.006, Pal.PLATE, 12)
+	b.cyl(Vector3(0, 0.034, 0), 0.15, 0.004, Pal.PLATE, 12)   # sits on the rim's top face
 	if dirty:
 		var rng := RandomNumberGenerator.new()
 		rng.seed = 8
@@ -148,13 +148,14 @@ static func _plate(b: MeshBuilder, dirty: bool) -> void:
 
 
 static func _mug(b: MeshBuilder, dirty: bool) -> void:
-	b.cyl(Vector3.ZERO, 0.072, 0.12, Pal.MUG, 10, 0.012, Color(0, 0, 0, 0), 0.08)
-	b.cyl(Vector3(0, 0.112, 0), 0.066, 0.009, Pal.CREAM.darkened(0.05), 10)
+	# The cream "inside" is the cap colour itself: a separate disc 1 mm above
+	# the cap flickered against it.
+	b.cyl(Vector3.ZERO, 0.072, 0.12, Pal.MUG, 10, 0.012, Pal.CREAM.darkened(0.05), 0.08)
 	b.box(Vector3(0.1, 0.06, 0), Vector3(0.03, 0.075, 0.025), Pal.MUG, 0.01)
 	b.box(Vector3(0.082, 0.096, 0), Vector3(0.04, 0.022, 0.025), Pal.MUG, 0.008)
 	b.box(Vector3(0.082, 0.026, 0), Vector3(0.04, 0.022, 0.025), Pal.MUG, 0.008)
 	if dirty:
-		b.cyl(Vector3(0, 0.121, 0), 0.06, 0.003, Pal.COFFEE.lightened(0.15), 8)
+		b.cyl(Vector3(0, 0.12, 0), 0.06, 0.004, Pal.COFFEE.lightened(0.15), 8)
 		b.box(Vector3(0.02, 0.1, 0.072), Vector3(0.03, 0.03, 0.006), Pal.COFFEE)
 
 
@@ -258,7 +259,7 @@ static func _car(b: MeshBuilder) -> void:
 	for x in [-0.7, 0.7]:
 		for z in [-1.1, 1.1]:
 			b.push_at(Vector3(x, 0.3, z), 0.0, Vector3.ONE, 0.0, PI / 2.0)
-			b.cyl(Vector3(0, -0.1, 0), 0.3, 0.2, Pal.RUBBER, 8, 0.04)
+			b.cyl(Vector3(0, -0.11, 0), 0.3, 0.22, Pal.RUBBER, 8, 0.04)   # 1 cm proud of the body side
 			b.pop()
 
 

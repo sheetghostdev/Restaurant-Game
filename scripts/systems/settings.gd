@@ -11,6 +11,7 @@ var _values := {
 	"tilt_shift": true,
 	"player_name": "Chef",
 	"last_address": "127.0.0.1",
+	"difficulty": 1,          ## Difficulty.RELAXED / NORMAL / HECTIC
 }
 
 

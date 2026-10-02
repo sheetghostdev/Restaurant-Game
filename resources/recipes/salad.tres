@@ -6,6 +6,7 @@
 script = ExtResource("1_j823g")
 id = &"salad"
 display_name = "Garden Salad"
+short_name = "Salad"
 required = Array[StringName]([&"lettuce_chopped", &"tomato_sliced"])
 price = 8.0
 menu_weight = 0.6
