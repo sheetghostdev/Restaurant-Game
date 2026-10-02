@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ExpansionDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/expansion_def.gd" id="1_8hb01"]
+
+[resource]
+script = ExtResource("1_8hb01")
+id = &"dish_room"
+display_name = "Dish Room"
+room_type = &"kitchen"
+rect = Rect2i(9, -4, 7, 4)
+price = 380.0
+doors = Array[Vector4i]([Vector4i(12, -1, 12, 0)])
+starter_fixtures = Array[Dictionary]([{
+"cell": Vector2i(10, -4),
+"def": "sink",
+"rot": 0
+}])
+description = "A back room just for washing up — keeps the line clear."

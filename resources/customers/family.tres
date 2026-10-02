@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="CustomerArchetype" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/customer_archetype.gd" id="1_kti3v"]
+
+[resource]
+script = ExtResource("1_kti3v")
+id = &"family"
+display_name = "Family"
+group_min = 3
+group_max = 5
+child_chance = 0.55
+patience = 0.85
+recipe_weights = {
+"burger": 1.3,
+"deluxe_burger": 0.5,
+"fries": 1.8,
+"salad": 0.6
+}
+tip = 0.9
+mess = 0.75
+spawn_weight = 0.55
+hour_weights = {
+-1: 0.45,
+12: 1.2,
+13: 1.0,
+17: 1.4,
+18: 1.6,
+19: 1.2
+}
+outfit_colors = PackedColorArray()
+description = "Big tables, lots of fries, lots of crumbs."

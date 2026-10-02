@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="LocationDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/location_def.gd" id="1_bmcfa"]
+
+[resource]
+script = ExtResource("1_bmcfa")
+id = &"main_street"
+display_name = "Main Street"
+layout_path = "res://data/layouts/main_street.json"
+expansions = Array[StringName]([&"dining_annex", &"dish_room", &"walk_in_cooler", &"patio"])
+description = "A small-town storefront with room to grow out back."

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/automation/grabber.tscn" id="1_gf6ns"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_ag1mr"]
+
+[resource]
+script = ExtResource("2_ag1mr")
+id = &"grabber"
+display_name = "Grabber Arm"
+scene = ExtResource("1_gf6ns")
+category = "automation"
+price = 120.0
+unlock_day = 2
+model = &"grabber"
+can_break = true
+collision_height = 0.66
+description = "Takes one item from behind and puts it in front. Pulls single ingredients out of crates."

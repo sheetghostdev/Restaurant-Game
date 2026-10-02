@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_u0fwr"]
+
+[resource]
+script = ExtResource("1_u0fwr")
+id = &"dining"
+display_name = "Dining Room"
+floor_a = Color(0.8235294, 0.654902, 0.4745098, 1)
+floor_b = Color(0.7254902, 0.5411765, 0.36862746, 1)
+wall_color = Color(0.9490196, 0.9019608, 0.827451, 1)
+customer_area = true
+light_color = Color(1, 0.8509804, 0.65882355, 1)

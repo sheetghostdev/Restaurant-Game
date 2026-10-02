@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/plate_rack.tscn" id="1_qa2qv"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_clpup"]
+
+[resource]
+script = ExtResource("2_clpup")
+id = &"plate_rack"
+display_name = "Plate Rack"
+scene = ExtResource("1_qa2qv")
+category = "service"
+price = 45.0
+model = &"plate_rack"
+description = "Holds clean plates. Comes with 4 plates."

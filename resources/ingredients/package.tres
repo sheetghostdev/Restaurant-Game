@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_mog2p"]
+
+[resource]
+script = ExtResource("1_mog2p")
+id = &"package"
+display_name = "Boxed Equipment"
+item_class = "package"
+model = &"flatpack"
+color = Color(0.7882353, 0.63529414, 0.44705883, 1)
+tags = PackedStringArray("package")
+heavy = true
+blocks_when_dropped = true

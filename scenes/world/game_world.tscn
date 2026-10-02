@@ -1,0 +1,96 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/game_world.gd" id="1_world"]
+[ext_resource type="Script" path="res://scripts/world/lighting_rig.gd" id="2_light"]
+[ext_resource type="Script" path="res://scripts/restaurant/restaurant_builder.gd" id="3_builder"]
+[ext_resource type="Script" path="res://scripts/camera/diorama_camera.gd" id="4_cam"]
+[ext_resource type="Script" path="res://scripts/restaurant/restaurant_grid.gd" id="5_grid"]
+[ext_resource type="Script" path="res://scripts/systems/day_manager.gd" id="6_day"]
+[ext_resource type="Script" path="res://scripts/systems/economy_manager.gd" id="7_econ"]
+[ext_resource type="Script" path="res://scripts/systems/order_manager.gd" id="8_orders"]
+[ext_resource type="Script" path="res://scripts/systems/customer_manager.gd" id="9_cust"]
+[ext_resource type="Script" path="res://scripts/systems/delivery_manager.gd" id="10_deliv"]
+[ext_resource type="Script" path="res://scripts/systems/build_manager.gd" id="11_build"]
+[ext_resource type="Script" path="res://scripts/systems/event_manager.gd" id="12_events"]
+[ext_resource type="Script" path="res://scripts/systems/staff_manager.gd" id="13_staff"]
+[ext_resource type="Script" path="res://scripts/systems/inventory_manager.gd" id="14_inv"]
+[ext_resource type="Script" path="res://scripts/interaction/interaction_system.gd" id="15_inter"]
+[ext_resource type="Script" path="res://scripts/networking/replicator.gd" id="16_repl"]
+[ext_resource type="Script" path="res://scripts/systems/feedback_fx.gd" id="17_fx"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="18_hud"]
+
+[node name="GameWorld" type="Node3D"]
+script = ExtResource("1_world")
+
+[node name="Lighting" type="Node3D" parent="."]
+script = ExtResource("2_light")
+
+[node name="Builder" type="Node3D" parent="."]
+script = ExtResource("3_builder")
+
+[node name="Fixtures" type="Node3D" parent="."]
+
+[node name="Items" type="Node3D" parent="."]
+
+[node name="Actors" type="Node3D" parent="."]
+
+[node name="Effects" type="Node3D" parent="."]
+
+[node name="Limbo" type="Node3D" parent="."]
+visible = false
+
+[node name="Camera" type="Camera3D" parent="."]
+script = ExtResource("4_cam")
+
+[node name="Systems" type="Node" parent="."]
+
+[node name="Grid" type="Node" parent="Systems"]
+script = ExtResource("5_grid")
+
+[node name="Economy" type="Node" parent="Systems"]
+script = ExtResource("7_econ")
+
+[node name="Orders" type="Node" parent="Systems"]
+script = ExtResource("8_orders")
+
+[node name="Customers" type="Node" parent="Systems"]
+script = ExtResource("9_cust")
+
+[node name="Deliveries" type="Node" parent="Systems"]
+script = ExtResource("10_deliv")
+
+[node name="Build" type="Node" parent="Systems"]
+script = ExtResource("11_build")
+
+[node name="Disasters" type="Node" parent="Systems"]
+script = ExtResource("12_events")
+
+[node name="Staff" type="Node" parent="Systems"]
+script = ExtResource("13_staff")
+
+[node name="Inventory" type="Node" parent="Systems"]
+script = ExtResource("14_inv")
+
+[node name="Day" type="Node" parent="Systems"]
+script = ExtResource("6_day")
+
+[node name="Interaction" type="Node" parent="Systems"]
+script = ExtResource("15_inter")
+
+[node name="Replicator" type="Node" parent="Systems"]
+script = ExtResource("16_repl")
+
+[node name="FX" type="Node" parent="Systems"]
+script = ExtResource("17_fx")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18_hud")

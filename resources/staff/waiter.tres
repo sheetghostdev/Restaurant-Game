@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StaffDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/staff_def.gd" id="1_dfy53"]
+
+[resource]
+script = ExtResource("1_dfy53")
+id = &"waiter"
+display_name = "Waiter"
+role = &"server"
+hire_cost = 80.0
+daily_wage = 40.0
+work_speed = 0.8
+uniform = Color(0.54901963, 0.3529412, 0.47843137, 1)
+unlock_day = 3
+description = "Takes orders as soon as tables are ready; buses tables in between."

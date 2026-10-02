@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EventDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/event_def.gd" id="1_pmvud"]
+
+[resource]
+script = ExtResource("1_pmvud")
+id = &"street_festival"
+display_name = "Street Festival"
+kind = "crowd"
+min_day = 3
+chance_per_day = 0.15
+params = {
+"hours": [18, 19, 20],
+"mult": 1.7
+}
+warning_text = "Street festival tonight! Huge dinner rush."

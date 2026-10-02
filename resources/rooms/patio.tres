@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_11qoi"]
+
+[resource]
+script = ExtResource("1_11qoi")
+id = &"patio"
+display_name = "Patio"
+floor_style = "patio"
+floor_a = Color(0.8039216, 0.7176471, 0.6039216, 1)
+floor_b = Color(0.7254902, 0.63529414, 0.5137255, 1)
+wall_color = Color(0.18431373, 0.49803922, 0.47843137, 1)
+outdoor = true
+customer_area = true

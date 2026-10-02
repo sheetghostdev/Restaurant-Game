@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ExpansionDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/expansion_def.gd" id="1_dopda"]
+
+[resource]
+script = ExtResource("1_dopda")
+id = &"walk_in_cooler"
+display_name = "Walk-in Cooler"
+room_type = &"cooler"
+rect = Rect2i(16, -4, 4, 4)
+price = 520.0
+doors = Array[Vector4i]([Vector4i(17, -1, 17, 0)])
+starter_fixtures = Array[Dictionary]([{
+"cell": Vector2i(16, -4),
+"def": "cold_shelf",
+"rot": 0
+}, {
+"cell": Vector2i(17, -4),
+"def": "cold_shelf",
+"rot": 0
+}, {
+"cell": Vector2i(18, -4),
+"def": "cold_shelf",
+"rot": 0
+}])
+description = "Everything stored inside stays fresh. No more fridge Tetris."

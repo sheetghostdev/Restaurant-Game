@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/plant_pot.tscn" id="1_bwrig"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_2guvb"]
+
+[resource]
+script = ExtResource("2_2guvb")
+id = &"plant_pot"
+display_name = "Potted Plant"
+scene = ExtResource("1_bwrig")
+category = "decor"
+price = 25.0
+model = &"plant_pot"
+collision_height = 1.0
+allowed_outdoors = true
+ambience = 0.02
+description = "Makes the dining room a little nicer."

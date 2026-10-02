@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_e5v4a"]
+
+[resource]
+script = ExtResource("1_e5v4a")
+id = &"supply_beef"
+display_name = "Beef Patties"
+item_id = &"patty"
+quantity = 12
+price = 18.0
+container = "crate_cold"
+needs_cold = true
+description = "A chilled tub of 12 patties."

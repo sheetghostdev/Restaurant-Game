@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ExpansionDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/expansion_def.gd" id="1_fncoc"]
+
+[resource]
+script = ExtResource("1_fncoc")
+id = &"patio"
+display_name = "Sidewalk Patio"
+room_type = &"patio"
+rect = Rect2i(-5, 2, 5, 7)
+price = 300.0
+doors = Array[Vector4i]([Vector4i(-1, 4, 0, 4)])
+starter_fixtures = Array[Dictionary]([{
+"cell": Vector2i(-3, 4),
+"def": "table",
+"rot": 0
+}, {
+"cell": Vector2i(-3, 3),
+"def": "chair",
+"rot": 0
+}, {
+"cell": Vector2i(-3, 5),
+"def": "chair",
+"rot": 2
+}])
+description = "Outdoor seating off the dining room. Customers love the sun."

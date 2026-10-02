@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/cold_shelf.tscn" id="1_wyh3u"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_dax7r"]
+
+[resource]
+script = ExtResource("2_dax7r")
+id = &"cold_shelf"
+display_name = "Steel Shelf"
+scene = ExtResource("1_wyh3u")
+category = "storage"
+price = 45.0
+model = &"cold_shelf"
+collision_height = 0.78
+description = "Wire shelving for walk-in coolers. Anything in a cold room stays fresh."

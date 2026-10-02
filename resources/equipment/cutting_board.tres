@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/cutting_board.tscn" id="1_otn7c"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_1vdku"]
+
+[resource]
+script = ExtResource("2_1vdku")
+id = &"cutting_board"
+display_name = "Cutting Board"
+scene = ExtResource("1_otn7c")
+price = 40.0
+model = &"cutting_board"
+description = "Hold USE to chop lettuce, tomatoes and potatoes."

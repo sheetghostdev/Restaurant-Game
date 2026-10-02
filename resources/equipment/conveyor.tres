@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/automation/conveyor.tscn" id="1_4f315"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_8whl7"]
+
+[resource]
+script = ExtResource("2_8whl7")
+id = &"conveyor"
+display_name = "Conveyor Belt"
+scene = ExtResource("1_4f315")
+category = "automation"
+price = 70.0
+unlock_day = 2
+model = &"conveyor"
+collision_height = 0.72
+description = "Moves items toward the fixture it faces. Chain them!"

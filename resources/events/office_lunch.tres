@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EventDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/event_def.gd" id="1_gdpjw"]
+
+[resource]
+script = ExtResource("1_gdpjw")
+id = &"office_lunch"
+display_name = "Office Lunch Rush"
+kind = "crowd"
+min_day = 2
+chance_per_day = 0.25
+params = {
+"hours": [12, 13],
+"mult": 1.5
+}
+warning_text = "Offices nearby: big lunch crowd expected."

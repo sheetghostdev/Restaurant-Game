@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_yw0r8"]
+
+[resource]
+script = ExtResource("1_yw0r8")
+id = &"coffee_beans"
+display_name = "Coffee Beans"
+model = &"coffee_beans"
+color = Color(0.3529412, 0.21176471, 0.13333334, 1)
+tags = PackedStringArray("beans")
+unit_cost = 0.8
+description = "Pour into the coffee machine's hopper (10 cups per bag)."

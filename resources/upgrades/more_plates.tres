@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UpgradeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/upgrade_def.gd" id="1_vosl8"]
+
+[resource]
+script = ExtResource("1_vosl8")
+id = &"more_plates"
+display_name = "Six More Plates"
+price = 40.0
+effect = &"extra_plates"
+amount = 6.0
+repeatable = true
+description = "Added to your plate rack. More plates, more buffer before washing up."

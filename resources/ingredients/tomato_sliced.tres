@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_d478f"]
+
+[resource]
+script = ExtResource("1_d478f")
+id = &"tomato_sliced"
+display_name = "Tomato Slices"
+model = &"tomato_sliced"
+color = Color(0.9098039, 0.25490198, 0.18431373, 1)
+tags = PackedStringArray("plateable", "prepared", "veg")
+unit_cost = 0.75
+plate_layer = 3
+perishable = true
+spoil_seconds = 600.0

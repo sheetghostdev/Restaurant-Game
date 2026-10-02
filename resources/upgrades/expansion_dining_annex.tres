@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="ExpansionDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/expansion_def.gd" id="1_0ullr"]
+
+[resource]
+script = ExtResource("1_0ullr")
+id = &"dining_annex"
+display_name = "Dining Annex"
+rect = Rect2i(0, -5, 9, 5)
+price = 450.0
+doors = Array[Vector4i]([Vector4i(3, -1, 3, 0), Vector4i(6, -1, 6, 0)])
+starter_fixtures = Array[Dictionary]([{
+"cell": Vector2i(2, -3),
+"def": "table",
+"rot": 0
+}, {
+"cell": Vector2i(2, -4),
+"def": "chair",
+"rot": 0
+}, {
+"cell": Vector2i(2, -2),
+"def": "chair",
+"rot": 2
+}, {
+"cell": Vector2i(6, -3),
+"def": "table",
+"rot": 0
+}, {
+"cell": Vector2i(6, -4),
+"def": "chair",
+"rot": 0
+}, {
+"cell": Vector2i(6, -2),
+"def": "chair",
+"rot": 2
+}])
+description = "More tables behind the dining room. More guests, longer walks."

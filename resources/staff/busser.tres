@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StaffDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/staff_def.gd" id="1_arboq"]
+
+[resource]
+script = ExtResource("1_arboq")
+id = &"busser"
+display_name = "Busser"
+role = &"busser"
+daily_wage = 30.0
+work_speed = 0.7
+uniform = Color(0.56078434, 0.47843137, 0.3529412, 1)
+unlock_day = 2
+description = "Clears dirty tables and wipes up crumbs."

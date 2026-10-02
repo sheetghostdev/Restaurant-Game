@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_4jsld"]
+
+[resource]
+script = ExtResource("1_4jsld")
+id = &"deluxe_burger"
+display_name = "Garden Deluxe"
+required = Array[StringName]([&"bun", &"patty", &"lettuce_chopped", &"tomato_sliced"])
+price = 15.0
+menu_weight = 0.7
+eat_time = 14.0
+unlock_day = 2
+icon_color = Color(0.42352942, 0.7607843, 0.2901961, 1)
+plating = "burger"
+prep_steps = PackedStringArray("Grill a patty", "Chop lettuce, slice tomato", "Stack everything on a bun")

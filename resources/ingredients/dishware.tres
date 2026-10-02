@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_etj0a"]
+
+[resource]
+script = ExtResource("1_etj0a")
+id = &"dishware"
+display_name = "Plate"
+item_class = "dish"
+model = &"plate"
+color = Color(0.98039216, 0.9647059, 0.9254902, 1)
+tags = PackedStringArray("dish")

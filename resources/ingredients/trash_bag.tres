@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_6yl30"]
+
+[resource]
+script = ExtResource("1_6yl30")
+id = &"trash_bag"
+display_name = "Trash Bag"
+item_class = "trash"
+model = &"trash_bag"
+color = Color(0.22352941, 0.2509804, 0.24705882, 1)
+tags = PackedStringArray("trash")
+heavy = true
+blocks_when_dropped = true

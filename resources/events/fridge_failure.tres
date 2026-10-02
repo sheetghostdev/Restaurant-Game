@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/event_def.gd" id="1_ihoxv"]
+
+[resource]
+script = ExtResource("1_ihoxv")
+id = &"fridge_failure"
+display_name = "Fridge Failure"
+min_day = 3
+chance_per_day = 0.2
+description = "A fridge stops cooling; stock starts to warm."

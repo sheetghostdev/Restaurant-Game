@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="CustomerArchetype" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/customer_archetype.gd" id="1_wsaow"]
+
+[resource]
+script = ExtResource("1_wsaow")
+id = &"work_crew"
+display_name = "Work Crew"
+group_min = 2
+group_max = 4
+patience = 0.75
+dishes_max = 2
+drink_chance = 0.5
+recipe_weights = {
+"burger": 2.0,
+"deluxe_burger": 1.0,
+"fries": 1.6,
+"salad": 0.25
+}
+tip = 0.8
+mess = 0.3
+spawn_weight = 0.8
+hour_weights = {
+-1: 0.25,
+11: 1.0,
+12: 2.3,
+13: 1.7
+}
+outfit_colors = PackedColorArray(0.9490196, 0.54901963, 0.15686275, 1, 0.30980393, 0.42745098, 0.56078434, 1, 0.47843137, 0.56078434, 0.3529412, 1)
+accessory = &"hard_hat"
+description = "Hungry and in a hurry. Lunchtime regulars."

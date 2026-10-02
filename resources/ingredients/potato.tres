@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_of281"]
+
+[resource]
+script = ExtResource("1_of281")
+id = &"potato"
+display_name = "Potato"
+model = &"potato"
+color = Color(0.7882353, 0.6431373, 0.41960785, 1)
+tags = PackedStringArray("choppable", "veg")
+unit_cost = 0.5
+chop_into = &"fries"
+chop_work = 2.2
+description = "Cut into fries, then fry until crispy."

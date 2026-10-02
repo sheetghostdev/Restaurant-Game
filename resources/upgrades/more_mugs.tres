@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UpgradeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/upgrade_def.gd" id="1_0ssf6"]
+
+[resource]
+script = ExtResource("1_0ssf6")
+id = &"more_mugs"
+display_name = "Four More Mugs"
+price = 25.0
+effect = &"extra_mugs"
+amount = 4.0
+repeatable = true
+description = "Added to your mug rack."

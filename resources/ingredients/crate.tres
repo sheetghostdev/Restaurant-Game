@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_rhnwk"]
+
+[resource]
+script = ExtResource("1_rhnwk")
+id = &"crate"
+display_name = "Crate"
+item_class = "crate"
+model = &"crate"
+color = Color(0.78039217, 0.6117647, 0.4, 1)
+tags = PackedStringArray("crate")
+heavy = true
+blocks_when_dropped = true

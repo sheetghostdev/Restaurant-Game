@@ -1,0 +1,73 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Mise en Chaos"
+config/description="A cooperative restaurant logistics game: build it, stock it, and somehow keep it running."
+config/version="0.1.0"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
+boot_splash/bg_color=Color(0.184, 0.498, 0.478, 1)
+boot_splash/show_image=false
+config/icon="res://icon.svg"
+
+[autoload]
+
+Events="*res://scripts/core/event_bus.gd"
+Content="*res://scripts/core/content_db.gd"
+Settings="*res://scripts/systems/settings.gd"
+Inputs="*res://scripts/player/input_manager.gd"
+Net="*res://scripts/networking/net.gd"
+Audio="*res://scripts/systems/audio_manager.gd"
+Saves="*res://scripts/systems/save_system.gd"
+
+[debug]
+
+gdscript/warnings/unused_parameter=0
+gdscript/warnings/unused_signal=0
+gdscript/warnings/integer_division=0
+gdscript/warnings/narrowing_conversion=0
+gdscript/warnings/return_value_discarded=0
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/default_font_antialiasing=1
+
+[layer_names]
+
+3d_physics/layer_1="world"
+3d_physics/layer_2="fixtures"
+3d_physics/layer_3="floor_items"
+3d_physics/layer_4="players"
+3d_physics/layer_5="npcs"
+
+[physics]
+
+common/physics_ticks_per_second=60
+3d/default_gravity=0.0
+
+[rendering]
+
+anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/screen_space_aa=1
+lights_and_shadows/directional_shadow/size=4096
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=3
+lights_and_shadows/positional_shadow/soft_shadow_filter_quality=3
+environment/defaults/default_clear_color=Color(0.86, 0.82, 0.74, 1)
+environment/ssao/quality=2
+textures/default_filters/anisotropic_filtering_level=2

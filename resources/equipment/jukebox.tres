@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/jukebox.tscn" id="1_cl4sd"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_atafs"]
+
+[resource]
+script = ExtResource("2_atafs")
+id = &"jukebox"
+display_name = "Jukebox"
+scene = ExtResource("1_cl4sd")
+category = "decor"
+price = 180.0
+unlock_day = 2
+model = &"jukebox"
+collision_height = 1.2
+ambience = 0.05
+description = "Customers wait a bit more patiently."

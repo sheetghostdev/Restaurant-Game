@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_4ni1f"]
+
+[resource]
+script = ExtResource("1_4ni1f")
+id = &"tomato"
+display_name = "Tomato"
+model = &"tomato"
+color = Color(0.9098039, 0.25490198, 0.18431373, 1)
+tags = PackedStringArray("choppable", "veg")
+unit_cost = 0.75
+chop_into = &"tomato_sliced"
+chop_work = 1.8
+perishable = true
+spoil_seconds = 900.0
+description = "Slice it for burgers and salads."

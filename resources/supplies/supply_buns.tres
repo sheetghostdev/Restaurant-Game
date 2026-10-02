@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_rjj5c"]
+
+[resource]
+script = ExtResource("1_rjj5c")
+id = &"supply_buns"
+display_name = "Burger Buns"
+item_id = &"bun"
+quantity = 12
+price = 6.0
+container = "carton"
+description = "A carton of 12 soft buns."

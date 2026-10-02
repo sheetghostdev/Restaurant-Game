@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/auto_chopper.tscn" id="1_334tt"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_2pvs4"]
+
+[resource]
+script = ExtResource("2_2pvs4")
+id = &"auto_chopper"
+display_name = "Auto-Chopper"
+scene = ExtResource("1_334tt")
+category = "automation"
+price = 260.0
+unlock_day = 3
+model = &"auto_chopper"
+can_break = true
+description = "Slowly chops whatever is placed on it, no hands needed."

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_34pne"]
+
+[resource]
+script = ExtResource("1_34pne")
+id = &"coffee"
+display_name = "Coffee"
+container = "mug"
+required = Array[StringName]([&"coffee"])
+price = 4.0
+eat_time = 6.0
+icon_color = Color(0.2901961, 0.17254902, 0.11372549, 1)
+plating = "drink"
+prep_steps = PackedStringArray("Put a clean mug under the coffee machine", "Take it when it\'s just right")

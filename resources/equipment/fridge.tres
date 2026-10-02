@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/fridge.tscn" id="1_iibjt"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_kjb3w"]
+
+[resource]
+script = ExtResource("2_kjb3w")
+id = &"fridge"
+display_name = "Glass Fridge"
+scene = ExtResource("1_iibjt")
+category = "storage"
+price = 150.0
+model = &"fridge"
+can_break = true
+collision_height = 1.9
+description = "Keeps one crate cold. Beef and lettuce spoil without it."

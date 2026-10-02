@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_j823g"]
+
+[resource]
+script = ExtResource("1_j823g")
+id = &"salad"
+display_name = "Garden Salad"
+required = Array[StringName]([&"lettuce_chopped", &"tomato_sliced"])
+price = 8.0
+menu_weight = 0.6
+eat_time = 9.0
+icon_color = Color(0.42352942, 0.7607843, 0.2901961, 1)
+plating = "salad"
+prep_steps = PackedStringArray("Chop lettuce", "Slice a tomato", "Plate both")

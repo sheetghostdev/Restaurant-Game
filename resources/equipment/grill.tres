@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/grill.tscn" id="1_1rcb4"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_k86y7"]
+
+[resource]
+script = ExtResource("2_k86y7")
+id = &"grill"
+display_name = "Flat-top Grill"
+scene = ExtResource("1_1rcb4")
+price = 140.0
+model = &"grill"
+flammable = true
+can_break = true
+description = "Cooks patties. Watch the colour — and the smoke."

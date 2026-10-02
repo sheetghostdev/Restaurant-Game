@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/terminal.tscn" id="1_su4br"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_2e0mf"]
+
+[resource]
+script = ExtResource("2_2e0mf")
+id = &"terminal"
+display_name = "Manager's Desk"
+scene = ExtResource("1_su4br")
+category = "service"
+price = 0.0
+purchasable = false
+model = &"terminal"
+description = "Order supplies, equipment and staff."

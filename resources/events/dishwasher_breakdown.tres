@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/event_def.gd" id="1_67115"]
+
+[resource]
+script = ExtResource("1_67115")
+id = &"dishwasher_breakdown"
+display_name = "Dishwasher Breakdown"
+min_day = 2
+chance_per_day = 0.35
+description = "Wash by hand until it's repaired."

@@ -1,0 +1,43 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player_character.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/art/character_rig.gd" id="2_rig"]
+[ext_resource type="Script" path="res://scripts/interaction/item_slot.gd" id="3_slot"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.26
+height = 1.2
+
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 8
+collision_mask = 7
+motion_mode = 1
+wall_min_slide_angle = 0.0
+safe_margin = 0.02
+script = ExtResource("1_player")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="Rig" type="Node3D" parent="."]
+script = ExtResource("2_rig")
+
+[node name="Hand" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0.44)
+script = ExtResource("3_slot")
+
+[node name="Ring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+cast_shadow = 0
+
+[node name="NameTag" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+pixel_size = 0.0045
+billboard = 1
+no_depth_test = true
+fixed_size = false
+text = "Chef"
+font_size = 40
+outline_size = 10
+outline_modulate = Color(0.12, 0.1, 0.09, 0.85)

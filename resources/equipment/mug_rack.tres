@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/mug_rack.tscn" id="1_fys6i"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_m22sg"]
+
+[resource]
+script = ExtResource("2_m22sg")
+id = &"mug_rack"
+display_name = "Mug Rack"
+scene = ExtResource("1_fys6i")
+category = "service"
+price = 35.0
+model = &"mug_rack"
+description = "Holds clean mugs. Comes with 4 mugs."

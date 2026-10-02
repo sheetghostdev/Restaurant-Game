@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_qfgao"]
+
+[resource]
+script = ExtResource("1_qfgao")
+id = &"supply_tomatoes"
+display_name = "Tomatoes"
+item_id = &"tomato"
+quantity = 8
+price = 6.0
+description = "8 ripe tomatoes."

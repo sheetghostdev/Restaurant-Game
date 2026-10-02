@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/fryer.tscn" id="1_1s3j8"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_h0kvk"]
+
+[resource]
+script = ExtResource("2_h0kvk")
+id = &"fryer"
+display_name = "Deep Fryer"
+scene = ExtResource("1_1s3j8")
+price = 160.0
+model = &"fryer"
+flammable = true
+can_break = true
+description = "Turns cut potatoes into crispy fries. Grease fires happen."

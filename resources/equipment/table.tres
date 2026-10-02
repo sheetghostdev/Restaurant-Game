@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/table.tscn" id="1_upv0n"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_5y7j1"]
+
+[resource]
+script = ExtResource("2_5y7j1")
+id = &"table"
+display_name = "Dining Table"
+scene = ExtResource("1_upv0n")
+category = "furniture"
+model = &"table"
+collision_height = 0.72
+allowed_outdoors = true
+description = "Push tables together to seat bigger groups."

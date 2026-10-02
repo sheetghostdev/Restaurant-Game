@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/pass_counter.tscn" id="1_638iw"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_c2jf6"]
+
+[resource]
+script = ExtResource("2_c2jf6")
+id = &"pass_counter"
+display_name = "Pass Counter"
+scene = ExtResource("1_638iw")
+category = "furniture"
+price = 55.0
+model = &"pass_counter"
+description = "A steel counter with a heat lamp gantry — the classic 'order up' spot."

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="StaffDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/staff_def.gd" id="1_eg1qp"]
+
+[resource]
+script = ExtResource("1_eg1qp")
+id = &"dish_hand"
+display_name = "Dish Hand"
+uniform = Color(0.41568628, 0.56078434, 0.627451, 1)
+description = "Washes dishes at the sink, runs the dishwasher and puts clean plates away."

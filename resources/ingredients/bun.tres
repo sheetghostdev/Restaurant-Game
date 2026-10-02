@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_owb5h"]
+
+[resource]
+script = ExtResource("1_owb5h")
+id = &"bun"
+display_name = "Burger Bun"
+model = &"bun"
+color = Color(0.9019608, 0.6627451, 0.33333334, 1)
+tags = PackedStringArray("plateable", "bread")
+unit_cost = 0.5
+description = "The foundation of every burger."

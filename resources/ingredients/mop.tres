@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_dtykx"]
+
+[resource]
+script = ExtResource("1_dtykx")
+id = &"mop"
+display_name = "Mop"
+item_class = "tool"
+model = &"mop"
+color = Color(0.9098039, 0.8862745, 0.8156863, 1)
+tags = PackedStringArray("mop", "tool")
+description = "Hold USE to clean spills and crumbs."

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="RestaurantFormatDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/restaurant_format_def.gd" id="1_4sviy"]
+
+[resource]
+script = ExtResource("1_4sviy")
+id = &"diner"
+display_name = "Diner"
+menu = Array[StringName]([&"burger", &"deluxe_burger", &"fries", &"salad", &"coffee"])
+base_groups = 8.0
+hourly_demand = {
+11: 0.6,
+12: 2.0,
+13: 1.7,
+14: 0.8,
+15: 0.6,
+16: 0.7,
+17: 1.2,
+18: 2.0,
+19: 1.8,
+20: 0.8
+}
+archetypes = Array[StringName]([&"regular_folks", &"family", &"work_crew", &"business", &"date", &"tourists", &"traveler", &"critic"])
+description = "Classic table service: burgers, fries, salads and bottomless coffee."

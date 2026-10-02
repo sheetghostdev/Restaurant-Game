@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="StaffDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/staff_def.gd" id="1_xaod1"]
+
+[resource]
+script = ExtResource("1_xaod1")
+id = &"stocker"
+display_name = "Stocker"
+role = &"stocker"
+hire_cost = 70.0
+daily_wage = 30.0
+work_speed = 0.7
+uniform = Color(0.47843137, 0.56078434, 0.3529412, 1)
+unlock_day = 2
+description = "Carries deliveries from the dock onto shelves (cold stuff first)."

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/register.tscn" id="1_ttwcg"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_iejyr"]
+
+[resource]
+script = ExtResource("2_iejyr")
+id = &"register"
+display_name = "Cash Register"
+scene = ExtResource("1_ttwcg")
+category = "service"
+price = 80.0
+model = &"register"
+description = "Ka-ching. Purely for the vibes (and a spare counter)."

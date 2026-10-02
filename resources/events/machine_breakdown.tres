@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/event_def.gd" id="1_bbfi8"]
+
+[resource]
+script = ExtResource("1_bbfi8")
+id = &"machine_breakdown"
+display_name = "Equipment Breakdown"
+min_day = 4
+chance_per_day = 0.18
+description = "A cooking appliance breaks mid-service."

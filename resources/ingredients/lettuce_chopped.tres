@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_qnvyv"]
+
+[resource]
+script = ExtResource("1_qnvyv")
+id = &"lettuce_chopped"
+display_name = "Chopped Lettuce"
+model = &"lettuce_chopped"
+color = Color(0.42352942, 0.7607843, 0.2901961, 1)
+tags = PackedStringArray("plateable", "prepared", "veg")
+unit_cost = 0.75
+plate_layer = 2
+perishable = true
+spoil_seconds = 360.0

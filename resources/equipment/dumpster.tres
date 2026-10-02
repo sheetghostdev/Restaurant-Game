@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/dumpster.tscn" id="1_a743h"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_f2jkb"]
+
+[resource]
+script = ExtResource("2_f2jkb")
+id = &"dumpster"
+display_name = "Dumpster"
+scene = ExtResource("1_a743h")
+category = "service"
+price = 60.0
+model = &"dumpster"
+collision_height = 1.1
+allowed_outdoors = true
+description = "Outdoor bin for trash bags, empty crates and spoiled stock."

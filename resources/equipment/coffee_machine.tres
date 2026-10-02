@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/coffee_machine.tscn" id="1_f3ohw"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_nyebd"]
+
+[resource]
+script = ExtResource("2_nyebd")
+id = &"coffee_machine"
+display_name = "Coffee Machine"
+scene = ExtResource("1_f3ohw")
+price = 120.0
+model = &"coffee_machine"
+can_break = true
+description = "Brews into clean mugs automatically. Refill the bean hopper."

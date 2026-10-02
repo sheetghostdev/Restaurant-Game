@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_gu14g"]
+
+[resource]
+script = ExtResource("1_gu14g")
+id = &"loading"
+display_name = "Loading Dock"
+floor_style = "loading"
+floor_a = Color(0.72156864, 0.7058824, 0.6666667, 1)
+floor_b = Color(0.65882355, 0.6431373, 0.6039216, 1)
+wall_color = Color(0.18431373, 0.49803922, 0.47843137, 1)
+outdoor = true

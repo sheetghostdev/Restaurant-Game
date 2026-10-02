@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="CustomerArchetype" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/customer_archetype.gd" id="1_an5vs"]
+
+[resource]
+script = ExtResource("1_an5vs")
+id = &"business"
+display_name = "Business Lunch"
+group_min = 2
+group_max = 3
+patience = 0.95
+drink_chance = 0.9
+recipe_weights = {
+"deluxe_burger": 1.5,
+"fries": 0.5,
+"salad": 1.6
+}
+spend = 1.3
+tip = 1.4
+eat_speed = 0.8
+spawn_weight = 0.5
+min_day = 2
+hour_weights = {
+-1: 0.35,
+12: 1.6,
+13: 1.6,
+14: 1.0
+}
+outfit_colors = PackedColorArray()
+accessory = &"tie"
+description = "Coffee, salads and generous tips. They linger."

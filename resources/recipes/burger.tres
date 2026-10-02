@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_lj81o"]
+
+[resource]
+script = ExtResource("1_lj81o")
+id = &"burger"
+display_name = "Classic Burger"
+required = Array[StringName]([&"bun", &"patty"])
+optional = Array[StringName]([&"lettuce_chopped", &"tomato_sliced"])
+price = 11.0
+menu_weight = 1.3
+eat_time = 12.0
+icon_color = Color(0.9019608, 0.6627451, 0.33333334, 1)
+plating = "burger"
+prep_steps = PackedStringArray("Grill a patty until medium", "Put a bun on a plate", "Add the patty", "(Optional) add lettuce or tomato")

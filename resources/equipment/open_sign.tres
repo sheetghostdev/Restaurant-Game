@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/open_sign.tscn" id="1_bgkcy"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_agtua"]
+
+[resource]
+script = ExtResource("2_agtua")
+id = &"open_sign"
+display_name = "Open Sign"
+scene = ExtResource("1_bgkcy")
+category = "service"
+price = 0.0
+purchasable = false
+model = &"open_sign"
+collision_height = 1.6
+description = "Hold USE to open the restaurant."

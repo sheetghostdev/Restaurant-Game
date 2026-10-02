@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/counter.tscn" id="1_567rf"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_m74d6"]
+
+[resource]
+script = ExtResource("2_m74d6")
+id = &"counter"
+display_name = "Counter"
+scene = ExtResource("1_567rf")
+category = "furniture"
+price = 30.0
+model = &"counter"
+description = "A sturdy prep surface. Put anything on it."

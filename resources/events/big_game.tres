@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EventDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/event_def.gd" id="1_jrrmg"]
+
+[resource]
+script = ExtResource("1_jrrmg")
+id = &"big_game"
+display_name = "Big Game Night"
+kind = "crowd"
+min_day = 4
+chance_per_day = 0.12
+params = {
+"hours": [20],
+"mult": 2.2
+}
+warning_text = "The big game ends at 8pm — expect a wave."

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CustomerArchetype" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/customer_archetype.gd" id="1_l688k"]
+
+[resource]
+script = ExtResource("1_l688k")
+id = &"critic"
+display_name = "Food Critic"
+group_max = 1
+patience = 0.9
+drink_chance = 0.7
+tip = 2.0
+reputation_weight = 4.0
+strictness = 0.35
+spawn_weight = 0.12
+min_reputation = 2.5
+min_day = 3
+outfit_colors = PackedColorArray()
+accessory = &"beret"
+description = "Rare. Notices everything. One review can change your week."

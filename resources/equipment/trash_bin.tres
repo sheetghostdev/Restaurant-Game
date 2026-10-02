@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/trash_bin.tscn" id="1_e6v15"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_i4prg"]
+
+[resource]
+script = ExtResource("2_i4prg")
+id = &"trash_bin"
+display_name = "Trash Bin"
+scene = ExtResource("1_e6v15")
+category = "service"
+price = 25.0
+model = &"trash_bin"
+collision_height = 0.75
+description = "Throw away food or scrape plates. Empty it when full."

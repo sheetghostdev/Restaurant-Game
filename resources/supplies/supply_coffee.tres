@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_m66ek"]
+
+[resource]
+script = ExtResource("1_m66ek")
+id = &"supply_coffee"
+display_name = "Coffee Beans"
+item_id = &"coffee_beans"
+quantity = 4
+price = 8.0
+container = "carton"
+description = "4 bags of beans (10 cups each)."
