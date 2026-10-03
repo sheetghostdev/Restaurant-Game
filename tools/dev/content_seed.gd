@@ -101,7 +101,7 @@ func _items() -> void:
 	_item("coffee_beans", "Coffee Beans", "food", "coffee_beans", Pal.BEANS, ["beans"],
 		{"unit_cost": 0.8, "description": "Pour into the coffee machine's hopper (10 cups per bag)."})
 	_item("coffee", "Coffee", "food", "coffee_fill", Pal.COFFEE, ["drink"],
-		{"cook_profile": brew, "unit_cost": 0.8})
+		{"cook_profile": brew, "unit_cost": 0.8, "made_from": &"coffee_beans"})
 	_item("dishware", "Plate", "dish", "plate", Pal.PLATE, ["dish"], {})
 	_item("crate", "Crate", "crate", "crate", Pal.CRATE, ["crate"],
 		{"heavy": true, "blocks_when_dropped": true})
@@ -165,8 +165,6 @@ func _recipe(id: String, name: String, cont: String, req: Array, opt: Array, pri
 func _recipes() -> void:
 	_recipe("burger", "Classic Burger", "plate", ["bun", "patty"], ["lettuce_chopped", "tomato_sliced"], 11.0, 1.3, 12.0, "burger", Pal.BUN,
 		["Grill a patty until medium", "Put a bun on a plate", "Add the patty", "(Optional) add lettuce or tomato"], 1, "Burger")
-	_recipe("deluxe_burger", "Garden Deluxe", "plate", ["bun", "patty", "lettuce_chopped", "tomato_sliced"], [], 15.0, 0.7, 14.0, "burger", Pal.LETTUCE,
-		["Grill a patty", "Chop lettuce, slice tomato", "Stack everything on a bun"], 2, "Deluxe Burger")
 	_recipe("fries", "Crispy Fries", "plate", ["fries"], [], 5.0, 1.0, 8.0, "fries", Pal.FRIES,
 		["Cut a potato on the cutting board", "Fry until crispy", "Plate it"], 1, "Fries")
 	_recipe("salad", "Garden Salad", "plate", ["lettuce_chopped", "tomato_sliced"], [], 8.0, 0.6, 9.0, "salad", Pal.LETTUCE,
@@ -211,6 +209,7 @@ func _fixtures() -> void:
 	_fixture("table", "Dining Table", F + "table.tscn", "furniture", 50.0, "Push tables together to seat bigger groups.", {"collision_height": 0.72, "allowed_outdoors": true})
 	_fixture("chair", "Diner Chair", F + "chair.tscn", "furniture", 20.0, "Face it toward a table to add a seat.", {"blocks_movement": false, "allowed_outdoors": true})
 	_fixture("terminal", "Manager's Desk", F + "terminal.tscn", "service", 0.0, "Order supplies, equipment and staff.", {"purchasable": false})
+	_fixture("menu_board", "Menu Board", F + "menu_board.tscn", "service", 40.0, "Cross ingredients off the menu when they run out.", {"collision_height": 1.7})
 	_fixture("open_sign", "Open Sign", F + "open_sign.tscn", "service", 0.0, "Hold USE to open the restaurant.", {"purchasable": false, "collision_height": 1.6})
 	_fixture("register", "Cash Register", F + "register.tscn", "service", 80.0, "Ka-ching. Purely for the vibes (and a spare counter).")
 	_fixture("plant_pot", "Potted Plant", F + "plant_pot.tscn", "decor", 25.0, "Makes the dining room a little nicer.", {"ambience": 0.02, "collision_height": 1.0, "allowed_outdoors": true})
@@ -235,14 +234,14 @@ func _customers() -> void:
 	_arch("regular_folks", "Townsfolk", {"group_min": 1, "group_max": 2, "patience": 1.0, "drink_chance": 0.35,
 		"mess": 0.12, "spawn_weight": 1.0, "description": "Ordinary locals. Easygoing."})
 	_arch("family", "Family", {"group_min": 3, "group_max": 4, "child_chance": 0.55, "patience": 0.85, "drink_chance": 0.3,
-		"recipe_weights": {"fries": 1.8, "burger": 1.3, "salad": 0.6, "deluxe_burger": 0.5}, "mess": 0.75, "tip": 0.9, "spawn_weight": 0.55,
+		"recipe_weights": {"fries": 1.8, "burger": 1.3, "salad": 0.6}, "mess": 0.75, "tip": 0.9, "spawn_weight": 0.55,
 		"hour_weights": {12: 1.2, 13: 1.0, 17: 1.4, 18: 1.6, 19: 1.2, -1: 0.45}, "description": "Big tables, lots of fries, lots of crumbs."})
 	_arch("work_crew", "Work Crew", {"group_min": 2, "group_max": 4, "patience": 0.75, "dishes_min": 1, "dishes_max": 2, "drink_chance": 0.5,
-		"recipe_weights": {"burger": 2.0, "fries": 1.6, "salad": 0.25, "deluxe_burger": 1.0}, "tip": 0.8, "mess": 0.3, "spawn_weight": 0.8,
+		"recipe_weights": {"burger": 2.0, "fries": 1.6, "salad": 0.25}, "tip": 0.8, "mess": 0.3, "spawn_weight": 0.8,
 		"hour_weights": {11: 1.0, 12: 2.3, 13: 1.7, -1: 0.25}, "accessory": &"hard_hat",
 		"outfit_colors": PackedColorArray([Color("f28c28"), Color("4f6d8f"), Color("7a8f5a")]), "description": "Hungry and in a hurry. Lunchtime regulars."})
 	_arch("business", "Business Lunch", {"group_min": 2, "group_max": 3, "patience": 0.95, "drink_chance": 0.9, "spend": 1.3, "tip": 1.4,
-		"eat_speed": 0.8, "recipe_weights": {"salad": 1.6, "deluxe_burger": 1.5, "fries": 0.5}, "min_day": 2, "spawn_weight": 0.5,
+		"eat_speed": 0.8, "recipe_weights": {"salad": 1.6, "fries": 0.5}, "min_day": 2, "spawn_weight": 0.5,
 		"hour_weights": {12: 1.6, 13: 1.6, 14: 1.0, -1: 0.35}, "accessory": &"tie", "description": "Coffee, salads and generous tips. They linger."})
 	_arch("date", "Date Night", {"group_min": 2, "group_max": 2, "patience": 1.1, "drink_chance": 0.6, "eat_speed": 0.75, "tip": 1.3,
 		"min_day": 3, "spawn_weight": 0.5, "hour_weights": {18: 2.0, 19: 2.2, 20: 2.0, -1: 0.25}, "accessory": &"bow", "mess": 0.05,
@@ -254,7 +253,7 @@ func _customers() -> void:
 		"recipe_weights": {"fries": 1.5, "burger": 1.2, "salad": 0.4}, "spawn_weight": 0.45, "accessory": &"backpack",
 		"description": "Wants something simple, fast."})
 	_arch("regular", "The Regular", {"group_min": 1, "group_max": 1, "patience": 1.3, "drink_chance": 1.0, "tip": 1.6,
-		"recipe_weights": {"burger": 6.0, "fries": 0.3, "salad": 0.2, "deluxe_burger": 0.2}, "reputation_weight": 2.0,
+		"recipe_weights": {"burger": 6.0, "fries": 0.3, "salad": 0.2}, "reputation_weight": 2.0,
 		"min_day": 2, "spawn_weight": 0.35, "max_per_day": 1, "fixed_look_seed": 4242, "hour_weights": {11: 3.0, 12: 1.5, -1: 0.3},
 		"accessory": &"bowtie", "description": "Comes in every day, always orders the burger and a coffee. Loyal — don't let them down."})
 	_arch("critic", "Food Critic", {"group_min": 1, "group_max": 1, "patience": 0.9, "drink_chance": 0.7, "strictness": 0.35,
@@ -391,7 +390,7 @@ func _formats() -> void:
 	f.id = &"diner"
 	f.display_name = "Diner"
 	f.service_style = "table"
-	var menu: Array[StringName] = [&"burger", &"deluxe_burger", &"fries", &"salad", &"coffee"]
+	var menu: Array[StringName] = [&"burger", &"fries", &"salad", &"coffee"]
 	f.menu = menu
 	f.open_hour = 11
 	f.close_hour = 21

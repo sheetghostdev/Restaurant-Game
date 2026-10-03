@@ -38,6 +38,7 @@ func _ready() -> void:
 	await t_staff()
 	await t_automation()
 	await t_regressions()
+	await t_menu_board()
 	await t_spoilage()
 	await t_close_day()
 	await t_save_load()
@@ -386,7 +387,7 @@ func t_service() -> void:
 	var m := g.members[0]
 	for o in m.orders:
 		var r := Content.recipe(o["recipe"])
-		var dish := _make_perfect(r)
+		var dish := _make_perfect(r, o.get("extras", []))
 		p.hold(dish)
 		var ok := grab(table)
 		check(ok, "served %s" % r.display_name)
@@ -403,9 +404,9 @@ func t_service() -> void:
 	check(p.held() is DishItem and (p.held() as DishItem).dirty, "cleared the dirty dishes")
 
 
-func _make_perfect(r: RecipeDef) -> DishItem:
+func _make_perfect(r: RecipeDef, extras: Array = []) -> DishItem:
 	var contents := []
-	for id in r.required:
+	for id in r.required + extras:
 		var d := Content.item(id)
 		var ck := 0.0
 		if d.cook_profile:
@@ -610,6 +611,46 @@ func t_regressions() -> void:
 	w.despawn(clean)
 	dr.count = before
 	rack.mark_dirty()
+
+
+func t_menu_board() -> void:
+	print("[menu board & exact orders]")
+	var board := fixture(&"menu_board")
+	check(board != null, "the menu board stands in the dining room")
+	if board:
+		check(board.interact_query(p, GameConst.Verb.USE).get("label", "") == "Change the menu", "USE on the board edits the menu")
+	check(Content.base_ingredient(&"tomato_sliced") == &"tomato" and Content.base_ingredient(&"fries") == &"potato" and Content.base_ingredient(&"coffee") == &"coffee_beans", "dish parts map to raw ingredients")
+	# Exact orders: the extras a guest picked must be on the plate.
+	var order := {"recipe": &"burger", "extras": [&"tomato_sliced"]}
+	var with_tomato := _make_perfect(Content.recipe(&"burger"), [&"tomato_sliced"])
+	var plain := _make_perfect(Content.recipe(&"burger"))
+	check(RecipeManager.is_exact(order, with_tomato), "a burger with tomato matches 'burger + tomato'")
+	check(RecipeManager.extras_diff(order, plain)["missing"] == [&"tomato_sliced"], "a plain burger is missing the tomato")
+	check(RecipeManager.order_code(order) == "burger+tomato_sliced" and RecipeManager.parse_code("burger+tomato_sliced")["extras"] == [&"tomato_sliced"], "order codes round-trip")
+	w.despawn(with_tomato)
+	w.despawn(plain)
+	# Cross tomatoes off: no salads, no tomato extras, and some guests mind.
+	w.orders.set_struck(&"tomato", true)
+	var a := Content.archetype(&"business")
+	var salads := 0
+	var tomato := 0
+	var sad := 0
+	for i in 300:
+		var res := w.customers.choose_orders(a, false)
+		if res["penalty"] > 0.0:
+			sad += 1
+		for o in res["orders"]:
+			if o["recipe"] == &"salad":
+				salads += 1
+			if (o["extras"] as Array).has(&"tomato_sliced"):
+				tomato += 1
+	check(salads == 0 and tomato == 0, "with tomatoes crossed off nobody orders salad or tomato")
+	check(sad > 0, "guests who wanted tomato are disappointed (%d of 300)" % sad)
+	var saved := w.make_save()
+	check((saved["menu"]["struck"] as Array).has("tomato"), "the menu is saved")
+	w.orders.set_struck(&"tomato", false)
+	check(not w.orders.is_struck(&"tomato"), "tomatoes back on the menu")
+	check(SeatingTable.name_of(1) == "Red" and SeatingTable.name_of(11) == "Red 2", "tables are named by colour")
 
 
 func t_spoilage() -> void:

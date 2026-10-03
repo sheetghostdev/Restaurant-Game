@@ -14,24 +14,49 @@ var messy := false
 var wipe := 0.0
 var _view := {}        ## seated group as clients see it (see _group_view)
 var _crumbs: Node3D
-var _number_label: Label3D
+var _cloth: Node3D
+var _painted := -1
+
+## Table colours, in table-number order. Tickets name tables by colour
+## ("Red table") instead of numbers nobody wants to memorise.
+const COLORS := [
+	["Red", Color("d9483b")], ["Blue", Color("3d7fd1")], ["Yellow", Color("f2c230")],
+	["Green", Color("4fa85a")], ["Purple", Color("8e5cc4")], ["Orange", Color("ef8a2c")],
+	["Pink", Color("e979a6")], ["Teal", Color("2fa7a0")], ["Brown", Color("8a5a3c")],
+	["Grey", Color("8d9196")],
+]
+
+
+static func color_of(table_number: int) -> Color:
+	if table_number <= 0:
+		return Color.WHITE
+	return COLORS[(table_number - 1) % COLORS.size()][1]
+
+
+## "Red", or "Red 2" for the eleventh table onwards.
+static func name_of(table_number: int) -> String:
+	if table_number <= 0:
+		return "Unknown"
+	var base: String = COLORS[(table_number - 1) % COLORS.size()][0]
+	var lap := (table_number - 1) / COLORS.size()
+	return base if lap == 0 else "%s %d" % [base, lap + 1]
+
+
+func _paint_cloth() -> void:
+	if _cloth == null or not _cloth.is_inside_tree() or _painted == number:
+		return
+	_painted = number
+	var c := color_of(number)
+	for mi in Item._mesh_instances(_cloth):
+		mi.set_instance_shader_parameter(&"mult", Vector3(c.r, c.g, c.b))
 
 
 func _ready() -> void:
-	# Big enough to match a ticket ("TABLE 3") to its table from the camera.
-	_number_label = Label3D.new()
-	_number_label.font = load("res://art/fonts/AlfaSlabOne-Regular.ttf")
-	_number_label.font_size = 72
-	_number_label.pixel_size = 0.005
-	_number_label.modulate = Pal.UI_INK
-	_number_label.outline_size = 18
-	_number_label.outline_modulate = Pal.UI_PAPER
-	_number_label.position = Vector3(0.3, 0.98, -0.3)
-	_number_label.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
-	fixture.add_child.call_deferred(_number_label)
-	var stand := Models.instance(&"table_number")
-	stand.position = Vector3(0.3, 0.72, -0.3)
-	fixture.add_child.call_deferred(stand)
+	# A coloured cloth names the table ("Red table") on the order tickets.
+	_cloth = Models.instance(&"table_cloth")
+	_cloth.position = Vector3(0, 0.72, 0)
+	fixture.add_child.call_deferred(_cloth)
+	_paint_cloth.call_deferred()
 
 
 ## Slot for a given world side (0..3) and setting (0 food, 1 drink).
@@ -113,7 +138,7 @@ func _group_view() -> Dictionary:
 		for m in g.members:
 			for o in m.orders:
 				if not o.get("served", false):
-					want.push_back(String(o["recipe"]))
+					want.push_back(RecipeManager.order_code(o))
 	return {"o": g.can_take_order(), "w": g.state_waiting_food(), "l": g.is_leaving(), "s": g.status_text(), "r": want}
 
 
@@ -121,8 +146,8 @@ func _wants(view: Dictionary, d: DishItem) -> bool:
 	if Net.is_authority():
 		var g := group()
 		return g != null and g.find_member_for(d, fixture) != null
-	for rid in view.get("r", []):
-		var r := Content.recipe(StringName(rid))
+	for code in view.get("r", []):
+		var r := Content.recipe(RecipeManager.parse_code(String(code))["recipe"])
 		if r and RecipeManager.satisfies(r, d):
 			return true
 	return false
@@ -244,8 +269,7 @@ func _process(_delta: float) -> void:
 	elif not messy and _crumbs:
 		_crumbs.queue_free()
 		_crumbs = null
-	if _number_label:
-		_number_label.text = str(number) if number > 0 else ""
+	_paint_cloth()
 
 
 func status_text() -> String:
@@ -256,7 +280,7 @@ func status_text() -> String:
 		return "Needs wiping"
 	if has_dirty_dishes():
 		return "Dirty dishes"
-	return "Table %d · %d seats" % [number, seated_sides().size()]
+	return "%s table · %d seats" % [name_of(number), seated_sides().size()]
 
 
 func on_placed() -> void:

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/menu_board.tscn" id="1_mb"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_mb"]
+
+[resource]
+script = ExtResource("2_mb")
+id = &"menu_board"
+display_name = "Menu Board"
+scene = ExtResource("1_mb")
+category = "service"
+price = 40.0
+model = &"menu_board"
+collision_height = 1.7
+description = "Cross ingredients off the menu when they run out."

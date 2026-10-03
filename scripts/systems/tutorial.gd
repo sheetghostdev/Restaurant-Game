@@ -28,7 +28,7 @@ func _physics_process(delta: float) -> void:
 			if g.state == CustomerGroup.State.READY:
 				_tip(&"order", "A table is waving at you! Walk up to it and press USE to take their order.")
 			if g.state == CustomerGroup.State.WAITING_FOOD:
-				_tip(&"serve", "Orders appear as cards at the top, one per table. Cook, put it on a plate, then GRAB the plate onto that table (look for the big number).")
+				_tip(&"serve", "Orders appear as paper tickets at the top, one per table: the colour is the tablecloth, the pictures show exactly what goes on the plate. Cook it, plate it, then GRAB the plate onto that table.")
 		for f in world.grid.all_fixtures():
 			var st := f.get_component("SeatingTable") as SeatingTable
 			if st and st.has_dirty_dishes():

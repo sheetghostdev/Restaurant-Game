@@ -59,7 +59,7 @@ static func match_dish(dish: DishItem) -> RecipeDef:
 
 static func match_contents(ids: Array, cont: String) -> RecipeDef:
 	var best: RecipeDef = null
-	for r in Content.recipes.values():
+	for r in active_recipes():
 		if r.container != cont:
 			continue
 		if r.is_satisfied_by(ids):
@@ -114,3 +114,55 @@ static func quality_word(q: float) -> String:
 	if q > 0.0:
 		return "Poor"
 	return "Ruined"
+
+
+# -----------------------------------------------------------------------------
+# Orders: a recipe plus the optional extras one guest asked for
+# -----------------------------------------------------------------------------
+
+## "burger+tomato_sliced": recipe id, then each extra. Used in thought bubbles,
+## tickets and icon keys.
+static func order_code(order: Dictionary) -> String:
+	var parts := [String(order["recipe"])]
+	for e in order.get("extras", []):
+		parts.push_back(String(e))
+	return "+".join(parts)
+
+
+static func parse_code(code: String) -> Dictionary:
+	var parts := code.split("+", false)
+	var extras: Array[StringName] = []
+	for i in range(1, parts.size()):
+		extras.push_back(StringName(parts[i]))
+	return {"recipe": StringName(parts[0]) if parts.size() > 0 else &"", "extras": extras}
+
+
+## Optional extras the guest wanted but the dish lacks, and extras on the dish
+## they didn't ask for: {"missing": [...], "unwanted": [...]}.
+static func extras_diff(order: Dictionary, dish: DishItem) -> Dictionary:
+	var r := Content.recipe(order["recipe"])
+	var ids := dish.content_ids()
+	var wanted: Array = order.get("extras", [])
+	var missing := []
+	var unwanted := []
+	if r:
+		for opt in r.optional:
+			var want := wanted.has(opt)
+			var has := ids.has(opt)
+			if want and not has:
+				missing.push_back(opt)
+			elif has and not want:
+				unwanted.push_back(opt)
+	return {"missing": missing, "unwanted": unwanted}
+
+
+static func is_exact(order: Dictionary, dish: DishItem) -> bool:
+	var d := extras_diff(order, dish)
+	return d["missing"].is_empty() and d["unwanted"].is_empty()
+
+
+static func order_price(order: Dictionary) -> float:
+	var r := Content.recipe(order["recipe"])
+	if r == null:
+		return 0.0
+	return r.price + r.extra_price * order.get("extras", []).size()

@@ -102,8 +102,7 @@ EVENING (calm, build mode)
 
 | Dish | How |
 |---|---|
-| **Classic Burger** | Grill a patty to *Medium*; plate it with a bun. Lettuce and tomato are optional extras |
-| **Garden Deluxe** (day 2+) | Bun + patty + chopped lettuce + tomato slices |
+| **Burger** | Grill a patty to *Medium*; plate it with a bun. Each guest picks their own extras (lettuce, tomato): the ticket shows exactly which |
 | **Crispy Fries** | Chop a potato, fry until *Crispy*, plate |
 | **Garden Salad** | Chopped lettuce + tomato slices on a plate |
 | **Coffee** | Put a clean mug under the machine (keep the bean hopper filled) |
@@ -153,10 +152,15 @@ burnt or spoiled food.
   pieces, baked AO, a display plinth, a cutaway building with "section cut"
   wall caps, tilt-shift blur, and lighting that follows the time of day. There
   is layered adaptive music (prep → service → rush) and 60+ sound effects.
-* **Order cards.** One card per table along the top of the screen, most
-  impatient first: the table number, each dish with its picture and name,
-  and a patience bar that turns yellow, then red. The same big number stands
-  on the table itself.
+* **Paper tickets.** One slip per table along the top of the screen, most
+  impatient first. Tables are named by the colour of their cloth ("Red
+  table"), and each dish shows a picture of exactly what to make plus its
+  ingredients, with unwanted extras crossed out. Pick up a finished dish and
+  every guest waiting for exactly that gets a green ring.
+* **Menu board.** Run out of tomatoes? Cross them off on the chalkboard menu:
+  guests stop ordering dishes that need them and stop asking for them as an
+  extra. Guests who wanted them are a little disappointed, which beats an
+  order that never comes.
 * **Debug panel (F1).** Spawn customers or deliveries, add money, advance time,
   start or end service, trigger disasters, show the nav grid and AI states,
   reset the restaurant.

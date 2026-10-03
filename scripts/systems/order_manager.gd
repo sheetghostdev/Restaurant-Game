@@ -4,8 +4,9 @@ extends Node
 ## ticket list is replicated to clients for the HUD rail.
 
 var world: GameWorld
-var orders: Array = []      ## server: [{id, group, member, recipe, table, created}]
-var tickets: Array = []     ## all peers: [{id, recipe, table, patience, served}]
+var orders: Array = []      ## server: [{id, group, member, recipe, extras, table, created}]
+var tickets: Array = []     ## all peers: [{id, recipe, extras, table, patience}]
+var struck := {}            ## raw ingredient id -> true: crossed off the menu board
 var _next := 1
 var _sync_t := 0.0
 
@@ -14,20 +15,20 @@ func _ready() -> void:
 	world = get_parent().get_parent() as GameWorld
 
 
-func add_order(g: CustomerGroup, m: Customer, recipe: StringName) -> void:
+func add_order(g: CustomerGroup, m: Customer, order: Dictionary) -> void:
 	var table := 0
 	if m.seat_table:
 		var st := m.seat_table.get_component("SeatingTable") as SeatingTable
 		table = st.number if st else 0
-	orders.push_back({"id": _next, "group": g, "member": m, "recipe": recipe, "table": table, "created": world.day.elapsed})
+	orders.push_back({"id": _next, "group": g, "member": m, "recipe": order["recipe"], "extras": order.get("extras", []), "table": table, "created": world.day.elapsed})
 	_next += 1
 	_publish()
 
 
-func mark_served(m: Customer, recipe: StringName, _quality: float) -> void:
+func mark_served(m: Customer, order: Dictionary) -> void:
 	for i in orders.size():
 		var o: Dictionary = orders[i]
-		if o["member"] == m and o["recipe"] == recipe:
+		if o["member"] == m and o["recipe"] == order["recipe"] and o.get("extras", []) == order.get("extras", []):
 			orders.remove_at(i)
 			break
 	_publish()
@@ -74,9 +75,13 @@ func _publish() -> void:
 	var out := []
 	for o in orders:
 		var g: CustomerGroup = o["group"]
+		var ex := []
+		for e in o.get("extras", []):
+			ex.push_back(String(e))
 		out.push_back({
 			"id": o["id"],
 			"recipe": String(o["recipe"]),
+			"extras": ex,
 			"table": o["table"],
 			"patience": snappedf(g.patience if g else 1.0, 0.02),
 		})
@@ -89,3 +94,58 @@ func _publish() -> void:
 func apply_shared(d: Dictionary) -> void:
 	tickets = d.get("t", [])
 	Events.orders_changed.emit()
+
+
+# -----------------------------------------------------------------------------
+# Menu board: ingredients crossed off the menu
+# -----------------------------------------------------------------------------
+
+func is_struck(ingredient: StringName) -> bool:
+	return struck.has(ingredient)
+
+
+## True if any required component of `r` comes from a struck ingredient.
+func recipe_blocked(r: RecipeDef) -> bool:
+	for c in r.required:
+		if struck.has(Content.base_ingredient(c)):
+			return true
+	return false
+
+
+func set_struck(ingredient: StringName, on: bool) -> void:
+	if on:
+		struck[ingredient] = true
+	else:
+		struck.erase(ingredient)
+	_publish_menu()
+	Events.notify(("%s crossed off the menu" if on else "%s back on the menu") % Content.display_name(ingredient), &"info")
+
+
+func _publish_menu() -> void:
+	var out := []
+	for k in struck:
+		out.push_back(String(k))
+	if world and world.replicator:
+		world.replicator.publish(&"menu", {"s": out})
+	Events.orders_changed.emit()
+
+
+func apply_shared_menu(d: Dictionary) -> void:
+	struck.clear()
+	for k in d.get("s", []):
+		struck[StringName(k)] = true
+	Events.orders_changed.emit()
+
+
+func save_menu() -> Dictionary:
+	var out := []
+	for k in struck:
+		out.push_back(String(k))
+	return {"struck": out}
+
+
+func load_menu(d: Dictionary) -> void:
+	struck.clear()
+	for k in d.get("struck", []):
+		struck[StringName(k)] = true
+	_publish_menu()

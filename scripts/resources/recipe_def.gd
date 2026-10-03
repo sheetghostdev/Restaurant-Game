@@ -10,6 +10,7 @@ extends Resource
 @export var required: Array[StringName] = []
 @export var optional: Array[StringName] = []
 @export var price := 10.0
+@export var extra_price := 1.0                    ## Added per optional extra a guest asks for.
 @export var menu_weight := 1.0                    ## Base popularity.
 @export var eat_time := 10.0                      ## Seconds a customer spends eating it.
 @export var unlock_day := 1

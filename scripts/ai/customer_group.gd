@@ -174,15 +174,22 @@ func take_order(actor: Node) -> void:
 	state = State.WAITING_FOOD
 	var total_dishes := 0
 	for m in members:
-		m.orders = manager.choose_orders(archetype, m.is_child)
+		var res := manager.choose_orders(archetype, m.is_child)
+		m.orders = res["orders"]
+		m.menu_penalty = res["penalty"]
+		if res["note"] != "":
+			# Wanted something that's crossed off the menu.
+			world().fx.popup_text(m.global_position + Vector3(0, 2.3, 0), res["note"], Pal.UI_WARN)
 		total_dishes += m.orders.size()
-		var ids := []
 		for o in m.orders:
-			ids.push_back(String(o["recipe"]))
-			world().orders.add_order(self, m, o["recipe"])
-		m.bubble = "r:" + ",".join(ids)
+			world().orders.add_order(self, m, o)
 		m.anim = CharacterRig.Anim.SIT
-		m.mark_dirty()
+		_refresh_bubble(m)
+	if total_dishes == 0:
+		# Nothing they want is on the menu.
+		Events.notify("A table left: nothing they wanted is on the menu", &"warning")
+		_get_upset()
+		return
 	_set_wait(manager.FOOD_PATIENCE + total_dishes * 9.0)
 	_order_time = world().day.elapsed
 	Audio.play_at(&"ui_confirm", members[0].global_position)
@@ -202,19 +209,36 @@ func _anyone_waiting() -> bool:
 func find_member_for(dish: DishItem, near_table: Fixture) -> Customer:
 	if state != State.WAITING_FOOD and state != State.EATING:
 		return null
+	# Best: someone who ordered exactly this (right extras), at this table.
 	var best: Customer = null
+	var best_score := -1
 	for m in members:
 		if _slot_for(m, dish) == null:
 			continue
-		for o in m.orders:
-			if o.get("served", false):
-				continue
-			var r := Content.recipe(o["recipe"])
-			if r and RecipeManager.satisfies(r, dish):
-				if best == null or m.seat_table == near_table:
-					best = m
-				break
+		var o := _order_for(m, dish)
+		if o.is_empty():
+			continue
+		var score := (2 if RecipeManager.is_exact(o, dish) else 0) + (1 if m.seat_table == near_table else 0)
+		if score > best_score:
+			best_score = score
+			best = m
 	return best
+
+
+## The member's unserved order this dish fits, preferring an exact match.
+func _order_for(m: Customer, dish: DishItem) -> Dictionary:
+	var fallback := {}
+	for o in m.orders:
+		if o.get("served", false):
+			continue
+		var r := Content.recipe(o["recipe"])
+		if r == null or not RecipeManager.satisfies(r, dish):
+			continue
+		if RecipeManager.is_exact(o, dish):
+			return o
+		if fallback.is_empty():
+			fallback = o
+	return fallback
 
 
 func _slot_for(m: Customer, dish: DishItem) -> ItemSlot:
@@ -237,11 +261,7 @@ func serve(actor: Node, dish: DishItem, near_table: Fixture) -> bool:
 	var slot := _slot_for(m, dish)
 	if slot == null:
 		return false
-	var order: Dictionary = {}
-	for o in m.orders:
-		if not o.get("served", false) and RecipeManager.satisfies(Content.recipe(o["recipe"]), dish):
-			order = o
-			break
+	var order := _order_for(m, dish)
 	if order.is_empty():
 		return false
 	actor.take_held()
@@ -263,19 +283,33 @@ func serve(actor: Node, dish: DishItem, near_table: Fixture) -> bool:
 		return true
 	order["served"] = true
 	order["quality"] = q
-	var sat := clampf(q * 0.65 + wait_frac * 0.35 - strict * (1.0 - q), 0.0, 1.0)
+	var sat := q * 0.65 + wait_frac * 0.35 - strict * (1.0 - q)
+	# Wrong extras: they wanted tomato and got none, or got lettuce they didn't ask for.
+	var diff := RecipeManager.extras_diff(order, dish)
+	var wrong: int = diff["missing"].size() + diff["unwanted"].size()
+	sat -= 0.15 * wrong
+	# Disappointment from items crossed off the menu (counted once per guest).
+	sat -= m.menu_penalty
+	m.menu_penalty = 0.0
+	sat = clampf(sat, 0.0, 1.0)
 	order["satisfaction"] = sat
 	satisfaction_sum += sat
 	satisfaction_n += 1
-	var price := r.price * archetype.spend
+	var price := RecipeManager.order_price(order) * archetype.spend
 	var tip := price * 0.25 * archetype.tip * sat * sat
 	revenue += price + tip
 	order["price"] = price
 	order["tip"] = tip
-	world().orders.mark_served(m, order["recipe"], q)
+	world().orders.mark_served(m, order)
 	Events.order_served.emit(order["recipe"], q, dish.global_position)
 	Audio.play_at(&"serve", dish.global_position)
-	world().fx.popup_text(m.global_position + Vector3(0, 2.0, 0), RecipeManager.quality_word(q), Pal.UI_GOOD if q >= 0.7 else Pal.UI_WARN)
+	if wrong > 0:
+		var what: StringName = diff["missing"][0] if not diff["missing"].is_empty() else diff["unwanted"][0]
+		var word := Content.display_name(Content.base_ingredient(what)).to_lower()
+		var msg := ("No %s?" % word) if not diff["missing"].is_empty() else ("I didn't want %s" % word)
+		world().fx.popup_text(m.global_position + Vector3(0, 2.0, 0), msg, Pal.UI_WARN)
+	else:
+		world().fx.popup_text(m.global_position + Vector3(0, 2.0, 0), RecipeManager.quality_word(q), Pal.UI_GOOD if q >= 0.7 else Pal.UI_WARN)
 	m.anim = CharacterRig.Anim.EAT
 	m.eat_left = maxf(m.eat_left, r.eat_time / archetype.eat_speed)
 	m.done_eating = false
@@ -288,11 +322,11 @@ func serve(actor: Node, dish: DishItem, near_table: Fixture) -> bool:
 
 
 func _refresh_bubble(m: Customer) -> void:
-	var ids := []
+	var codes := []
 	for o in m.orders:
 		if not o.get("served", false):
-			ids.push_back(String(o["recipe"]))
-	m.bubble = ("r:" + ",".join(ids)) if not ids.is_empty() else ""
+			codes.push_back(RecipeManager.order_code(o))
+	m.bubble = ("r:" + ",".join(codes)) if not codes.is_empty() else ""
 	m.mark_dirty()
 
 

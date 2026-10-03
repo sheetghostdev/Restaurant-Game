@@ -81,10 +81,16 @@ func _update_alerts() -> void:
 		var sup := Content.supply_for_item(id)
 		var low := maxi(1, int(ceil(sup.quantity * 0.25))) if sup else LOW
 		if n <= 0:
-			if _alerted.get(id, "") != "out":
-				_alerted[id] = "out"
-				Events.alert.emit(key, "OUT of %s!" % label.to_lower(), true)
-				Audio.play_ui(&"error", -6.0)
+			# Point at the menu board, and stay quiet once it's crossed off.
+			var struck := world.orders.is_struck(id)
+			var st := "off" if struck else "out"
+			if _alerted.get(id, "") != st:
+				_alerted[id] = st
+				if struck:
+					Events.alert.emit(key, "", false)
+				else:
+					Events.alert.emit(key, "OUT of %s! Cross it off at the menu board" % label.to_lower(), true)
+					Audio.play_ui(&"error", -6.0)
 		elif n < low:
 			if _alerted.get(id, "") != "low":
 				_alerted[id] = "low"

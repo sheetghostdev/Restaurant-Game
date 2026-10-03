@@ -19,7 +19,7 @@ signal day_results(results: Dictionary)
 signal alert(id: StringName, text: String, active: bool)
 signal coins_popped(amount: float, position: Vector3)
 signal ping(position: Vector3, color: Color)
-signal catalog_requested(player: Node)
+signal catalog_requested(player: Node, tab: String)
 signal build_changed()
 
 

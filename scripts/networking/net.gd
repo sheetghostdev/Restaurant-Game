@@ -208,6 +208,7 @@ func _do_request(action: String, args: Array, _from: int) -> void:
 		"rush_order": w.deliveries.rush_order(StringName(args[0]), int(args[1]) if args.size() > 1 else 1)
 		"standing": w.deliveries.adjust_order(StringName(args[0]), clampi(int(args[1]), -9, 9))
 		"auto_order": w.deliveries.set_auto(StringName(args[0]), bool(args[1]))
+		"strike": w.orders.set_struck(StringName(args[0]), bool(args[1]))
 		"continue_results": w.day.continue_from_results()
 		"save": Saves.save_game(w)
 		"debug": w.debug_command(String(args[0]), args.slice(1))
@@ -217,23 +218,25 @@ func _do_request(action: String, args: Array, _from: int) -> void:
 # Server -> clients
 # -----------------------------------------------------------------------------
 
-func open_catalog_for(actor: Node) -> void:
+## Opens the catalog on the screen of whoever `actor` is (optionally on a
+## given tab, e.g. "menu" from the menu board).
+func open_catalog_for(actor: Node, tab := "") -> void:
 	if not (actor is PlayerCharacter):
 		return
 	var p := actor as PlayerCharacter
 	if p.is_local():
-		Events.catalog_requested.emit(p)
+		Events.catalog_requested.emit(p, tab)
 	elif online:
-		_s_open_catalog.rpc_id(p.peer_id, p.net_id)
+		_s_open_catalog.rpc_id(p.peer_id, p.net_id, tab)
 
 
 @rpc("authority", "reliable")
-func _s_open_catalog(net_id: int) -> void:
+func _s_open_catalog(net_id: int, tab: String) -> void:
 	var w := GameWorld.current
 	if w:
 		var p := w.get_entity(net_id)
 		if p:
-			Events.catalog_requested.emit(p)
+			Events.catalog_requested.emit(p, tab)
 
 
 @rpc("authority", "reliable")

@@ -117,9 +117,25 @@ func load_save(data: Dictionary) -> void:
 	deliveries.load_data(data.get("deliveries", {}))
 	staff.load_data(data.get("staff", {}))
 	build.load_data(data.get("build", {}))
+	orders.load_menu(data.get("menu", {}))
 	day.load_data(data.get("day", {}))
 	build.setup_plots()
+	_ensure_layout_fixtures()
 	_after_start()
+
+
+## Saves from older versions miss fixtures added to the starting layout since
+## (the menu board): place them where the layout wants, or nearby.
+func _ensure_layout_fixtures() -> void:
+	for f in _layout.get("fixtures", []):
+		var def_id := StringName(f["def"])
+		if def_id != &"menu_board" or not grid.fixtures_of(def_id).is_empty():
+			continue
+		var fd := Content.fixture(def_id)
+		var want := Vector2i(int(f["cell"][0]), int(f["cell"][1]))
+		var c := build.nearest_free(want, fd, null)
+		if build.can_place_at(c, fd, null):
+			spawn_fixture(def_id, c, int(f.get("rot", 0)))
 
 
 func _after_start() -> void:
@@ -134,6 +150,8 @@ func _after_start() -> void:
 	camera.set_building_rect(Rect2(bounds.position.x, bounds.position.y, bounds.size.x, bounds.size.y).grow(0.5))
 	camera.snap()
 	inventory.refresh()
+	if Net.is_authority():
+		customers.mark_tables_dirty()   # number (and colour) the tables now
 	Events.world_ready.emit(self)
 
 
@@ -403,6 +421,7 @@ func make_save() -> Dictionary:
 		"deliveries": deliveries.save_data(),
 		"staff": staff.save_data(),
 		"build": build.save_data(),
+		"menu": orders.save_menu(),
 		"day": day.save_data(),
 		"unlocks": unlocks.map(func(u): return String(u)),
 	}

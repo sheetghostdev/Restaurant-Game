@@ -13,7 +13,6 @@ dishes_max = 2
 drink_chance = 0.5
 recipe_weights = {
 "burger": 2.0,
-"deluxe_burger": 1.0,
 "fries": 1.6,
 "salad": 0.25
 }

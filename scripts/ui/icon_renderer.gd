@@ -80,13 +80,27 @@ func _build(key: String) -> Dictionary:
 			if r:
 				n = DishPlating.make_recipe_model(r)
 				frame_size = 0.44 if r.container == "plate" else 0.3
-		"item":
+		"dish":
+			# "dish:burger+tomato_sliced": the exact dish an order asks for.
+			var o := RecipeManager.parse_code(key.substr(5))
+			var r2 := Content.recipe(o["recipe"])
+			if r2:
+				n = DishPlating.make_order_model(r2, o["extras"])
+				frame_size = 0.44 if r2.container == "plate" else 0.3
+		"item", "cooked":
+			# "cooked:patty" shows it done just right (tickets); "item:" raw.
 			var d := Content.item(id)
 			if d:
 				n = Models.instance(d.model)
-				frame_size = 0.36
+				# Food is small: frame it tightly so it reads even as a chip.
+				frame_size = 0.26 if d.item_class == "food" else 0.36
 				if d.cook_profile:
-					n.set_meta(&"content", {"id": d.id, "ck": 0.0})
+					var ck := 0.0
+					if kind == "cooked":
+						var p := d.cook_profile
+						var i := p.perfect_stage
+						ck = ((0.0 if i == 0 else p.stage_ends[i - 1]) + p.stage_ends[i]) * 0.5
+					n.set_meta(&"content", {"id": d.id, "ck": ck})
 		"fixture":
 			var f := Content.fixture(id)
 			if f:

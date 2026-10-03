@@ -13,16 +13,20 @@ var path: Array[Vector3] = []
 var speed := 1.6
 var mood := 1.0
 var anim := CharacterRig.Anim.IDLE
-var bubble := ""                  ## "", "think", "order", "angry", "pay", "wait", or "r:<recipe ids,>"
+var bubble := ""                  ## "", "think", "order", "angry", "pay", "wait", or "r:<order codes,>"
 var seated := false
 var is_child := false
 var orders: Array = []            ## Server: order dicts for this member
+var menu_penalty := 0.0           ## Server: disappointment from crossed-off items
 var eat_left := 0.0
 var done_eating := false
 
 var rig: CharacterRig
 var _bubble_node: Node3D
 var _bubble_key := "~"
+var _want := 0                    ## local players' held dish fits this guest: 1 = recipe, 2 = exactly
+var _want_t := 0.0
+var _want_ring: Node3D
 var _target_pos := Vector3.ZERO
 var _target_yaw := 0.0
 var _have_target := false
@@ -156,8 +160,51 @@ func _process(delta: float) -> void:
 		rig.anim = anim
 	position.y = 0.06 if seated else 0.0
 	_update_bubble()
+	_update_wanted(delta)
 	if mood < 0.25 and fmod(Time.get_ticks_msec() * 0.001, 1.0) < delta * 2.0 and world:
 		world.fx.steam(global_position + Vector3(0, 1.45, 0), 0.5, Color("ff8a6a"), true)
+
+
+## When a local player carries a finished dish this guest is waiting for,
+## light them up: green ring = exactly their order, yellow = right dish but
+## different extras. The thought bubble pulses too.
+func _update_wanted(delta: float) -> void:
+	_want_t -= delta
+	if _want_t <= 0.0:
+		_want_t = 0.15
+		_want = _held_match()
+		if _want > 0 and _want_ring == null:
+			_want_ring = Models.instance(&"ring")
+			_want_ring.position = Vector3(0, 0.03, 0)
+			_want_ring.scale = Vector3.ONE * 1.15
+			add_child(_want_ring)
+		if _want_ring:
+			_want_ring.visible = _want > 0
+			if _want > 0:
+				var col := Pal.UI_GOOD if _want == 2 else Pal.UI_WARN
+				for mi in Item._mesh_instances(_want_ring):
+					mi.material_override = Models.mat_unshaded(col)
+	if _bubble_node:
+		var pulse := 1.0 + (0.18 * (0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.012)) if _want > 0 else 0.0)
+		_bubble_node.scale = Vector3.ONE * pulse
+
+
+func _held_match() -> int:
+	if not bubble.begins_with("r:") or world == null:
+		return 0
+	var best := 0
+	for p in world.players():
+		if not p.is_local():
+			continue
+		var d := p.held() as DishItem
+		if d == null or not d.is_single() or d.dirty or d.contents.is_empty():
+			continue
+		for code in bubble.substr(2).split(",", false):
+			var o := RecipeManager.parse_code(code)
+			var r := Content.recipe(o["recipe"])
+			if r and RecipeManager.satisfies(r, d):
+				best = maxi(best, 2 if RecipeManager.is_exact(o, d) else 1)
+	return best
 
 
 func _update_bubble() -> void:

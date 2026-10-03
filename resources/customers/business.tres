@@ -11,7 +11,6 @@ group_max = 3
 patience = 0.95
 drink_chance = 0.9
 recipe_weights = {
-"deluxe_burger": 1.5,
 "fries": 0.5,
 "salad": 1.6
 }

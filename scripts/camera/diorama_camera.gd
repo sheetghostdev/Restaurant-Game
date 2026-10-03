@@ -84,9 +84,11 @@ func _process(delta: float) -> void:
 		var d_players := maxf(_required_distance(pr), min_distance)
 		# Stay mostly zoomed out: ease only partway toward the players.
 		target_dist = clampf(lerpf(d_full, d_players, player_focus), min_distance, d_full)
-		var t_amt := 1.0 - (target_dist - min_distance) / maxf(d_full - min_distance, 0.001)
+		var t_amt := 1.0 - (target_dist * (1.0 + zoom_bias) - min_distance) / maxf(d_full - min_distance, 0.001)
 		var pc := Vector3(pr.get_center().x, 0, pr.get_center().y)
-		target_focus = target_focus.lerp(pc, clampf(t_amt * 1.6, 0.0, 0.5))
+		# Zoomed in, follow the players more closely so they stay in shot.
+		var follow := 0.5 + 0.45 * clampf(-zoom_bias / 0.35, 0.0, 1.0)
+		target_focus = target_focus.lerp(pc, clampf(t_amt * 1.6, 0.0, follow))
 	target_dist *= 1.0 + zoom_bias
 	target_dist = maxf(target_dist, min_distance * 0.5)
 	# Keep the focus inside the building framing.

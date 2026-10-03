@@ -121,6 +121,32 @@ func display_name(id: StringName) -> String:
 	return String(id).capitalize()
 
 
+## The raw ingredient a component comes from (sliced tomato -> tomato,
+## fries -> potato, coffee -> beans). What the menu board strikes off.
+func base_ingredient(id: StringName) -> StringName:
+	var d := item(id)
+	if d and d.made_from != &"":
+		return d.made_from
+	for other in items.values():
+		if (other as ItemDef).chop_into == id:
+			return other.id
+	return id
+
+
+## Raw ingredients used by a format's menu, in menu order (menu board rows).
+func menu_ingredients(format: RestaurantFormatDef) -> Array[StringName]:
+	var out: Array[StringName] = []
+	for rid in format.menu:
+		var r := recipe(rid)
+		if r == null:
+			continue
+		for c in r.required + r.optional:
+			var b := base_ingredient(c)
+			if not out.has(b):
+				out.push_back(b)
+	return out
+
+
 ## Recipes on the menu of a format, sorted by price.
 func menu_for(format: RestaurantFormatDef, day: int) -> Array[RecipeDef]:
 	var out: Array[RecipeDef] = []

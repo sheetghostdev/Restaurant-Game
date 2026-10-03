@@ -13,7 +13,7 @@ var _money: Label
 var _tab := "equipment"
 var _refresh_t := 0.0
 
-const TABS := [["equipment", "Equipment"], ["supplies", "Supplies"], ["staff", "Staff"], ["upgrades", "Upgrades"], ["expansions", "Expansions"]]
+const TABS := [["menu", "Menu"], ["equipment", "Equipment"], ["supplies", "Supplies"], ["staff", "Staff"], ["upgrades", "Upgrades"], ["expansions", "Expansions"]]
 
 
 func _ready() -> void:
@@ -61,11 +61,11 @@ func _ready() -> void:
 	_scroll.add_child(_content)
 
 
-func open_for(p: Node) -> void:
+func open_for(p: Node, tab := "") -> void:
 	player = p as PlayerCharacter
 	visible = true
 	Audio.play_ui(&"ui_confirm")
-	_select(_tab)
+	_select(tab if tab != "" else (_tab if _tab != "menu" else "equipment"))
 
 
 func close() -> void:
@@ -104,6 +104,7 @@ func _select(id: String) -> void:
 		_content.remove_child(c)
 		c.queue_free()
 	match id:
+		"menu": _build_menu()
 		"equipment": _build_equipment()
 		"supplies": _build_supplies()
 		"staff": _build_staff()
@@ -197,6 +198,37 @@ func _build_equipment() -> void:
 			b.text = "Day %d · %.1f★" % [fd.unlock_day, fd.unlock_reputation]
 			b.set_meta(&"locked", true)
 		_row("fixture:%s" % fd.id, fd.display_name, fd.description, b)
+
+
+## The menu board: cross ingredients off so guests stop ordering them.
+func _build_menu() -> void:
+	var w := hud.world
+	var hint := UITheme.label("Out of something? Cross it off and guests stop ordering it (dishes that need it come off the menu; it's left off as an extra). Guests who wanted it are a little disappointed, but that beats waiting for food that never comes.", 16, "regular", Pal.UI_INK_SOFT)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_content.add_child(hint)
+	for ing in Content.menu_ingredients(w.format):
+		var id: StringName = ing
+		var off := w.orders.is_struck(id)
+		var uses := []
+		for rid in w.format.menu:
+			var r := Content.recipe(rid)
+			if r == null:
+				continue
+			for c in r.required:
+				if Content.base_ingredient(c) == id:
+					uses.push_back(r.ticket_name())
+			for c in r.optional:
+				if Content.base_ingredient(c) == id:
+					uses.push_back("%s (extra)" % r.ticket_name())
+		var b := UITheme.button("Crossed off — put back" if off else "On the menu — cross off", func():
+			Net.request("strike", [String(id), not off])
+			_refresh_later_tab("menu"))
+		b.custom_minimum_size = Vector2(270, 0)
+		if off:
+			b.add_theme_color_override("font_color", Pal.UI_BAD)
+		var desc := "In: %s · in stock: %d" % [", ".join(uses), w.inventory.units(id)]
+		var title := Content.display_name(id) + ("  ✕ OFF" if off else "")
+		_row("item:%s" % id, title, desc, b)
 
 
 func _build_supplies() -> void:

@@ -109,7 +109,7 @@ func _run_scenario() -> void:
 					for o in m.orders:
 						var r := Content.recipe(o["recipe"])
 						var contents := []
-						for id in r.required:
+						for id in r.required + o.get("extras", []):
 							var d := Content.item(id)
 							var ck := 0.0
 							if d.cook_profile:
@@ -122,6 +122,23 @@ func _run_scenario() -> void:
 							w.despawn(pl.take_held())
 			Engine.time_scale = 1.0
 			w.players()[0].global_position = Vector3(4.5, 0, 4.5)
+			if "--holding" in OS.get_cmdline_user_args():
+				# Hold exactly what someone is still waiting for (shows the highlight).
+				for g in groups:
+					for m in g.members if g else []:
+						for o in m.orders:
+							if o.get("served", false):
+								continue
+							var r2 := Content.recipe(o["recipe"])
+							var cc := []
+							for id in r2.required + o.get("extras", []):
+								var d2 := Content.item(id)
+								var ck2 := 0.0
+								if d2.cook_profile:
+									ck2 = (d2.cook_profile.stage_ends[d2.cook_profile.perfect_stage - 1] + d2.cook_profile.stage_ends[d2.cook_profile.perfect_stage]) * 0.5
+								cc.push_back({"id": String(id), "ck": ck2})
+							if not w.players()[0].held():
+								w.players()[0].hold(w.spawn_item(&"dishware", {"p": 0 if r2.container == "mug" else 1, "m": 1 if r2.container == "mug" else 0, "c": cc}))
 		"results", "evening":
 			w.debug_command("start_service", [])
 			w.debug_command("end_service", [])

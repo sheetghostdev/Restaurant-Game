@@ -14,6 +14,7 @@ extends Resource
 @export var unit_cost := 1.0                      ## Used for waste accounting.
 @export_group("Preparation")
 @export var chop_into: StringName                 ## Item produced on a cutting board.
+@export var made_from: StringName                 ## Raw ingredient it comes from, when not chopped (menu board).
 @export var chop_work := 2.0                      ## Seconds of chopping.
 @export var cook_profile: CookProfile
 @export var plate_layer := 0                      ## Stacking order when plated.

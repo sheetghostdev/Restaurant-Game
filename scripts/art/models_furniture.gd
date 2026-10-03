@@ -16,6 +16,8 @@ static func build(key: StringName, b: MeshBuilder) -> bool:
 		&"jukebox": _jukebox(b)
 		&"jukebox_glow": _jukebox_glow(b)
 		&"table_number": _table_number(b)
+		&"table_cloth": _table_cloth(b)
+		&"menu_board": _menu_board(b)
 		_: return false
 	return true
 
@@ -132,6 +134,34 @@ static func _jukebox(b: MeshBuilder) -> void:
 
 static func _jukebox_glow(b: MeshBuilder) -> void:
 	b.box(Vector3(0, 0.95, 0.24), Vector3(0.62, 0.16, 0.04), Color("ffb347"), 0.02)
+
+
+## A diamond-set cloth on the table top. Built white; each table multiplies it
+## by its own colour (the colour that names the table on order tickets).
+static func _table_cloth(b: MeshBuilder) -> void:
+	b.push_at(Vector3.ZERO, PI * 0.25)
+	b.block(Vector3.ZERO, Vector3(0.5, 0.008, 0.5), Color(0.96, 0.96, 0.96), 0.003)
+	b.block(Vector3.ZERO, Vector3(0.36, 0.014, 0.36), Color(0.82, 0.82, 0.82), 0.003)
+	b.pop()
+
+
+## Chalkboard menu on two posts, standing against a wall (face toward +Z).
+## The chalk writing is added live by the MenuBoard component. It stands a
+## little off the wall so a window frame behind it never pokes through.
+static func _menu_board(b: MeshBuilder) -> void:
+	var z := -0.25
+	for x in [-0.47, 0.47]:
+		b.block(Vector3(x, 0, z), Vector3(0.07, 1.78, 0.07), Pal.WALNUT, 0.015)
+	b.block(Vector3(0, 0.7, z), Vector3(0.86, 1.0, 0.05), Color("2f3b36"), 0.0)
+	# Frame stands 1.5 cm proud of the slate on every side
+	var fz := 0.08
+	b.block(Vector3(0, 0.64, z), Vector3(0.96, 0.06, fz), Pal.OAK, 0.012)
+	b.block(Vector3(0, 1.7, z), Vector3(0.96, 0.06, fz), Pal.OAK, 0.012)
+	for x in [-0.46, 0.46]:
+		b.block(Vector3(x, 0.7, z), Vector3(0.06, 1.0, fz), Pal.OAK, 0.012)
+	# Chalk ledge
+	b.block(Vector3(0, 0.6, z + 0.07), Vector3(0.8, 0.04, 0.1), Pal.OAK, 0.01)
+	b.block(Vector3(0.22, 0.64, z + 0.08), Vector3(0.07, 0.02, 0.02), Color(0.95, 0.95, 0.92))
 
 
 static func _table_number(b: MeshBuilder) -> void:

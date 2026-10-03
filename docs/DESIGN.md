@@ -101,6 +101,14 @@ building are available.
   required ⊆ contents ⊆ required ∪ optional. The recipe with the most required
   items wins. You can only add an ingredient if some recipe can still be
   completed.
+* Every order names its extras (burger + tomato, no lettuce), each adding to
+  the price. A dish with the wrong extras is still accepted but costs
+  satisfaction; tickets show the extras as pictures, unwanted ones crossed
+  out.
+* The menu board crosses raw ingredients off (tomato covers sliced tomato,
+  potato covers fries). Dishes that need them leave the menu and they are
+  never asked for as extras. Guests who wanted them lose some satisfaction
+  (less for an extra than for a whole dish).
 * A customer refuses a dish that is raw, burnt or spoiled (quality 0). Above
   that, satisfaction = quality × 0.65 + remaining patience × 0.35 − strictness.
   Tips scale with satisfaction squared.

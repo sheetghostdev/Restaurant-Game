@@ -26,14 +26,15 @@ func _build(code: String) -> void:
 	_models.position = Vector3(0, 0.07, 0.12)
 	add_child(_models)
 	if code.begins_with("r:"):
-		var ids := code.substr(2).split(",", false)
-		var n := ids.size()
+		var codes := code.substr(2).split(",", false)
+		var n := codes.size()
 		var sc := 0.85 if n <= 1 else 0.62
 		for i in n:
-			var r := Content.recipe(StringName(ids[i]))
+			var o := RecipeManager.parse_code(codes[i])
+			var r := Content.recipe(o["recipe"])
 			if r == null:
 				continue
-			var m := DishPlating.make_recipe_model(r)
+			var m := DishPlating.make_order_model(r, o["extras"])
 			m.scale = Vector3.ONE * sc
 			m.position = Vector3((i - (n - 1) * 0.5) * 0.24, -0.06, 0)
 			m.rotation.x = deg_to_rad(38)

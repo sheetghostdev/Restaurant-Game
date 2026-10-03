@@ -23,6 +23,7 @@ var _clusters: Array = []          ## [{tables: Array[Fixture], seats: Array}]
 var _reserved := {}                ## Fixture -> CustomerGroup
 var _next_group := 1
 var _seat_t := 0.0
+var _renumber_queued := false
 var _queue_t := 0.0
 
 
@@ -286,6 +287,17 @@ func _update_queue(force := false) -> void:
 
 func mark_tables_dirty() -> void:
 	_tables_dirty = true
+	# Renumber soon (not lazily at the next seating) so every table shows its
+	# colour from the start and right after furniture moves.
+	if Net.is_authority() and not _renumber_queued:
+		_renumber_queued = true
+		_renumber.call_deferred()
+
+
+func _renumber() -> void:
+	_renumber_queued = false
+	if _tables_dirty and world and world.grid:
+		_rebuild_clusters()
 
 
 func _rebuild_clusters() -> void:
@@ -399,7 +411,19 @@ func release_tables(g: CustomerGroup) -> void:
 # Orders
 # -----------------------------------------------------------------------------
 
-func choose_orders(a: CustomerArchetype, child: bool) -> Array:
+## Chance a guest asks for each optional extra (lettuce, tomato...).
+const EXTRA_CHANCE := 0.45
+## Satisfaction lost when the dish a guest wanted is off the menu, and when
+## an extra they wanted is.
+const MISSING_DISH_PENALTY := 0.15
+const MISSING_EXTRA_PENALTY := 0.07
+
+
+## What one guest orders: {"orders": [{recipe, extras}], "penalty": float,
+## "note": String}. Guests decide what they *want* from the full menu first;
+## anything crossed off the menu board disappoints them (the penalty lowers
+## their satisfaction) and they pick something else.
+func choose_orders(a: CustomerArchetype, child: bool) -> Dictionary:
 	var menu := Content.menu_for(world.format, world.day.day)
 	var food: Array[RecipeDef] = []
 	var drinks: Array[RecipeDef] = []
@@ -408,31 +432,67 @@ func choose_orders(a: CustomerArchetype, child: bool) -> Array:
 			drinks.push_back(r)
 		else:
 			food.push_back(r)
-	var out := []
+	var res := {"orders": [], "penalty": 0.0, "note": ""}
 	var n := 1 if child else randi_range(a.dishes_min, a.dishes_max)
 	var picked := {}
 	for i in n:
-		var total := 0.0
-		for r in food:
-			if picked.has(r.id):
-				continue
-			total += r.menu_weight * float(a.recipe_weights.get(String(r.id), a.recipe_weights.get(r.id, 1.0)))
-		if total <= 0.0:
+		var wish := _pick_recipe(food, a, picked, false)
+		if wish == null:
 			break
-		var roll := randf() * total
-		for r in food:
-			if picked.has(r.id):
+		picked[wish.id] = true
+		var r := wish
+		if world.orders.recipe_blocked(wish):
+			res["penalty"] += MISSING_DISH_PENALTY
+			res["note"] = "No %s?" % wish.ticket_name().to_lower()
+			r = _pick_recipe(food, a, picked, true)
+			if r == null:
 				continue
-			roll -= r.menu_weight * float(a.recipe_weights.get(String(r.id), a.recipe_weights.get(r.id, 1.0)))
-			if roll <= 0.0:
-				picked[r.id] = true
-				out.push_back({"recipe": r.id})
-				break
-	if not child and not drinks.is_empty() and randf() < a.drink_chance and out.size() < 2:
-		out.push_back({"recipe": drinks[randi() % drinks.size()].id})
-	if out.is_empty() and not food.is_empty():
-		out.push_back({"recipe": food[0].id})
-	return out
+			picked[r.id] = true
+		res["orders"].push_back(_with_extras(r, res))
+	if not child and not drinks.is_empty() and randf() < a.drink_chance and res["orders"].size() < 2:
+		var d: RecipeDef = drinks[randi() % drinks.size()]
+		if world.orders.recipe_blocked(d):
+			res["penalty"] += MISSING_DISH_PENALTY * 0.5
+			res["note"] = "No %s?" % d.ticket_name().to_lower()
+		else:
+			res["orders"].push_back(_with_extras(d, res))
+	if res["orders"].is_empty() and res["note"] == "":
+		var fallback := _pick_recipe(food, a, {}, true)
+		if fallback:
+			res["orders"].push_back(_with_extras(fallback, res))
+	return res
+
+
+func _pick_recipe(list: Array[RecipeDef], a: CustomerArchetype, exclude: Dictionary, available_only: bool) -> RecipeDef:
+	var total := 0.0
+	for r in list:
+		if exclude.has(r.id) or (available_only and world.orders.recipe_blocked(r)):
+			continue
+		total += r.menu_weight * float(a.recipe_weights.get(String(r.id), a.recipe_weights.get(r.id, 1.0)))
+	if total <= 0.0:
+		return null
+	var roll := randf() * total
+	for r in list:
+		if exclude.has(r.id) or (available_only and world.orders.recipe_blocked(r)):
+			continue
+		roll -= r.menu_weight * float(a.recipe_weights.get(String(r.id), a.recipe_weights.get(r.id, 1.0)))
+		if roll <= 0.0:
+			return r
+	return null
+
+
+func _with_extras(r: RecipeDef, res: Dictionary) -> Dictionary:
+	var extras: Array[StringName] = []
+	for opt in r.optional:
+		if randf() >= EXTRA_CHANCE:
+			continue
+		var base := Content.base_ingredient(opt)
+		if world.orders.is_struck(base):
+			res["penalty"] += MISSING_EXTRA_PENALTY
+			res["note"] = "No %s?" % Content.display_name(base).to_lower()
+		else:
+			extras.push_back(opt)
+	return {"recipe": r.id, "extras": extras}
 
 
 # -----------------------------------------------------------------------------

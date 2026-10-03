@@ -95,9 +95,15 @@ static func _generic(dish: DishItem, parent: Node3D, parts: Array[Node3D]) -> vo
 
 ## A perfectly cooked example of a recipe (for bubbles, tickets and icons).
 static func make_recipe_model(r: RecipeDef) -> Node3D:
+	return make_order_model(r, [])
+
+
+## The exact dish an order asks for (recipe plus chosen extras), cooked just
+## right: what thought bubbles and ticket pictures show.
+static func make_order_model(r: RecipeDef, extras: Array) -> Node3D:
 	var root := Node3D.new()
 	var contents := []
-	for id in r.required:
+	for id in r.required + extras:
 		var d := Content.item(id)
 		var ck := 0.0
 		if d and d.cook_profile:

@@ -6,7 +6,7 @@
 script = ExtResource("1_4sviy")
 id = &"diner"
 display_name = "Diner"
-menu = Array[StringName]([&"burger", &"deluxe_burger", &"fries", &"salad", &"coffee"])
+menu = Array[StringName]([&"burger", &"fries", &"salad", &"coffee"])
 base_groups = 8.0
 hourly_demand = {
 11: 0.6,

@@ -64,7 +64,7 @@ func _bot_step(p: PlayerCharacter) -> void:
 						continue
 					var r := Content.recipe(o["recipe"])
 					var contents := []
-					for id in r.required:
+					for id in r.required + o.get("extras", []):
 						var d := Content.item(id)
 						var ck := 0.0
 						if d.cook_profile:
