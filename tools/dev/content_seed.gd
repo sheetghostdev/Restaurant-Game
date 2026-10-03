@@ -382,13 +382,8 @@ func _events() -> void:
 	_event("machine_breakdown", "Equipment Breakdown", "disaster", 0.18, 4, {}, "", "A cooking appliance breaks mid-service.")
 	_event("pipe_leak", "Pipe Leak", "disaster", 0.2, 3, {}, "", "Water on the kitchen floor.")
 	_event("equipment_jam", "Conveyor Jam", "disaster", 0.3, 2, {}, "", "Automation stops until someone clears it.")
-	_event("surprise_delivery", "Surprise Delivery", "delivery", 0.25, 2, {}, "The supplier might drop off extra stock mid-shift.")
 	_event("health_inspection", "Health Inspection", "inspection", 0.15, 3, {}, "A health inspector is visiting the neighbourhood.")
-	_event("office_lunch", "Office Lunch Rush", "crowd", 0.25, 2, {"hours": [12, 13], "mult": 1.5}, "Offices nearby: big lunch crowd expected.")
-	_event("street_festival", "Street Festival", "crowd", 0.15, 3, {"hours": [18, 19, 20], "mult": 1.7}, "Street festival tonight! Huge dinner rush.")
-	_event("rainy_day", "Rainy Day", "crowd", 0.15, 2, {"all_day": 0.75}, "Rain in the forecast: a quieter day.")
 	_event("power_outage", "Power Cut", "disaster", 0.15, 4, {}, "", "Powered machines stop for a while and the lights flicker.")
-	_event("big_game", "Big Game Night", "crowd", 0.12, 4, {"hours": [20], "mult": 2.2}, "The big game ends at 8pm — expect a wave.")
 
 
 func _formats() -> void:

@@ -23,7 +23,6 @@ func _ready() -> void:
 func plan_day(day: int) -> void:
 	today.clear()
 	forecast.clear()
-	world.customers.demand_mods.clear()
 	var fmt := world.format
 	for e in Content.sorted_values(Content.events):
 		var ev := e as EventDef
@@ -36,20 +35,10 @@ func plan_day(day: int) -> void:
 			chance *= Difficulty.factor("disasters")
 		if randf() >= chance:
 			continue
-		if ev.kind == "crowd":
-			var hours: Array = ev.params.get("hours", [])
-			var mult: float = ev.params.get("mult", 1.5)
-			for h in hours:
-				world.customers.demand_mods[int(h)] = world.customers.demand_mods.get(int(h), 1.0) * mult
-			if ev.params.has("all_day"):
-				for h in range(fmt.open_hour, fmt.close_hour):
-					world.customers.demand_mods[h] = world.customers.demand_mods.get(h, 1.0) * float(ev.params["all_day"])
-			forecast.push_back(ev.warning_text if ev.warning_text != "" else ev.display_name)
-			continue
 		var h0: float = ev.params.get("hour_min", fmt.open_hour + 1.0)
 		var h1: float = ev.params.get("hour_max", fmt.close_hour - 1.5)
 		today.push_back({"id": ev.id, "hour": randf_range(h0, h1), "done": false})
-		if ev.kind == "delivery" or ev.kind == "inspection":
+		if ev.kind == "inspection":
 			forecast.push_back(ev.warning_text if ev.warning_text != "" else ev.display_name)
 
 
@@ -111,15 +100,6 @@ func trigger(id: StringName) -> bool:
 				spawn_mess(&"spill", s.global_position + s.front_vec() * (0.9 + k * 0.5) + Vector3(randf_range(-0.4, 0.4), 0, 0))
 			Audio.play_at(&"splash", s.global_position)
 			Events.notify("A pipe burst! Mop it up before someone slips", &"big", Pal.UI_WARN)
-		&"surprise_delivery":
-			var items := []
-			for s2 in Content.supplies.values():
-				if randf() < 0.4:
-					items.push_back({"supply": String(s2.id)})
-			if items.is_empty():
-				items.push_back({"supply": "supply_potatoes"})
-			world.deliveries.schedule_extra(items, 1.0, "A surprise delivery")
-			Events.notify("Your supplier sent extra stock — mid-rush!", &"warning")
 		&"health_inspection":
 			start_inspection()
 		&"power_outage":

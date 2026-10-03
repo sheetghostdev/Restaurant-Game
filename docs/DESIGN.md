@@ -51,10 +51,10 @@ groups, rush hours and special events. Prepared food doesn't keep overnight,
 so over-prepping is waste and under-prepping is panic.
 
 **Service** compresses 11am–9pm into about seven real minutes. Demand follows a
-curve per format: lunch and dinner rushes, shifted by events such as an office
-lunch, a street festival, the big game or rain. Archetypes have their own
-hour preferences. Work crews come at lunch, dates in the evening, tourists in
-the afternoon.
+curve per format with lunch and dinner rushes. The day's groups are shared out
+by that curve, so the rushes are always the busy hours; only arrival minutes
+and who turns up vary. Archetypes have their own hour preferences. Work crews
+come at lunch, dates in the evening, tourists in the afternoon.
 
 **Closing and results** come next. The doors close at 9pm, so the people in
 the queue leave and the seated tables finish. The ledger shows revenue,
@@ -125,8 +125,9 @@ through the hood dishwasher, which takes up to 10 dishes, auto-starts when
 full, and sometimes breaks. Clean dishes go back on the racks.
 
 ### Disasters
-Disasters are rolled each morning, so they stay occasional and the forecast
-can warn about crowd events.
+Disasters are rolled each morning, so they stay occasional. Nothing outside
+the restaurant changes demand (no festivals or weather): it keeps the day
+readable.
 * **Grease fire.** A random cooker ignites, or food left too long on heat
   catches. The fire spreads to flammable neighbours every 10 seconds and wrecks
   the equipment after about 28 seconds. Grab the extinguisher (it refills on

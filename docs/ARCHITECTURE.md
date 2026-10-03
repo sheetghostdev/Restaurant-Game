@@ -211,7 +211,7 @@ resource by class:
 | `RecipeDef` | recipes/ | burger, deluxe, fries, salad, coffee |
 | `FixtureDef` | equipment/ | grill, conveyor, table (points at a scene) |
 | `CustomerArchetype` | customers/ | family, work crew, critic |
-| `EventDef` | events/ | grease fire, festival, inspection |
+| `EventDef` | events/ | grease fire, power cut, inspection |
 | `ExpansionDef`, `UpgradeDef` | upgrades/ | walk-in cooler, extra plates |
 | `StaffDef` | staff/ | dish hand, busser, stocker, waiter |
 | `RoomTypeDef` | rooms/ | dining (planks), kitchen (checker), cooler (cold) |

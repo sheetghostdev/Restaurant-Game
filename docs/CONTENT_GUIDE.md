@@ -76,13 +76,10 @@ the default), `outfit_colors` and `accessory` (`hard_hat`, `tie`, `camera`,
 
 ## A new event
 
-`resources/events/power_cut.tres` (`EventDef`), with `kind` set to one of:
-
-* `crowd`: changes demand. Set `params.hours` with `params.mult`, or
-  `params.all_day`. It is shown in the morning forecast via `warning_text`.
-* `disaster`, `delivery` or `inspection`: scheduled during service between
-  `params.hour_min` and `params.hour_max`. For a new behaviour, add a case to
-  `EventManager.trigger()`.
+`resources/events/power_cut.tres` (`EventDef`), with `kind` set to `disaster`
+or `inspection`. It is scheduled during service between `params.hour_min` and
+`params.hour_max`. For a new behaviour, add a case to `EventManager.trigger()`.
+Inspections are announced in the morning forecast via `warning_text`.
 
 ## A new expansion
 

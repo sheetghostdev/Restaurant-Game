@@ -138,19 +138,25 @@ func t_difficulty() -> void:
 	check(Difficulty.level() == Difficulty.NORMAL, "default difficulty is Normal")
 	# Plan the same day at each level, then put today's plan back.
 	var cm := w.customers
-	var saved := [cm.schedule.duplicate(true), cm.forecast.duplicate(), cm.demand_mods.duplicate(), cm._sched_i]
+	var saved := [cm.schedule.duplicate(true), cm.forecast.duplicate(), cm._sched_i]
 	var counts := []
+	var rush_ok := true
 	for lvl in [Difficulty.RELAXED, Difficulty.NORMAL, Difficulty.HECTIC]:
 		Settings._values["difficulty"] = lvl   # (not saved to disk)
-		cm.demand_mods.clear()
 		cm.plan_day(4, 2.5)
 		counts.push_back(cm.schedule.size())
+		# Every rush hour is at least as busy as every quiet hour.
+		var rush := cm.rush_hours()
+		for h in cm.forecast:
+			for r in rush:
+				if not h in rush and int(cm.forecast.get(r, 0)) < int(cm.forecast[h]):
+					rush_ok = false
 	Settings._values["difficulty"] = Difficulty.NORMAL
 	cm.schedule = saved[0]
 	cm.forecast = saved[1]
-	cm.demand_mods = saved[2]
-	cm._sched_i = saved[3]
+	cm._sched_i = saved[2]
 	check(counts[0] < counts[1] and counts[1] < counts[2], "easier settings bring fewer guests %s" % str(counts))
+	check(rush_ok, "rush hours always get the most guests")
 	var easier := true
 	for k in ["patience", "spoil"]:
 		easier = easier and Difficulty.PRESETS[0][k] > Difficulty.PRESETS[1][k] and Difficulty.PRESETS[1][k] > Difficulty.PRESETS[2][k]

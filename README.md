@@ -132,8 +132,8 @@ burnt or spoiled food.
   order, eat, pay and tip based on quality and speed.
 * **Disasters.** Grease fires that spread and need the extinguisher, power cuts, dishwasher,
   fridge and appliance breakdowns, pipe leaks that make the floor slippery,
-  conveyor jams, health inspections, surprise deliveries, and crowd events
-  (office lunch, street festival, big game, rainy day).
+  conveyor jams and health inspections. Nothing outside the restaurant changes
+  how many guests come: the lunch and dinner rushes are reliable.
 * **Build mode.** Move and rotate any fixture on a grid, knock doorways through
   walls or wall them up, and buy expansions: Dining Annex, Dish Room, Walk-in
   Cooler (everything inside stays fresh) and Sidewalk Patio.

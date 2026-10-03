@@ -17,7 +17,6 @@ var world: GameWorld
 var groups: Array[CustomerGroup] = []
 var schedule: Array = []           ## [[hour, archetype_id], ...] sorted
 var forecast := {}                 ## hour -> expected groups (for the prep UI)
-var demand_mods := {}              ## hour -> multiplier (from events)
 var _sched_i := 0
 var _tables_dirty := true
 var _clusters: Array = []          ## [{tables: Array[Fixture], seats: Array}]
@@ -47,27 +46,46 @@ func plan_day(day: int, reputation: float) -> void:
 	n = maxi(n, 3)
 	var hours: Array[int] = []
 	var weights: Array[float] = []
+	var total_w := 0.0
 	for h in range(fmt.open_hour, fmt.close_hour):
 		hours.push_back(h)
 		var w := float(fmt.hourly_demand.get(h, fmt.hourly_demand.get(str(h), 1.0)))
-		w *= float(demand_mods.get(h, 1.0))
 		weights.push_back(w)
+		total_w += w
+	# Share the day's groups out by the demand curve (largest remainder), so
+	# the rush hours are reliably the busy ones. Only arrival times within an
+	# hour and who turns up are random.
+	var per_hour: Array[int] = []
+	var rest := []
+	var given := 0
+	for i in hours.size():
+		var exact := n * weights[i] / maxf(total_w, 0.001)
+		per_hour.push_back(int(floor(exact)))
+		given += per_hour[i]
+		rest.push_back([exact - floor(exact), i])
+	rest.sort_custom(func(a, b): return a[0] > b[0])
+	for k in n - given:
+		per_hour[rest[k % rest.size()][1]] += 1
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(day * 7919 + int(reputation * 100))
 	var archs := _eligible_archetypes(day, reputation)
 	var per_day := {}
-	for i in n:
-		var h: int = _weighted_pick(hours, weights, rng)
-		var t: float = h + rng.randf() * 0.95
-		var a := _pick_archetype(archs, h, rng)
-		if a == null:
-			continue
-		if a.max_per_day > 0:
-			per_day[a.id] = per_day.get(a.id, 0) + 1
-			if per_day[a.id] > a.max_per_day:
+	for i in hours.size():
+		var h := hours[i]
+		var count := per_hour[i]
+		for j in count:
+			var t: float = h + (j + rng.randf_range(0.05, 0.85)) / count
+			var a: CustomerArchetype = null
+			for attempt in 6:
+				a = _pick_archetype(archs, h, rng)
+				if a == null or a.max_per_day <= 0 or per_day.get(a.id, 0) < a.max_per_day:
+					break
+				a = null
+			if a == null:
 				continue
-		schedule.push_back([t, String(a.id)])
-		forecast[h] = forecast.get(h, 0) + 1
+			per_day[a.id] = per_day.get(a.id, 0) + 1
+			schedule.push_back([t, String(a.id)])
+			forecast[h] = forecast.get(h, 0) + 1
 	schedule.sort_custom(func(x, y): return x[0] < y[0])
 
 
@@ -94,23 +112,11 @@ func _pick_archetype(archs: Array[CustomerArchetype], hour: int, rng: RandomNumb
 	return archs[archs.size() - 1]
 
 
-func _weighted_pick(items: Array, weights: Array, rng: RandomNumberGenerator) -> Variant:
-	var total := 0.0
-	for w in weights:
-		total += w
-	var r := rng.randf() * total
-	for i in items.size():
-		r -= weights[i]
-		if r <= 0.0:
-			return items[i]
-	return items[items.size() - 1]
-
-
 func rush_hours() -> Array:
 	var out := []
 	var fmt := world.format
 	for h in range(fmt.open_hour, fmt.close_hour):
-		var w := float(fmt.hourly_demand.get(h, fmt.hourly_demand.get(str(h), 1.0))) * float(demand_mods.get(h, 1.0))
+		var w := float(fmt.hourly_demand.get(h, fmt.hourly_demand.get(str(h), 1.0)))
 		if w >= 1.6:
 			out.push_back(h)
 	return out
