@@ -1,6 +1,6 @@
 class_name Mess
 extends Entity
-## Physical mess on the floor: crumbs, spills (slippery!), litter.
+## Physical mess on the floor: crumbs, spills (slippery!), litter, broken dishes.
 ## Clean with the mop. Health inspectors notice.
 
 var amount := 1.0
@@ -41,6 +41,10 @@ func _build() -> void:
 		&"trash":
 			_model = Models.instance(&"mess_trash")
 			add_child(_model)
+		&"shards":
+			_model = Models.instance(&"mess_shards")
+			_model.scale = Vector3.ONE * 1.4
+			add_child(_model)
 		_:
 			_model = Models.instance(&"crumbs")
 			_model.scale = Vector3.ONE * 1.3
@@ -60,6 +64,7 @@ func display_name() -> String:
 	match def_id:
 		&"spill": return "Spill (slippery!)"
 		&"trash": return "Litter"
+		&"shards": return "Broken dishes"
 	return "Crumbs"
 
 

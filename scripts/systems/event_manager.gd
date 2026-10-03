@@ -193,6 +193,42 @@ func _update_alarm() -> void:
 # Mess
 # -----------------------------------------------------------------------------
 
+## A tall dirty pile slips out of `actor`'s hands: most of it breaks, the rest
+## lands on the floor with the shards.
+func topple_dishes(actor: Node, pile: DishItem) -> void:
+	if not Net.is_authority():
+		return
+	var front: Vector3 = actor.global_position + actor.facing_dir() * 0.6
+	var broken := 0
+	var keep_p := 0
+	var keep_m := 0
+	for k in pile.plates:
+		if randf() < 0.6:
+			broken += 1
+		else:
+			keep_p += 1
+	for k in pile.mugs:
+		if randf() < 0.6:
+			broken += 1
+		else:
+			keep_m += 1
+	actor.take_held()
+	if keep_p + keep_m > 0:
+		pile.plates = keep_p
+		pile.mugs = keep_m
+		pile.rebuild_visual()
+		pile.place_on_floor(front + actor.facing_dir() * 0.25)
+		pile.mark_dirty()
+	else:
+		world.despawn(pile)
+	spawn_mess(&"shards", front)
+	Audio.play_at(&"glass_break", front)
+	world.fx.dust(front + Vector3(0, 0.3, 0))
+	world.camera.add_shake(0.3)
+	world.stats_add(&"dishes_broken", broken)
+	Events.notify("Crash! %d dishes broke. Tall stacks wobble: carry fewer at a time." % broken if broken > 0 else "Whoops! The stack slipped.", &"warning")
+
+
 func spawn_mess(kind: StringName, pos: Vector3) -> Mess:
 	if not Net.is_authority():
 		return null

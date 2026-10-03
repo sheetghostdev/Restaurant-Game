@@ -23,6 +23,17 @@ static func container_of(dish: DishItem) -> String:
 	return "mug" if dish.mugs > 0 else "plate"
 
 
+## Could `food_id` start a dish in an empty `container` ("plate" / "mug")?
+static func can_start(container: String, food_id: StringName) -> bool:
+	var item_def := Content.item(food_id)
+	if item_def == null or not item_def.has_tag("plateable"):
+		return false
+	for r in active_recipes():
+		if r.container == container and r.is_partial([food_id]):
+			return true
+	return false
+
+
 ## Could `food` be added to `dish` and still be on the way to some recipe?
 static func can_add_food(dish: DishItem, food_id: StringName) -> bool:
 	if dish.dirty or dish.count() != 1:

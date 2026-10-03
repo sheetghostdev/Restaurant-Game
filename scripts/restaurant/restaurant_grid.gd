@@ -196,6 +196,30 @@ func fence_between(a: Vector2i, b: Vector2i) -> bool:
 	return inner != null and inner.outdoor and inner.customer_area
 
 
+## True if the straight line from `a` to `b` (world positions) crosses a wall
+## or fence. Used so nobody can reach through a wall to a counter behind it.
+func line_crosses_wall(a: Vector3, b: Vector3) -> bool:
+	var from := Vector2(a.x, a.z)
+	var to := Vector2(b.x, b.z)
+	var steps := maxi(1, int(ceil(from.distance_to(to) / 0.1)))
+	var prev := Vector2i(floori(from.x), floori(from.y))
+	for i in range(1, steps + 1):
+		var q := from.lerp(to, float(i) / steps)
+		var c := Vector2i(floori(q.x), floori(q.y))
+		if c == prev:
+			continue
+		if c.x != prev.x and c.y != prev.y:
+			# Diagonal step past a corner: blocked only if both ways round are.
+			var via_x := Vector2i(c.x, prev.y)
+			var via_z := Vector2i(prev.x, c.y)
+			if (wall_between(prev, via_x) or wall_between(via_x, c)) and (wall_between(prev, via_z) or wall_between(via_z, c)):
+				return true
+		elif wall_between(prev, c):
+			return true
+		prev = c
+	return false
+
+
 func fixture_at(c: Vector2i) -> Fixture:
 	var f = _fixtures.get(c)
 	if f != null and not is_instance_valid(f):

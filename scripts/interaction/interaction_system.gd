@@ -19,6 +19,11 @@ var _hints := {}          ## player -> Dictionary
 var _highlighted := {}    ## Node -> Color
 var _use_target := {}     ## player -> Node (current hold-USE target)
 var _lift_started := {}   ## player -> bool
+var _last_pos := {}       ## player -> position last physics frame (stack wobble)
+
+## Chance per second of a tall dirty pile toppling while walking, times the
+## square of how many dishes it holds over DishItem.SAFE_STACK.
+const TOPPLE_RATE := 0.006
 
 
 func _ready() -> void:
@@ -46,6 +51,7 @@ func _physics_process(delta: float) -> void:
 		_targets[p] = t
 		if auth:
 			_process_actions(p, t, delta)
+			_check_stack(p, delta)
 		else:
 			Net.send_buttons(p)
 		_hints[p] = _build_hint(p, t)
@@ -77,6 +83,9 @@ func find_target(p: Node) -> Node:
 			continue
 		if dist > 0.25 and fwd.dot(to / dist) < -0.05:
 			continue
+		# No reaching through walls to whatever is on the other side.
+		if world.grid.line_crosses_wall(pos, _reach_point(cand, pos)):
+			continue
 		var score := Vector2(tp.x - probe.x, tp.z - probe.z).length()
 		var g := _query(cand, p, GameConst.Verb.GRAB)
 		var u := _query(cand, p, GameConst.Verb.USE)
@@ -107,6 +116,34 @@ func _candidates(p: Node, pos: Vector3) -> Array:
 		if n is Node3D and (n as Node3D).global_position.distance_squared_to(pos) < 6.0:
 			out.push_back(n)
 	return out
+
+
+## Walking with a tall dirty pile: the higher it is, the likelier it falls.
+func _check_stack(p: PlayerCharacter, delta: float) -> void:
+	var last: Vector3 = _last_pos.get(p, p.global_position)
+	_last_pos[p] = p.global_position
+	var pile := p.held() as DishItem
+	if pile == null or pile.topple_risk() <= 0.0 or delta <= 0.0:
+		return
+	var speed := Vector2(p.global_position.x - last.x, p.global_position.z - last.z).length() / delta
+	if speed < 0.6:
+		return
+	var over := pile.count() - DishItem.SAFE_STACK
+	var rate := TOPPLE_RATE * over * over * (2.0 if speed > PlayerCharacter.WALK_SPEED + 0.5 else 1.0)
+	if randf() < rate * delta:
+		world.disasters.topple_dishes(p, pile)
+
+
+## The point of a candidate the player's hand has to reach: for a fixture the
+## middle of the side facing the player, so a counter set against a wall is
+## still reachable from its own room.
+func _reach_point(n: Node, from: Vector3) -> Vector3:
+	var tp := _target_point(n)
+	if n is Fixture:
+		var to := Vector3(from.x - tp.x, 0, from.z - tp.z)
+		if to.length() > 0.001:
+			tp += to.normalized() * 0.4
+	return tp
 
 
 func _target_point(n: Node) -> Vector3:

@@ -22,6 +22,7 @@ static func build(key: StringName, b: MeshBuilder) -> bool:
 		&"plate_dirty": _plate(b, true)
 		&"mug": _mug(b, false)
 		&"mug_dirty": _mug(b, true)
+		&"mess_shards": _shards(b)
 		&"extinguisher": _extinguisher(b)
 		&"mop": _mop(b)
 		&"flatpack": _flatpack(b)
@@ -157,6 +158,20 @@ static func _mug(b: MeshBuilder, dirty: bool) -> void:
 	if dirty:
 		b.cyl(Vector3(0, 0.12, 0), 0.06, 0.004, Pal.COFFEE.lightened(0.15), 8)
 		b.box(Vector3(0.02, 0.1, 0.072), Vector3(0.03, 0.03, 0.006), Pal.COFFEE)
+
+
+## Broken dishes on the floor: angular white wedges and a few teal mug bits.
+static func _shards(b: MeshBuilder) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 314
+	for k in 11:
+		var a := rng.randf() * TAU
+		var rr := rng.randf_range(0.04, 0.38)
+		b.push_at(Vector3(cos(a) * rr, 0.0, sin(a) * rr), rng.randf() * TAU, Vector3.ONE, rng.randf_range(-0.25, 0.25))
+		var s := rng.randf_range(0.05, 0.11)
+		var col := Pal.PLATE if k % 4 != 0 else Pal.MUG
+		b.extrude(PackedVector2Array([Vector2(0, 0), Vector2(s, s * 0.25), Vector2(s * 0.35, s * 0.8)]), 0.0, 0.014, col)
+		b.pop()
 
 
 # -----------------------------------------------------------------------------

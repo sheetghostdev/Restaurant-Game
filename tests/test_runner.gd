@@ -185,6 +185,32 @@ func t_input_targeting() -> void:
 	var h := w.interaction.hint_for(p)
 	check(h.get("target") == board, "hint describes the board")
 	p.input_override = false
+	# Reaching through a wall: stand in the dining room against the kitchen
+	# wall, facing a kitchen counter on the other side.
+	var behind: Fixture = null
+	for f in w.grid.all_fixtures():
+		var c: Vector2i = f.cell
+		var other := c + Vector2i(-1, 0)
+		if f.def.category != "seating" and w.grid.wall_between(c, other) and w.grid.room_index(other) >= 0 and w.grid.fixture_at(other) == null:
+			behind = f
+			break
+	if behind:
+		var bait: Item = null
+		if behind.primary_slot() and behind.primary_slot().item == null:
+			bait = w.spawn_item(&"dishware", {"p": 1}, {"slot": [behind.net_id, 0]})
+		var stand := GameConst.cell_center(behind.cell + Vector2i(-1, 0)) + Vector3(0.3, 0, 0)
+		p.global_position = stand
+		p.rotation.y = PI * 0.5
+		p.facing = Vector3(1, 0, 0)
+		check(w.interaction.find_target(p) != behind, "can't reach the %s through the wall" % behind.display_name())
+		p.global_position = GameConst.cell_center(behind.front_cell())
+		var to := behind.global_position - p.global_position
+		p.facing = Vector3(to.x, 0, to.z).normalized()
+		check(w.interaction.find_target(p) == behind, "but can from its own side")
+		if bait:
+			w.despawn(bait)
+	else:
+		check(false, "found a fixture against a wall to test reaching through")
 
 
 func t_delivery() -> void:
@@ -291,6 +317,16 @@ func t_plating_and_coffee() -> void:
 	grab(c2)
 	check(plate2.recipe() != null and plate2.recipe().id == &"burger", "bun + patty = Classic Burger")
 	print("     burger quality: %.2f" % plate2.quality())
+	# Holding food, GRAB on the plate rack plates it in one go.
+	var spare := w.spawn_item(&"fries", {"ck": 0.45})
+	p.hold(spare)
+	var rc := (rack.get_component("DishRack") as DishRack).count
+	grab(rack)
+	var plated := p.held() as DishItem
+	check(plated != null and plated.content_ids().has(&"fries"), "holding fries, GRAB on the plate rack plates them")
+	check((rack.get_component("DishRack") as DishRack).count == rc - 1, "and uses one plate from the rack")
+	if plated:
+		w.despawn(plated)
 	# Coffee
 	var mugs := fixture(&"mug_rack")
 	grab(mugs)
@@ -514,6 +550,47 @@ func t_regressions() -> void:
 	w.despawn(pile)
 	dw.plates = 0
 	dwf.mark_dirty()
+	# Tall dirty stacks topple when walked around; small ones never do.
+	var small := w.spawn_item(&"dishware", {"p": 4, "dt": true})
+	p.hold(small)
+	var fell := false
+	var start := p.global_position
+	for i in 1800:
+		p.global_position = start + Vector3(0.075 * (i % 40), 0, 0)
+		w.interaction._check_stack(p, 1.0 / 60.0)
+		if p.held() != small:
+			fell = true
+			break
+	check(not fell, "a pile of 4 dirty plates is steady")
+	if p.held():
+		w.despawn(p.held())
+	var tall := w.spawn_item(&"dishware", {"p": 10, "dt": true})
+	p.hold(tall)
+	var shards_before := 0
+	for m in get_tree().get_nodes_in_group(&"messes"):
+		if (m as Mess).def_id == &"shards":
+			shards_before += 1
+	fell = false
+	for i in 1800:
+		p.global_position = start + Vector3(0.075 * (i % 40), 0, 0)
+		w.interaction._check_stack(p, 1.0 / 60.0)
+		if p.held() != tall:
+			fell = true
+			break
+	await frames(2)
+	var shards_after := 0
+	for m in get_tree().get_nodes_in_group(&"messes"):
+		if (m as Mess).def_id == &"shards":
+			shards_after += 1
+	check(fell, "a pile of 10 dirty plates topples while walking")
+	check(shards_after > shards_before, "and leaves broken dishes on the floor")
+	check(not is_instance_valid(tall) or tall.is_queued_for_deletion() or tall.count() < 10, "some of the plates broke")
+	if is_instance_valid(tall) and not tall.is_queued_for_deletion():
+		w.despawn(tall)
+	for m in get_tree().get_nodes_in_group(&"messes"):
+		if (m as Mess).def_id == &"shards":
+			w.despawn(m)
+	p.global_position = start
 	# Automation: a partial rack insert hands the remainder back to the belt.
 	var rack := fixture(&"plate_rack")
 	var dr := rack.get_component("DishRack") as DishRack

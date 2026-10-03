@@ -10,6 +10,10 @@ var dirty := false
 var contents: Array = []   # [{ "id": StringName, "ck": float, "sd": bool }]
 
 var _parts: Array[Node3D] = []
+var _wobble_t := 0.0
+
+## Dirty piles taller than this wobble in a player's hands and may topple.
+const SAFE_STACK := 4
 
 
 func count() -> int:
@@ -109,6 +113,33 @@ func can_stack_with(other: DishItem) -> bool:
 
 func max_stack() -> int:
 	return 10
+
+
+## 0 for a steady pile, up to 1 for a full dirty stack of 10.
+func topple_risk() -> float:
+	if not dirty or count() <= SAFE_STACK:
+		return 0.0
+	return float(count() - SAFE_STACK) / float(max_stack() - SAFE_STACK)
+
+
+func on_slot_changed() -> void:
+	super.on_slot_changed()
+	set_process(true)
+
+
+func _process(delta: float) -> void:
+	super._process(delta)
+	if visual == null:
+		return
+	# A tall dirty pile in someone's hands sways: the warning before it falls.
+	var r := topple_risk() if holder() is PlayerCharacter else 0.0
+	if r > 0.0:
+		_wobble_t += delta * (5.0 + r * 7.0)
+		var amp := 0.04 + r * 0.16
+		visual.rotation = Vector3(sin(_wobble_t * 0.83) * amp * 0.6, 0.0, sin(_wobble_t) * amp)
+		set_process(true)
+	elif visual.rotation != Vector3.ZERO:
+		visual.rotation = Vector3.ZERO
 
 
 func receive(other: Item) -> void:

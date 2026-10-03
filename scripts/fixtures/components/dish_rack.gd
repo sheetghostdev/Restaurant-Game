@@ -27,6 +27,13 @@ func _accepts(held: Item) -> bool:
 	return n > 0 and count < capacity
 
 
+## Holding food that can go on a clean plate (or in a mug): take one straight
+## off the stack with the food already on it.
+func _can_plate(held: Item) -> bool:
+	return held is FoodItem and count > 0 and not (held as FoodItem).spoiled \
+		and RecipeManager.can_start(kind, held.def_id)
+
+
 func query(actor: Node, verb: int) -> Dictionary:
 	if verb != GameConst.Verb.GRAB:
 		return {}
@@ -35,6 +42,8 @@ func query(actor: Node, verb: int) -> Dictionary:
 		if count > 0:
 			return {"label": "Take a %s" % kind}
 		return {}
+	if _can_plate(held):
+		return {"label": "Put it on a %s" % kind}
 	if _accepts(held):
 		return {"label": "Put %ss away" % kind}
 	return {}
@@ -48,6 +57,16 @@ func perform(actor: Node, verb: int, _delta: float) -> bool:
 		count -= 1
 		var one: DishItem = world().spawn_item(&"dishware", {"p": 1 if kind == "plate" else 0, "m": 1 if kind == "mug" else 0}, {"none": true})
 		actor.hold(one)
+		Audio.play_at(&"dish_clink", fixture.global_position)
+		fixture.mark_dirty()
+		return true
+	if _can_plate(held):
+		count -= 1
+		var food: Item = actor.take_held()
+		var dish: DishItem = world().spawn_item(&"dishware", {"p": 1 if kind == "plate" else 0, "m": 1 if kind == "mug" else 0}, {"none": true})
+		dish.receive(food)
+		actor.hold(dish)
+		dish.mark_dirty()
 		Audio.play_at(&"dish_clink", fixture.global_position)
 		fixture.mark_dirty()
 		return true
