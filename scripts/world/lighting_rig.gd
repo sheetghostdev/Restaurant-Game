@@ -59,10 +59,10 @@ func _ready() -> void:
 	sun.shadow_enabled = true
 	sun.shadow_bias = 0.03
 	sun.shadow_normal_bias = 1.2
-	sun.shadow_blur = 1.2
+	sun.shadow_blur = 0.8
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	sun.directional_shadow_max_distance = 60.0
-	sun.light_angular_distance = 1.5
+	sun.light_angular_distance = 0.0
 	add_child(sun)
 	fill = DirectionalLight3D.new()
 	fill.name = "Fill"

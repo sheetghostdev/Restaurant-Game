@@ -2,6 +2,7 @@ extends Node
 ## Dev tool: boots the game, optionally runs a scripted scenario, and saves
 ## screenshots. Used for visual checks in CI-like environments.
 ## Run: godot --path . res://tools/dev/shot_runner.tscn -- --shot=out.png [--delay=3] [--scenario=name]
+##      [--closeup] [--players=N] [--at=x,z] [--menu] [--dump-icons]
 
 var shot_path := "user://shot.png"
 var delay := 3.0
@@ -30,6 +31,11 @@ func _ready() -> void:
 				var pl := _world().add_local_player(Inputs.PAD_BASE + i)
 				pl.global_position = Vector3(10.5 + i * 1.2, 0, 5.0)
 	await _run_scenario()
+	for a in OS.get_cmdline_user_args():
+		# --at=x,z moves the first player (and so the camera focus) there.
+		if a.begins_with("--at=") and _world():
+			var xz := a.substr(5).split(",")
+			_world().players()[0].global_position = Vector3(float(xz[0]), 0, float(xz[1]))
 	if "--closeup" in OS.get_cmdline_user_args() and _world():
 		_world().camera.zoom_bias = -0.55
 		_world().camera.player_focus = 0.9

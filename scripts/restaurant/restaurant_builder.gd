@@ -331,7 +331,9 @@ func _wall_segment(b: MeshBuilder, glass: MeshBuilder, a: Vector2i, n: Vector2i)
 	var side_a := Vector3(a.x + 0.5, 0, a.y + 0.5) - center
 	side_a = Vector3(signf(side_a.x), 0, signf(side_a.z))
 	var window := false
-	if not low and (grid.room_index(a) < 0 or grid.room_index(n) < 0):
+	# Windows only in back walls: side walls are seen nearly edge-on, where a
+	# window's frame turns into thin flickering slivers.
+	if not low and along_x and (grid.room_index(a) < 0 or grid.room_index(n) < 0):
 		var inner := a if grid.room_index(a) >= 0 else n
 		var rt := grid.room_type_at(inner)
 		if rt and not rt.outdoor and rt.id != &"storage" and rt.id != &"cooler":
@@ -358,37 +360,45 @@ func _wall_segment(b: MeshBuilder, glass: MeshBuilder, a: Vector2i, n: Vector2i)
 	_add_wall_collider(center, Vector3(1.0 + WALL_T if along_x else WALL_T, h, WALL_T if along_x else 1.0 + WALL_T), low)
 
 
+## A window in a back wall. Every piece is chunky (no sliver thinner than a
+## few centimetres) and pieces only meet face to face, so nothing shimmers or
+## flickers when the camera moves.
 func _window_wall(b: MeshBuilder, glass: MeshBuilder, center: Vector3, along_x: bool, side_a: Vector3, col_a: Color, col_n: Color) -> void:
 	var length := 1.0 - WALL_T   # wall between the corner posts
-	var span := 1.0 + WALL_T     # frame proportions (post centre to post centre + overlap)
+	var ow := 0.32               # half-width of the opening
+	var fr := 0.06               # frame bar size
 	var sill := 0.95
-	var head := 1.95
+	var head := 1.9
 	var off := side_a * WALL_T * 0.25
+	var axis := Vector3(1, 0, 0) if along_x else Vector3(0, 0, 1)
+	var across := WALL_T + 0.06  # frame depth: stands 3 cm proud of both faces
 	var half_lo := Vector3(length if along_x else WALL_T * 0.5, sill, WALL_T * 0.5 if along_x else length)
 	var half_hi := Vector3(length if along_x else WALL_T * 0.5, WALL_TALL - head, WALL_T * 0.5 if along_x else length)
 	b.block(center + off, half_lo, col_a)
 	b.block(center - off, half_lo, col_n)
 	b.block(center + off + Vector3(0, head, 0), half_hi, col_a)
 	b.block(center - off + Vector3(0, head, 0), half_hi, col_n)
-	# Jambs of the opening, from the frame out to the corner posts (two halves,
-	# like the wall, so each side keeps its own colour)
-	var axis := Vector3(1, 0, 0) if along_x else Vector3(0, 0, 1)
-	var jamb_w := length * 0.5 - (span * 0.5 - 0.22)
+	# Jambs from the opening out to the corner posts (two halves, like the wall)
+	var jamb_w := length * 0.5 - ow
 	var jamb := Vector3(jamb_w if along_x else WALL_T * 0.5, head - sill, WALL_T * 0.5 if along_x else jamb_w)
 	for s in [-1.0, 1.0]:
-		var jc: Vector3 = center + axis * s * (length * 0.5 - jamb_w * 0.5) + Vector3(0, sill, 0)
+		var jc: Vector3 = center + axis * s * (ow + jamb_w * 0.5) + Vector3(0, sill, 0)
 		b.block(jc + off, jamb, col_a)
 		b.block(jc - off, jamb, col_n)
-	# Chunky window frame + sill
+	# Frame: side bars, head and a deeper sill bar, all inside the opening
 	var fw := Pal.WINDOW_FRAME
-	var frame_len := span - 0.44
-	var fsz := Vector3(frame_len if along_x else WALL_T + 0.08, 0.07, WALL_T + 0.08 if along_x else frame_len)
-	b.block(center + Vector3(0, sill - 0.02, 0), fsz + (Vector3(0.1, 0, 0.06) if along_x else Vector3(0.06, 0, 0.1)), fw, 0.02)
-	b.block(center + Vector3(0, head - 0.06, 0), fsz, fw, 0.02)
-	var mull := Vector3(0.06 if along_x else WALL_T + 0.04, head - sill, WALL_T + 0.04 if along_x else 0.06)
-	b.block(center + Vector3(0, sill, 0), mull, fw, 0.01)
-	var gsz := Vector3(frame_len if along_x else 0.03, head - sill, 0.03 if along_x else frame_len)
-	glass.block(center + Vector3(0, sill, 0), gsz, Color(1, 1, 1))
+	for s in [-1.0, 1.0]:
+		var sc: Vector3 = center + axis * s * (ow - fr * 0.5) + Vector3(0, sill, 0)
+		b.block(sc, Vector3(fr if along_x else across, head - sill, across if along_x else fr), fw, 0.012)
+	var inner := (ow - fr) * 2.0
+	b.block(center + Vector3(0, head - fr, 0), Vector3(inner if along_x else across, fr, across if along_x else inner), fw, 0.012)
+	b.block(center + Vector3(0, sill, 0), Vector3(inner if along_x else across + 0.08, fr, across + 0.08 if along_x else inner), fw, 0.015)
+	# Glass and a centre mullion
+	var gh := head - sill - fr * 2.0
+	var gsz := Vector3(inner if along_x else 0.03, gh, 0.03 if along_x else inner)
+	glass.block(center + Vector3(0, sill + fr, 0), gsz, Color(1, 1, 1))
+	var mull := Vector3(0.05 if along_x else 0.07, gh, 0.07 if along_x else 0.05)
+	b.block(center + Vector3(0, sill + fr, 0), mull, fw, 0.008)
 
 
 func _door(b: MeshBuilder, a: Vector2i, n: Vector2i, type: String) -> void:
