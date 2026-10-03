@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_gc3ef"]
+
+[resource]
+script = ExtResource("1_gc3ef")
+id = &"supply_kegs"
+display_name = "Beer Kegs"
+item_id = &"keg"
+quantity = 2
+price = 26.0
+default_order = 0
+description = "2 kegs (16 pints each)."

@@ -616,38 +616,6 @@
    "rot": 0
   },
   {
-   "def": "grill",
-   "cell": [
-    10,
-    0
-   ],
-   "rot": 0
-  },
-  {
-   "def": "grill",
-   "cell": [
-    11,
-    0
-   ],
-   "rot": 0
-  },
-  {
-   "def": "counter",
-   "cell": [
-    12,
-    0
-   ],
-   "rot": 0
-  },
-  {
-   "def": "fryer",
-   "cell": [
-    13,
-    0
-   ],
-   "rot": 0
-  },
-  {
    "def": "counter",
    "cell": [
     14,
@@ -678,43 +646,6 @@
     1
    ],
    "rot": 1
-  },
-  {
-   "def": "cutting_board",
-   "cell": [
-    11,
-    3
-   ],
-   "rot": 0
-  },
-  {
-   "def": "cutting_board",
-   "cell": [
-    12,
-    3
-   ],
-   "rot": 0
-  },
-  {
-   "def": "counter",
-   "cell": [
-    13,
-    3
-   ],
-   "rot": 0
-  },
-  {
-   "def": "coffee_machine",
-   "cell": [
-    9,
-    4
-   ],
-   "rot": 1,
-   "state": {
-    "CoffeeBrewer": {
-     "b": 10
-    }
-   }
   },
   {
    "def": "mug_rack",
@@ -901,30 +832,66 @@
     7
    ],
    "def": "mop"
-  },
-  {
-   "cell": [
-    16,
-    0
-   ],
-   "supply": "supply_potatoes",
-   "units": 6
-  },
-  {
-   "cell": [
-    17,
-    0
-   ],
-   "supply": "supply_buns",
-   "units": 8
-  },
-  {
-   "cell": [
-    18,
-    0
-   ],
-   "supply": "supply_tomatoes",
-   "units": 4
   }
+ ],
+ "stations": [
+  [
+   10,
+   0,
+   0
+  ],
+  [
+   11,
+   0,
+   0
+  ],
+  [
+   12,
+   0,
+   0
+  ],
+  [
+   13,
+   0,
+   0
+  ],
+  [
+   11,
+   3,
+   0
+  ],
+  [
+   12,
+   3,
+   0
+  ],
+  [
+   9,
+   4,
+   1
+  ],
+  [
+   13,
+   3,
+   0
+  ]
+ ],
+ "pantry": [
+  [
+   16,
+   0
+  ],
+  [
+   17,
+   0
+  ],
+  [
+   18,
+   0
+  ],
+  [
+   19,
+   0
+  ]
  ]
 }

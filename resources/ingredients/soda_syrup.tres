@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_0jsyf"]
+
+[resource]
+script = ExtResource("1_0jsyf")
+id = &"soda_syrup"
+display_name = "Soda Syrup"
+model = &"soda_syrup"
+color = Color(0.5411765, 0.22745098, 0.16470589, 1)
+tags = PackedStringArray("refill")
+unit_cost = 5.0
+description = "Load into the soda fountain (12 drinks per box)."

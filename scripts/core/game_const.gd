@@ -56,6 +56,7 @@ static func money(v: float) -> String:
 static func clock_text(hour: float) -> String:
 	var h := int(floor(hour))
 	var m := int(floor((hour - h) * 60.0)) / 5 * 5
+	h = posmod(h, 24)
 	var suffix := "am" if h < 12 else "pm"
 	var h12 := h % 12
 	if h12 == 0:

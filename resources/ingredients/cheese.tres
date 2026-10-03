@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_u0gnr"]
+
+[resource]
+script = ExtResource("1_u0gnr")
+id = &"cheese"
+display_name = "Cheese"
+model = &"cheese"
+color = Color(0.9490196, 0.7882353, 0.29803923, 1)
+tags = PackedStringArray("plateable", "dairy")
+unit_cost = 0.6
+plate_layer = 2
+perishable = true
+spoil_seconds = 540.0
+description = "Goes on every pizza. Keep it in the fridge."

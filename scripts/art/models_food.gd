@@ -26,6 +26,28 @@ static func build(key: StringName, b: MeshBuilder) -> bool:
 		&"fry_boat": _fry_boat(b)
 		&"salad_greens": _salad_greens(b)
 		&"crumbs": _crumbs(b)
+		&"milk": _milk(b)
+		&"milk_fill": _fill(b, Color("f7f3ea"), Color("ffffff"))
+		&"latte_fill": _latte_fill(b)
+		&"beer_fill": _beer_fill(b)
+		&"soda_fill": _soda_fill(b)
+		&"croissant": _croissant(b)
+		&"muffin": _muffin(b)
+		&"jam": _jam(b)
+		&"dough": _dough(b)
+		&"sauce": _sauce_jar(b)
+		&"pepperoni": _pepperoni(b)
+		&"mushroom": _mushroom(b)
+		&"mushroom_sliced": _mushroom_sliced(b)
+		&"pizza_base": _pizza_base(b)
+		&"pizza_sauce": _pizza_sauce(b)
+		&"pizza_cheese": _pizza_cheese(b)
+		&"pizza_pepperoni": _pizza_pepperoni(b)
+		&"pizza_mushrooms": _pizza_mushrooms(b)
+		&"wings": _wings(b)
+		&"dip": _dip(b)
+		&"soda_syrup": _soda_syrup(b)
+		&"keg": _keg(b)
 		_: return false
 	return true
 
@@ -191,3 +213,173 @@ static func _crumbs(b: MeshBuilder) -> void:
 		b.push_at(Vector3(cos(a) * rr, 0.0, sin(a) * rr), rng.randf() * TAU)
 		b.block(Vector3.ZERO, Vector3(rng.randf_range(0.025, 0.05), 0.012, rng.randf_range(0.02, 0.04)), Pal.BUN.darkened(rng.randf() * 0.3), 0.004)
 		b.pop()
+
+
+# -----------------------------------------------------------------------------
+# Coffee shop, pizza parlor and bar
+# -----------------------------------------------------------------------------
+
+static func _milk(b: MeshBuilder) -> void:
+	b.block(Vector3.ZERO, Vector3(0.09, 0.15, 0.09), Color("f7f5ef"), 0.008)
+	b.block(Vector3(0, 0.05, 0), Vector3(0.094, 0.05, 0.094), Color("5b8fd6"), 0.004)
+	b.push_at(Vector3(0, 0.15, 0), 0.0, Vector3(1, 1, 1), 0.0, PI / 4.0)
+	b.box(Vector3.ZERO, Vector3(0.05, 0.05, 0.09), Color("f7f5ef"), 0.004)
+	b.pop()
+
+
+## Drink surface for a mug (sits just above the mug's cap).
+static func _fill(b: MeshBuilder, col: Color, top: Color) -> void:
+	b.cyl(Vector3.ZERO, 0.062, 0.006, col, 10, 0.0, top)
+
+
+static func _latte_fill(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.062, 0.006, Color("c99a6b"), 10)
+	# Foam heart
+	b.cyl(Vector3(-0.012, 0.006, -0.008), 0.018, 0.003, Color("fbf5ea"), 8)
+	b.cyl(Vector3(0.012, 0.006, -0.008), 0.018, 0.003, Color("fbf5ea"), 8)
+	b.cyl(Vector3(0, 0.006, 0.012), 0.014, 0.003, Color("fbf5ea"), 3, 0.0, Color(0, 0, 0, 0), 0.004, PI / 2.0)
+
+
+static func _beer_fill(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.062, 0.006, Color("e2a034"), 10)
+	# Foam head spilling a little over the rim
+	b.cyl(Vector3(0, 0.006, 0), 0.068, 0.014, Color("fbf6e6"), 10, 0.005)
+	for k in 4:
+		var a := TAU * k / 4.0 + 0.4
+		b.sphere(Vector3(cos(a) * 0.04, 0.022, sin(a) * 0.04), Vector3(0.022, 0.012, 0.022), Color("fffaf0"))
+
+
+static func _soda_fill(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.062, 0.006, Color("4a2418"), 10)
+	for k in 3:
+		var a := TAU * k / 3.0
+		b.push_at(Vector3(cos(a) * 0.028, 0.008, sin(a) * 0.028), a)
+		b.box(Vector3.ZERO, Vector3(0.026, 0.02, 0.026), Color(0.85, 0.95, 1.0), 0.004)
+		b.pop()
+	# Straw
+	b.push_at(Vector3(0.02, 0.0, 0.0), 0.0, Vector3.ONE, 0.0, -0.25)
+	b.cyl(Vector3.ZERO, 0.008, 0.14, Color("e8412f"), 6)
+	b.pop()
+
+
+static func _croissant(b: MeshBuilder) -> void:
+	# A crescent of tapering puffs; pale so the oven colour shows.
+	var col := Color("f2dcae")
+	for k in 5:
+		var t := (k - 2) / 2.0
+		var a := t * 1.1
+		var r := 0.042 - absf(t) * 0.012
+		b.sphere(Vector3(sin(a) * 0.1, r * 0.9, -cos(a) * 0.05 + 0.04), Vector3(r * 1.2, r, r), col, 1, Color(0, 0, 0, 0), 0.0, k)
+
+
+static func _muffin(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.06, 0.06, Color("e7e1d4"), 10, 0.0, Color(0, 0, 0, 0), 0.075)
+	b.sphere(Vector3(0, 0.07, 0), Vector3(0.085, 0.05, 0.085), Color("b07440"), 1, Color(0, 0, 0, 0), 0.08, 7)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	for k in 6:
+		var a := rng.randf() * TAU
+		var rr := rng.randf_range(0.01, 0.05)
+		b.sphere(Vector3(cos(a) * rr, 0.105, sin(a) * rr), Vector3(0.011, 0.011, 0.011), Color("3f3a7a"))
+
+
+static func _jam(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.04, 0.07, Color("b3263a"), 8, 0.006)
+	b.cyl(Vector3(0, 0.07, 0), 0.043, 0.02, Color("e9e2d2"), 8, 0.004)
+	b.cyl(Vector3(0, 0.09, 0), 0.03, 0.004, Color("d24a3c"), 8)
+
+
+static func _dough(b: MeshBuilder) -> void:
+	b.sphere(Vector3(0, 0.05, 0), Vector3(0.085, 0.055, 0.085), Color("f6efd8"), 1, Color(0, 0, 0, 0), 0.05, 2)
+
+
+static func _sauce_jar(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.045, 0.09, Color("c8302a"), 8, 0.006)
+	b.cyl(Vector3(0, 0.03, 0), 0.047, 0.035, Color("f2e3c4"), 8)
+	b.cyl(Vector3(0, 0.09, 0), 0.04, 0.018, Color("3f8f3a"), 8, 0.004)
+
+
+static func _pepperoni(b: MeshBuilder) -> void:
+	b.push_at(Vector3(0, 0.035, 0), 0.0, Vector3.ONE, 0.0, PI / 2.0)
+	b.cyl(Vector3(0, -0.1, 0), 0.035, 0.2, Color("a8322a"), 8, 0.01)
+	b.pop()
+	for k in 3:
+		b.cyl(Vector3(0.13, 0.0, -0.03 + k * 0.03), 0.032, 0.008, Color("c0453a"), 8)
+
+
+static func _mushroom(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.025, 0.05, Color("efe6d4"), 7)
+	b.sphere(Vector3(0, 0.06, 0), Vector3(0.065, 0.04, 0.065), Color("b8956a"), 1, Color(0, 0, 0, 0), 0.04, 4)
+
+
+static func _mushroom_sliced(b: MeshBuilder) -> void:
+	for k in 3:
+		b.push_at(Vector3(-0.05 + k * 0.05, 0.0, 0.0), k * 0.5, Vector3.ONE, PI / 2.0)
+		_mushroom_slice(b)
+		b.pop()
+
+
+static func _mushroom_slice(b: MeshBuilder) -> void:
+	b.extrude(PackedVector2Array([Vector2(-0.03, 0.0), Vector2(0.03, 0.0), Vector2(0.03, 0.02), Vector2(0.015, 0.035), Vector2(-0.015, 0.035), Vector2(-0.03, 0.02)]), 0.0, 0.008, Color("e3d2b3"))
+
+
+## Pizza layers, all modelled pale/neutral so the dough's bake colour (passed
+## through as a multiply) browns the whole pie together.
+static func _pizza_base(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.19, 0.016, Color("f6efd8"), 14, 0.006)
+	b.cyl(Vector3(0, 0.016, 0), 0.19, 0.006, Color("f6efd8"), 14, 0.004, Color(0, 0, 0, 0), 0.17)
+
+
+static func _pizza_sauce(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.165, 0.004, Color("f2604a"), 14)
+
+
+static func _pizza_cheese(b: MeshBuilder) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
+	for k in 9:
+		var a := rng.randf() * TAU
+		var rr := rng.randf_range(0.0, 0.11)
+		b.cyl(Vector3(cos(a) * rr, 0.0, sin(a) * rr), rng.randf_range(0.04, 0.06), 0.004 + k * 0.0006, Color("fff0b0"), 7)
+
+
+static func _pizza_pepperoni(b: MeshBuilder) -> void:
+	for k in 7:
+		var a := TAU * k / 7.0 + 0.3
+		var rr := 0.1 if k > 0 else 0.0
+		b.cyl(Vector3(cos(a) * rr, 0.0, sin(a) * rr), 0.028, 0.006, Color("e2715e"), 9)
+
+
+static func _pizza_mushrooms(b: MeshBuilder) -> void:
+	for k in 6:
+		var a := TAU * k / 6.0
+		b.push_at(Vector3(cos(a) * 0.06, 0.0, sin(a) * 0.06), a)
+		b.extrude(PackedVector2Array([Vector2(-0.022, -0.012), Vector2(0.022, -0.012), Vector2(0.018, 0.01), Vector2(0.0, 0.018), Vector2(-0.018, 0.01)]), 0.0, 0.006, Color("f0e4cc"))
+		b.pop()
+
+
+static func _wings(b: MeshBuilder) -> void:
+	var offs := [Vector3(-0.05, 0.0, -0.02), Vector3(0.03, 0.0, -0.04), Vector3(0.0, 0.0, 0.04), Vector3(0.06, 0.03, 0.01), Vector3(-0.03, 0.035, 0.02)]
+	for k in offs.size():
+		b.push_at(offs[k] + Vector3(0, 0.03, 0), k * 1.1)
+		b.sphere(Vector3.ZERO, Vector3(0.05, 0.028, 0.032), COOK_BASE, 1, Color(0, 0, 0, 0), 0.0, k)
+		b.sphere(Vector3(0.05, 0.0, 0.0), Vector3(0.022, 0.018, 0.02), COOK_BASE, 0)
+		b.pop()
+
+
+static func _dip(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.04, 0.035, Color("f0ece4"), 9, 0.004, Color(0, 0, 0, 0), 0.046)
+	b.cyl(Vector3(0, 0.035, 0), 0.04, 0.005, Color("f7f2df"), 9, 0.0, Color("e9e4c8"))
+
+
+static func _soda_syrup(b: MeshBuilder) -> void:
+	b.block(Vector3.ZERO, Vector3(0.16, 0.13, 0.11), Color("8a3a2a"), 0.008)
+	b.block(Vector3(0, 0.03, 0.056), Vector3(0.12, 0.06, 0.008), Color("f2e3c4"))
+	b.cyl(Vector3(0.05, 0.13, 0.0), 0.012, 0.02, Color("2c2e33"), 6)
+
+
+static func _keg(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.09, 0.22, Color("c3cacd"), 10, 0.01)
+	for y in [0.03, 0.19]:
+		b.cyl(Vector3(0, y, 0), 0.094, 0.018, Color("858e93"), 10)
+	b.cyl(Vector3(0, 0.22, 0), 0.025, 0.02, Color("3d4147"), 6)

@@ -22,15 +22,25 @@ func _ready() -> void:
 		menu.set_status(reason))
 	var args := OS.get_cmdline_user_args()
 	if "--autostart" in args:
-		start_offline(false)
+		start_offline(false, setup_from_args())
 	elif "--host" in args:
-		start_host()
+		start_host(setup_from_args())
 	else:
 		var ji := args.find("--join")
 		if ji >= 0 and ji + 1 < args.size():
 			start_join(args[ji + 1])
 		else:
 			show_menu()
+
+
+## "--format=bar --location=main_street" on the command line (dev and tests).
+static func setup_from_args() -> Dictionary:
+	var out := {}
+	for a in OS.get_cmdline_user_args():
+		for k in ["format", "location"]:
+			if a.begins_with("--%s=" % k):
+				out[k] = a.split("=", true, 1)[1]
+	return out
 
 
 func show_menu() -> void:
@@ -64,19 +74,21 @@ func _teardown_world() -> void:
 		world = null
 
 
-func start_offline(continue_save: bool) -> void:
+## `setup` picks a new restaurant: {"location", "format", "name"} (defaults
+## to the Corner Diner on Main Street).
+func start_offline(continue_save: bool, setup := {}) -> void:
 	_hide_menu()
-	_launch(continue_save)
+	_launch(continue_save, setup)
 
 
-func start_host() -> void:
+func start_host(setup := {}) -> void:
 	var err := Net.host()
 	if err != OK:
 		show_menu()
 		menu.set_status("Could not host (port %d busy?)" % Net.DEFAULT_PORT)
 		return
 	_hide_menu()
-	_launch(Saves.has_save())
+	_launch(setup.is_empty() and Saves.has_save(), setup)
 	Events.notify("Hosting on port %d — friends can join with your IP" % Net.DEFAULT_PORT, &"info")
 
 
@@ -100,13 +112,19 @@ func _on_world_init(meta: Dictionary, layout: Dictionary) -> void:
 	w.start_client(meta, layout)
 
 
-func _launch(continue_save: bool) -> void:
+func _launch(continue_save: bool, setup := {}) -> void:
 	var w := _new_world()
 	var data := Saves.load_data() if continue_save else {}
 	if not data.is_empty():
 		w.load_save(data)
 	else:
-		w.start_new(&"main_street", &"diner", "The Corner Diner")
+		var fmt := StringName(setup.get("format", "diner"))
+		var loc := StringName(setup.get("location", "main_street"))
+		if not Content.formats.has(fmt):
+			fmt = &"diner"
+		if not Content.locations.has(loc):
+			loc = &"main_street"
+		w.start_new(loc, fmt, String(setup.get("name", "")))
 	w.add_local_player(Inputs.KB_A)
 	if "--coop-test" in OS.get_cmdline_user_args():
 		w.add_local_player(Inputs.KB_B)
@@ -121,8 +139,11 @@ func return_to_menu() -> void:
 
 
 func debug_reset() -> void:
+	var setup := {}
+	if world and world.format and world.location:
+		setup = {"location": String(world.location.id), "format": String(world.format.id), "name": world.restaurant_name}
 	Saves.delete()
 	_teardown_world()
 	if Net.is_online():
 		Net.leave()
-	start_offline(false)
+	start_offline(false, setup)

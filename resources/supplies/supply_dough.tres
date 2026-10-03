@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_4uedb"]
+
+[resource]
+script = ExtResource("1_4uedb")
+id = &"supply_dough"
+display_name = "Pizza Dough"
+item_id = &"dough"
+price = 6.0
+default_order = 0
+description = "10 balls of pizza dough."

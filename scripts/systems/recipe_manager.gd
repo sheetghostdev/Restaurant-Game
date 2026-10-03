@@ -23,6 +23,20 @@ static func container_of(dish: DishItem) -> String:
 	return "mug" if dish.mugs > 0 else "plate"
 
 
+## Could `id` go into `dish` and still be on the way to some recipe? Like
+## can_add_food, but for things poured by a machine (no "plateable" tag).
+static func can_extend(dish: DishItem, id: StringName) -> bool:
+	if dish.dirty or dish.count() != 1:
+		return false
+	var ids := dish.content_ids()
+	ids.push_back(id)
+	var cont := container_of(dish)
+	for r in active_recipes():
+		if r.container == cont and r.is_partial(ids):
+			return true
+	return false
+
+
 ## Could `food_id` start a dish in an empty `container` ("plate" / "mug")?
 static func can_start(container: String, food_id: StringName) -> bool:
 	var item_def := Content.item(food_id)

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_p6fmh"]
+
+[resource]
+script = ExtResource("1_p6fmh")
+id = &"beer"
+display_name = "Beer"
+container = "mug"
+required = Array[StringName]([&"beer"])
+price = 6.0
+menu_weight = 1.2
+eat_time = 8.0
+icon_color = Color(0.9098039, 0.6901961, 0.2901961, 1)
+plating = "drink"
+prep_steps = PackedStringArray("Put a clean mug under the beer tap", "Take it when it\'s full (not foaming over)")

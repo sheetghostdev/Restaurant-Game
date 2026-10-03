@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_nh2ch"]
+
+[resource]
+script = ExtResource("1_nh2ch")
+id = &"jam"
+display_name = "Jam"
+model = &"jam"
+color = Color(0.7019608, 0.14901961, 0.22745098, 1)
+tags = PackedStringArray("plateable")
+unit_cost = 0.2
+plate_layer = 2
+description = "A little pot of jam for croissants."

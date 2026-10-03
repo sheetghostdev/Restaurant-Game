@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_h42rq"]
+
+[resource]
+script = ExtResource("1_h42rq")
+id = &"latte"
+display_name = "Latte"
+container = "mug"
+required = Array[StringName]([&"coffee", &"milk"])
+price = 5.0
+menu_weight = 0.9
+eat_time = 7.0
+icon_color = Color(0.8784314, 0.7647059, 0.6039216, 1)
+plating = "drink"
+prep_steps = PackedStringArray("Pour milk into a clean mug", "Put it under the coffee machine", "Take it when it\'s just right")

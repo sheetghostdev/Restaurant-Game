@@ -33,11 +33,11 @@ func refresh() -> void:
 			var f := it as FoodItem
 			if f.is_untouched():
 				c[f.def_id] = c.get(f.def_id, 0) + 1
-	# Beans already loaded into coffee machines count as stock (in bags).
+	# Refills already loaded into machines (beans, syrup, kegs) count as stock.
 	for f in world.grid.all_fixtures():
 		var cb := f.get_component("CoffeeBrewer") as CoffeeBrewer
 		if cb and cb.beans > 0:
-			c[&"coffee_beans"] = c.get(&"coffee_beans", 0) + int(ceil(float(cb.beans) / cb.servings_per_bag))
+			c[cb.refill] = c.get(cb.refill, 0) + int(ceil(float(cb.beans) / cb.servings_per_bag))
 	counts = c
 	warming = warm
 	_update_alerts()
@@ -58,7 +58,7 @@ func apply_shared(d: Dictionary) -> void:
 ## Ingredients the current menu depends on.
 func tracked_ingredients() -> Array[StringName]:
 	var out: Array[StringName] = []
-	for s in Content.supplies.values():
+	for s in Content.supplies_for(world.format):
 		if not out.has(s.item_id):
 			out.push_back(s.item_id)
 	return out

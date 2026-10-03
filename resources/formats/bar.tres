@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="RestaurantFormatDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/restaurant_format_def.gd" id="1_lk81b"]
+
+[resource]
+script = ExtResource("1_lk81b")
+id = &"bar"
+display_name = "Bar & Grill"
+menu = Array[StringName]([&"beer", &"soda", &"wings", &"fries"])
+open_hour = 16
+close_hour = 24
+hourly_demand = {
+16: 0.6,
+17: 1.0,
+18: 1.4,
+19: 2.0,
+20: 2.0,
+21: 1.6,
+22: 1.4,
+23: 0.9
+}
+archetypes = Array[StringName]([&"regular_folks", &"sports_fans", &"night_owls", &"work_crew", &"date", &"business", &"critic"])
+stations = Array[StringName]([&"fryer", &"fryer", &"counter", &"counter", &"cutting_board", &"counter", &"beer_tap", &"soda_fountain"])
+pantry = Array[Dictionary]([{
+"supply": "supply_potatoes",
+"units": 6
+}, {
+"supply": "supply_dip",
+"units": 6
+}])
+supplies = Array[StringName]([&"supply_kegs", &"supply_syrup", &"supply_wings", &"supply_dip", &"supply_potatoes"])
+opening = {
+"supply_dip": 1,
+"supply_kegs": 1,
+"supply_potatoes": 1,
+"supply_syrup": 1,
+"supply_wings": 1
+}
+food_chance = 0.6
+drink_bonus = 0.5
+accent = Color(0.24705882, 0.42745098, 0.30588236, 1)
+tagline = "Pints, wings and the big game."
+default_name = "The Tipsy Tap"
+description = "Open late. Pour pints before they foam over, fry wings and fries, and keep the kegs coming."

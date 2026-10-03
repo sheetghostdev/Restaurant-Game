@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_pblp5"]
+
+[resource]
+script = ExtResource("1_pblp5")
+id = &"soda"
+display_name = "Soda"
+container = "mug"
+required = Array[StringName]([&"soda"])
+price = 3.0
+eat_time = 5.0
+icon_color = Color(0.47843137, 0.22745098, 0.16470589, 1)
+plating = "drink"
+prep_steps = PackedStringArray("Put a clean mug under the soda fountain", "Take it when it\'s full")

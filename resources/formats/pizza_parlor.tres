@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="RestaurantFormatDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/restaurant_format_def.gd" id="1_x5x6y"]
+
+[resource]
+script = ExtResource("1_x5x6y")
+id = &"pizza_parlor"
+display_name = "Pizza Parlor"
+menu = Array[StringName]([&"pizza", &"salad", &"soda"])
+open_hour = 12
+close_hour = 22
+base_groups = 8.0
+hourly_demand = {
+12: 1.4,
+13: 1.2,
+14: 0.6,
+15: 0.5,
+16: 0.7,
+17: 1.3,
+18: 2.0,
+19: 2.1,
+20: 1.4,
+21: 0.7
+}
+archetypes = Array[StringName]([&"regular_folks", &"family", &"student", &"work_crew", &"date", &"tourists", &"sports_fans", &"critic"])
+stations = Array[StringName]([&"oven", &"oven", &"counter", &"counter", &"cutting_board", &"cutting_board", &"soda_fountain", &"counter"])
+pantry = Array[Dictionary]([{
+"supply": "supply_dough",
+"units": 6
+}, {
+"supply": "supply_sauce",
+"units": 6
+}, {
+"supply": "supply_pepperoni",
+"units": 6
+}])
+supplies = Array[StringName]([&"supply_dough", &"supply_sauce", &"supply_cheese", &"supply_pepperoni", &"supply_mushrooms", &"supply_lettuce", &"supply_tomatoes", &"supply_syrup"])
+opening = {
+"supply_cheese": 1,
+"supply_dough": 1,
+"supply_lettuce": 1,
+"supply_mushrooms": 1,
+"supply_pepperoni": 1,
+"supply_sauce": 1,
+"supply_syrup": 1,
+"supply_tomatoes": 1
+}
+drink_bonus = 0.1
+accent = Color(0.8862745, 0.3764706, 0.2901961, 1)
+tagline = "Build it, bake it, serve it hot."
+default_name = "Slice of Life"
+description = "Assemble pizzas on the plate (dough, sauce, cheese, toppings) and bake the whole plate. Big family tables in the evening."

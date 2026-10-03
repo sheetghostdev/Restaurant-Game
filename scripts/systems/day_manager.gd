@@ -56,7 +56,7 @@ func _reset_stats() -> void:
 ## (and paid for) before the save, and is restored by the DeliveryManager.
 func _begin_morning(first_day: bool, from_load := false) -> void:
 	phase = GameConst.Phase.MORNING
-	hour = 8.0
+	hour = morning_hour()
 	elapsed = 0.0
 	_reset_stats()
 	world.disasters.plan_day(day)
@@ -118,7 +118,7 @@ func continue_from_results() -> void:
 	if phase != GameConst.Phase.RESULTS:
 		return
 	phase = GameConst.Phase.EVENING
-	hour = 21.5
+	hour = evening_hour()
 	Events.notify("Evening — plan tomorrow: expand, buy, rearrange", &"info")
 	_phase_changed()
 
@@ -228,7 +228,7 @@ func _physics_process(delta: float) -> void:
 		return
 	match phase:
 		GameConst.Phase.MORNING:
-			hour = minf(hour + delta / 60.0, 10.75)
+			hour = minf(hour + delta / 60.0, world.format.open_hour - 0.25)
 		GameConst.Phase.SERVICE:
 			elapsed += delta
 			var span := float(world.format.close_hour - world.format.open_hour)
@@ -244,14 +244,24 @@ func _physics_process(delta: float) -> void:
 					Audio.play_ui(&"timer_ring")
 				_phase_changed()
 		GameConst.Phase.CLOSING:
-			hour = minf(hour + delta / 30.0, 23.0)
+			hour = minf(hour + delta / 30.0, world.format.close_hour + 2.0)
 		GameConst.Phase.EVENING:
-			hour = minf(hour + delta / 90.0, 23.5)
+			hour = minf(hour + delta / 90.0, evening_hour() + 2.0)
 	world.lighting.set_hour(hour)
 	_sync_t -= delta
 	if _sync_t <= 0.0:
 		_sync_t = 0.5
 		_publish()
+
+
+## The clock follows the restaurant's hours: a coffee shop's prep starts
+## before dawn, a bar's evening planning happens after midnight.
+func morning_hour() -> float:
+	return world.format.open_hour - 3.0
+
+
+func evening_hour() -> float:
+	return maxf(world.format.close_hour + 0.5, 21.5)
 
 
 func is_rush() -> bool:

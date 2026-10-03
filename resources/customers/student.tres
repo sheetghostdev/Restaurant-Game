@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="CustomerArchetype" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/customer_archetype.gd" id="1_mtnvi"]
+
+[resource]
+script = ExtResource("1_mtnvi")
+id = &"student"
+display_name = "Students"
+group_max = 3
+patience = 1.15
+drink_chance = 0.6
+recipe_weights = {
+"fries": 1.3,
+"latte": 1.6,
+"muffin": 1.6,
+"pizza": 1.6,
+"soda": 1.4
+}
+spend = 0.85
+tip = 0.6
+mess = 0.35
+spawn_weight = 0.8
+hour_weights = {
+-1: 0.6,
+10: 1.4,
+14: 1.6,
+15: 1.6,
+16: 1.4,
+20: 1.4,
+21: 1.4
+}
+outfit_colors = PackedColorArray()
+accessory = &"glasses"
+description = "Small budgets, big tables, in no hurry."

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_kwr01"]
+
+[resource]
+script = ExtResource("1_kwr01")
+id = &"supply_cheese"
+display_name = "Cheese"
+item_id = &"cheese"
+price = 8.0
+container = "crate_cold"
+needs_cold = true
+default_order = 0
+description = "10 portions of cheese. Keep cold."

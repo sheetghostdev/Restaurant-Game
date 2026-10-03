@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/beer_tap.tscn" id="1_jq1p1"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_7nla2"]
+
+[resource]
+script = ExtResource("2_7nla2")
+id = &"beer_tap"
+display_name = "Beer Tap"
+scene = ExtResource("1_jq1p1")
+price = 140.0
+model = &"beer_tap"
+can_break = true
+description = "Pours pints into clean mugs. Swap in a fresh keg when it runs dry."

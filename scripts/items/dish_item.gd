@@ -48,7 +48,21 @@ func matches(tag: String) -> bool:
 		return not dirty and contents.is_empty()
 	if tag == "dirty_dish":
 		return dirty
+	if tag == "ovenable":
+		return not content_on(&"oven").is_empty()
 	return super.matches(tag)
+
+
+## The first content that cooks on `heat` (the dough of a pizza), if this is
+## a single clean dish. The record is live: cookers write its "ck".
+func content_on(heat: StringName) -> Dictionary:
+	if not is_single() or dirty:
+		return {}
+	for c in contents:
+		var d := Content.item(c["id"])
+		if d and d.cook_profile and d.cook_profile.heat == heat:
+			return c
+	return {}
 
 
 func recipe() -> RecipeDef:
@@ -213,13 +227,7 @@ func _build_model() -> void:
 		return
 	if is_mug():
 		visual.add_child(Models.instance(&"mug_dirty" if dirty else &"mug"))
-		for c in contents:
-			if c["id"] == &"coffee":
-				var fill := Models.instance(&"coffee_fill")
-				fill.position = Vector3(0, 0.122, 0)   # just above the mug's cap
-				visual.add_child(fill)
-				_parts.push_back(fill)
-				fill.set_meta(&"content", c)
+		DishPlating.fill_mug(contents, visual, _parts)
 		return
 	visual.add_child(Models.instance(&"plate_dirty" if dirty else &"plate"))
 	if not contents.is_empty():

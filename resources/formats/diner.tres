@@ -21,4 +21,27 @@ hourly_demand = {
 20: 0.8
 }
 archetypes = Array[StringName]([&"regular_folks", &"family", &"work_crew", &"business", &"date", &"tourists", &"traveler", &"regular", &"critic"])
-description = "Classic table service: burgers, fries, salads and bottomless coffee."
+stations = Array[StringName]([&"grill", &"grill", &"counter", &"fryer", &"cutting_board", &"cutting_board", &"coffee_machine", &"counter"])
+pantry = Array[Dictionary]([{
+"supply": "supply_potatoes",
+"units": 6
+}, {
+"supply": "supply_buns",
+"units": 8
+}, {
+"supply": "supply_tomatoes",
+"units": 4
+}])
+supplies = Array[StringName]([&"supply_beef", &"supply_buns", &"supply_potatoes", &"supply_lettuce", &"supply_tomatoes", &"supply_coffee"])
+opening = {
+"supply_beef": 1,
+"supply_buns": 1,
+"supply_coffee": 1,
+"supply_lettuce": 1,
+"supply_potatoes": 1,
+"supply_tomatoes": 1
+}
+accent = Color(0.8509804, 0.28235295, 0.23137255, 1)
+tagline = "Burgers off the grill, crispy fries and bottomless coffee."
+default_name = "The Corner Diner"
+description = "Classic table service. Grill patties to medium, fry potatoes, chop salad. Busy at lunch and dinner."

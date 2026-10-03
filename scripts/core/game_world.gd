@@ -74,6 +74,8 @@ func start_new(location_id: StringName, format_id: StringName, name_text := "") 
 	format = Content.formats.get(format_id)
 	if name_text != "":
 		restaurant_name = name_text
+	elif format.default_name != "":
+		restaurant_name = format.default_name
 	RecipeManager.menu = format.menu.duplicate()
 	var layout := _read_json(location.layout_path)
 	_layout = layout
@@ -86,6 +88,7 @@ func start_new(location_id: StringName, format_id: StringName, name_text := "") 
 			spawn_fixture(StringName(f["def"]), Vector2i(c[0], c[1]), int(f.get("rot", 0)), f.get("state", {}))
 		for it in layout.get("items", []):
 			_spawn_layout_item(it)
+		_spawn_format_kitchen(layout)
 		economy.setup_new(layout.get("money", 250.0), layout.get("reputation", 1.0))
 		build.setup_plots()
 		day.setup_new()
@@ -122,6 +125,32 @@ func load_save(data: Dictionary) -> void:
 	build.setup_plots()
 	_ensure_layout_fixtures()
 	_after_start()
+
+
+## The kitchen depends on the kind of restaurant: the format names the
+## equipment for each of the layout's station slots ([x, y, rot]) and the
+## opening stock for its pantry shelves.
+func _spawn_format_kitchen(layout: Dictionary) -> void:
+	var slots: Array = layout.get("stations", [])
+	for i in mini(slots.size(), format.stations.size()):
+		var def_id := format.stations[i]
+		if def_id == &"" or Content.fixture(def_id) == null:
+			continue
+		var c: Array = slots[i]
+		var f := spawn_fixture(def_id, Vector2i(int(c[0]), int(c[1])), int(c[2]) if c.size() > 2 else 0)
+		var cb := f.get_component("CoffeeBrewer") as CoffeeBrewer if f else null
+		if cb:
+			cb.beans = cb.servings_per_bag   # one refill already loaded
+	var shelves: Array = layout.get("pantry", [])
+	var k := 0
+	for p in format.pantry:
+		if k >= shelves.size():
+			break
+		if Content.supply(StringName(p.get("supply", ""))) == null:
+			continue
+		var cell: Array = shelves[k]
+		_spawn_layout_item({"cell": cell, "supply": String(p["supply"]), "units": int(p.get("units", -1))})
+		k += 1
 
 
 ## Saves from older versions miss fixtures added to the starting layout since
@@ -271,7 +300,7 @@ func debug_command(cmd: String, args: Array) -> void:
 			Events.notify("Spawned %s" % a.display_name, &"info")
 		"spawn_delivery":
 			var items := []
-			for s in Content.supplies.values():
+			for s in Content.supplies_for(format):
 				items.push_back({"supply": String(s.id)})
 			deliveries.schedule_extra(items, 0.5, "Debug delivery")
 		"give_money":

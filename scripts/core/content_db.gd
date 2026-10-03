@@ -158,6 +158,19 @@ func menu_for(format: RestaurantFormatDef, day: int) -> Array[RecipeDef]:
 	return out
 
 
+## What the supplier sells a restaurant of this format, sorted by id.
+func supplies_for(format: RestaurantFormatDef) -> Array:
+	if format == null or format.supplies.is_empty():
+		return sorted_values(supplies)
+	var out := []
+	for id in format.supplies:
+		var s: SupplyDef = supplies.get(id)
+		if s:
+			out.push_back(s)
+	out.sort_custom(func(a, b): return String(a.id) < String(b.id))
+	return out
+
+
 func sorted_values(table: Dictionary) -> Array:
 	var arr := table.values()
 	arr.sort_custom(func(a, b): return String(a.id) < String(b.id))

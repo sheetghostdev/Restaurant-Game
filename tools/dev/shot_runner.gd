@@ -22,7 +22,7 @@ func _ready() -> void:
 	add_child(main)
 	if not "--menu" in OS.get_cmdline_user_args():
 		await get_tree().process_frame
-		main.start_offline(false)
+		main.start_offline(false, main.setup_from_args())
 	await get_tree().create_timer(0.5).timeout
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--players=") and _world():
@@ -174,25 +174,45 @@ func _run_scenario() -> void:
 
 func _stage_kitchen(w: GameWorld) -> void:
 	# Put food on stations so the screenshot shows cooking states.
-	var grills := w.grid.fixtures_of(&"grill")
-	if grills.size() > 0:
-		var p := w.spawn_item(&"patty", {"ck": 0.7}, {"slot": [grills[0].net_id, 0]})
-	if grills.size() > 1:
-		w.spawn_item(&"patty", {"ck": 0.2}, {"slot": [grills[1].net_id, 0]})
-	for f in w.grid.fixtures_of(&"fryer"):
-		w.spawn_item(&"fries", {"ck": 0.8}, {"slot": [f.net_id, 0]})
+	var k := 0
+	for f in w.grid.all_fixtures():
+		var cook := f.get_component("Cooker") as Cooker
+		if cook == null or f.primary_slot().item:
+			continue
+		var raw := 0.2 if k % 2 else 0.75
+		k += 1
+		match cook.heat:
+			&"grill":
+				w.spawn_item(&"patty", {"ck": raw}, {"slot": [f.net_id, 0]})
+			&"fryer":
+				w.spawn_item(&"wings" if w.format.menu.has(&"wings") and k % 2 else &"fries", {"ck": raw + 0.1}, {"slot": [f.net_id, 0]})
+			&"oven":
+				if w.format.menu.has(&"pizza"):
+					w.spawn_item(&"dishware", {"p": 1, "m": 0, "c": [{"id": "dough", "ck": raw}, {"id": "sauce"}, {"id": "cheese"}, {"id": "pepperoni"}]}, {"slot": [f.net_id, 0]})
+				else:
+					w.spawn_item(&"croissant", {"ck": raw}, {"slot": [f.net_id, 0]})
 	var boards := w.grid.fixtures_of(&"cutting_board")
-	if boards.size() > 0:
-		w.spawn_item(&"tomato", {"ch": 0.8}, {"slot": [boards[0].net_id, 0]})
-	if boards.size() > 1:
-		w.spawn_item(&"lettuce", {}, {"slot": [boards[1].net_id, 0]})
-	var counters := w.grid.fixtures_of(&"counter")
-	var dish := w.spawn_item(&"dishware", {"p": 1, "m": 0, "c": [{"id": "bun", "ck": 0.0}, {"id": "patty", "ck": 0.75}, {"id": "lettuce_chopped", "ck": 0.0}, {"id": "tomato_sliced", "ck": 0.0}]}, {"slot": [counters[1].net_id, 0]})
-	var d2 := w.spawn_item(&"dishware", {"p": 1, "m": 0, "c": [{"id": "fries", "ck": 0.8}]}, {"slot": [counters[2].net_id, 0]})
-	var d3 := w.spawn_item(&"dishware", {"p": 1, "m": 0, "c": [{"id": "lettuce_chopped", "ck": 0.0}, {"id": "tomato_sliced", "ck": 0.0}]}, {"slot": [counters[0].net_id, 0]})
-	var cm := w.grid.fixtures_of(&"coffee_machine")
-	if cm.size() > 0:
-		w.spawn_item(&"dishware", {"p": 0, "m": 1}, {"slot": [cm[0].net_id, 0]})
+	var raw_veg := [&"tomato", &"lettuce"] if not w.format.menu.has(&"pizza") else [&"mushroom", &"tomato"]
+	for i in mini(boards.size(), 2):
+		w.spawn_item(raw_veg[i], {"ch": 0.8} if i == 0 else {}, {"slot": [boards[i].net_id, 0]})
+	# One of each plated dish on the free counters.
+	var counters := w.grid.fixtures_of(&"counter").filter(func(c): return c.primary_slot().item == null)
+	var i := 0
+	for r in Content.menu_for(w.format, 99):
+		if r.container == "mug" or i >= counters.size():
+			continue
+		var contents := []
+		for id in r.required + r.optional:
+			var d := Content.item(id)
+			var ck := 0.0
+			if d.cook_profile:
+				ck = (d.cook_profile.stage_ends[d.cook_profile.perfect_stage - 1] + d.cook_profile.stage_ends[d.cook_profile.perfect_stage]) * 0.5
+			contents.push_back({"id": String(id), "ck": ck})
+		w.spawn_item(&"dishware", {"p": 1, "m": 0, "c": contents}, {"slot": [counters[i].net_id, 0]})
+		i += 1
+	for f in w.grid.all_fixtures():
+		if f.get_component("CoffeeBrewer"):
+			w.spawn_item(&"dishware", {"p": 0, "m": 1}, {"slot": [f.net_id, 0]})
 
 
 func _report_bad_transforms(n: Node) -> void:

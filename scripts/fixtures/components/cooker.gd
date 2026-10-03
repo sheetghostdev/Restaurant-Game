@@ -3,6 +3,9 @@ extends FixtureComponent
 ## Passively cooks the item in a slot when it matches this heat source.
 ## Feedback: colour shift (via the item's cook profile), a ding when perfect,
 ## steam, smoke and crackle when burning, and eventually a grease fire.
+##
+## Loose food cooks itself (patties, fries, croissants). A plate in an oven
+## bakes the content that cooks on this heat (the dough under a pizza).
 
 @export var heat: StringName = &"grill"
 @export var speed := 1.0
@@ -21,6 +24,7 @@ func _ready() -> void:
 		_glow = get_node_or_null(glow_path)
 
 
+## Loose food cooking here, or null (a baking dish is not returned).
 func cooking_item() -> FoodItem:
 	var s := fixture.slot(slot_index) if fixture else null
 	if s and s.item is FoodItem and (s.item as FoodItem).can_cook_on(heat):
@@ -28,18 +32,45 @@ func cooking_item() -> FoodItem:
 	return null
 
 
+## What is cooking: {"item", "profile"} plus "c" (the content record) when a
+## dish is baking. Empty when nothing here cooks on this heat.
+func cooking() -> Dictionary:
+	var s := fixture.slot(slot_index) if fixture else null
+	if s == null or s.item == null:
+		return {}
+	if s.item is FoodItem and (s.item as FoodItem).can_cook_on(heat):
+		return {"item": s.item, "profile": (s.item as FoodItem).def.cook_profile}
+	if s.item is DishItem:
+		var c := (s.item as DishItem).content_on(heat)
+		if not c.is_empty():
+			return {"item": s.item, "profile": Content.item(c["id"]).cook_profile, "c": c}
+	return {}
+
+
+static func cook_of(k: Dictionary) -> float:
+	if k.has("c"):
+		return float(k["c"].get("ck", 0.0))
+	return (k["item"] as FoodItem).cook
+
+
 func server_tick(delta: float) -> void:
-	var it := cooking_item()
-	if it == null or not fixture.is_working():
+	var k := cooking()
+	if k.is_empty() or not fixture.is_working():
 		_last_stage = -1
 		return
-	var p := it.def.cook_profile
+	var it: Item = k["item"]
+	var p: CookProfile = k["profile"]
 	var r := p.rate * speed
-	if p.stage_index(it.cook) >= p.perfect_stage:
+	var ck := cook_of(k)
+	if p.stage_index(ck) >= p.perfect_stage:
 		# Past perfect: the difficulty decides how long until it overcooks.
 		r *= Difficulty.factor("overcook")
-	it.cook += r * delta
-	var st := p.stage_index(it.cook)
+	ck += r * delta
+	if k.has("c"):
+		k["c"]["ck"] = ck
+	else:
+		(it as FoodItem).cook = ck
+	var st := p.stage_index(ck)
 	if st != _last_stage:
 		if _last_stage >= 0:
 			if st == p.perfect_stage:
@@ -56,7 +87,7 @@ func server_tick(delta: float) -> void:
 		_sync_t = 0.0
 		it.refresh_visual()
 		it.mark_dirty()
-	if p.fire_at > 0.0 and it.cook >= p.fire_at:
+	if p.fire_at > 0.0 and ck >= p.fire_at:
 		var fl := fixture.get_component("Flammable") as Flammable
 		if fl and not fl.burning:
 			fl.ignite()
@@ -65,8 +96,8 @@ func server_tick(delta: float) -> void:
 func _process(delta: float) -> void:
 	if fixture == null:
 		return
-	var it := cooking_item()
-	var active := it != null and fixture.is_working()
+	var k := cooking()
+	var active := not k.is_empty() and fixture.is_working()
 	if _glow:
 		_glow.visible = active
 	Audio.loop(fixture, loop_sound, active)
@@ -75,26 +106,27 @@ func _process(delta: float) -> void:
 	_fx_t -= delta
 	if _fx_t <= 0.0 and fixture.world:
 		_fx_t = 0.35
-		var p := it.def.cook_profile
-		var pos := it.global_position + Vector3(0, 0.12, 0)
-		if it.cook >= p.smoke_from:
+		var p: CookProfile = k["profile"]
+		var ck := cook_of(k)
+		var pos: Vector3 = (k["item"] as Item).global_position + Vector3(0, 0.12, 0)
+		if ck >= p.smoke_from:
 			fixture.world.fx.smoke(pos, 0.8, true)
-		elif p.stage_index(it.cook) == p.perfect_stage:
+		elif p.stage_index(ck) == p.perfect_stage:
 			fixture.world.fx.steam(pos, 1.0, Color(1, 1, 1, 0.55), true)
 		else:
 			fixture.world.fx.steam(pos, 0.5, Color(1, 1, 1, 0.55), true)
 
 
 func status_text() -> String:
-	var it := cooking_item()
-	if it:
-		return it.def.cook_profile.stage_name(it.cook)
+	var k := cooking()
+	if not k.is_empty():
+		return (k["profile"] as CookProfile).stage_name(cook_of(k))
 	return ""
 
 
 ## For the HUD progress ring above the slot.
 func cook_progress() -> float:
-	var it := cooking_item()
-	if it == null:
+	var k := cooking()
+	if k.is_empty():
 		return -1.0
-	return it.cook
+	return cook_of(k)

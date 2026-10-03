@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_ragwk"]
+
+[resource]
+script = ExtResource("1_ragwk")
+id = &"keg"
+display_name = "Beer Keg"
+model = &"keg"
+color = Color(0.72156864, 0.7372549, 0.76862746, 1)
+tags = PackedStringArray("refill")
+unit_cost = 13.0
+description = "Load into the beer tap (16 pints per keg)."

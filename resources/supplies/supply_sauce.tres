@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_unqwd"]
+
+[resource]
+script = ExtResource("1_unqwd")
+id = &"supply_sauce"
+display_name = "Tomato Sauce"
+item_id = &"sauce"
+price = 5.0
+container = "carton"
+default_order = 0
+description = "10 jars of tomato sauce."

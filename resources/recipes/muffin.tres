@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_ct5d3"]
+
+[resource]
+script = ExtResource("1_ct5d3")
+id = &"muffin"
+display_name = "Muffin"
+required = Array[StringName]([&"muffin"])
+price = 3.5
+menu_weight = 0.8
+eat_time = 5.0
+icon_color = Color(0.6901961, 0.45490196, 0.2509804, 1)
+prep_steps = PackedStringArray("Put a muffin on a plate")

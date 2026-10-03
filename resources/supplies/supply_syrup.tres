@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_by72j"]
+
+[resource]
+script = ExtResource("1_by72j")
+id = &"supply_syrup"
+display_name = "Soda Syrup"
+item_id = &"soda_syrup"
+quantity = 2
+container = "carton"
+default_order = 0
+description = "2 syrup boxes (12 sodas each)."

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_on560"]
+
+[resource]
+script = ExtResource("1_on560")
+id = &"dip"
+display_name = "Dip"
+model = &"dip"
+color = Color(0.9411765, 0.9254902, 0.89411765, 1)
+tags = PackedStringArray("plateable")
+unit_cost = 0.3
+plate_layer = 2
+description = "A pot of dip on the side of the wings."

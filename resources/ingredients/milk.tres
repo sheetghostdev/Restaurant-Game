@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_xqub4"]
+
+[resource]
+script = ExtResource("1_xqub4")
+id = &"milk"
+display_name = "Milk"
+model = &"milk"
+color = Color(0.96862745, 0.9607843, 0.9372549, 1)
+tags = PackedStringArray("plateable", "dairy")
+unit_cost = 0.4
+perishable = true
+spoil_seconds = 420.0
+description = "Pour into a clean mug, then add coffee for a latte. Keep it in the fridge."

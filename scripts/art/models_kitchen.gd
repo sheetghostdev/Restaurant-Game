@@ -42,6 +42,12 @@ static func build(key: StringName, b: MeshBuilder) -> bool:
 		&"auto_chopper": _auto_chopper(b)
 		&"auto_chopper_blade": _auto_chopper_blade(b)
 		&"pass_counter": _pass_counter(b)
+		&"oven": _oven(b)
+		&"oven_glow": _oven_glow(b)
+		&"soda_fountain": _soda_fountain(b)
+		&"syrup_level": _syrup_level(b)
+		&"beer_tap": _beer_tap(b)
+		&"keg_level": _keg_level(b)
 		_: return false
 	return true
 
@@ -445,3 +451,67 @@ static func _auto_chopper(b: MeshBuilder) -> void:
 static func _auto_chopper_blade(b: MeshBuilder) -> void:
 	b.box(Vector3(0, 0.12, 0), Vector3(0.08, 0.24, 0.08), Pal.STEEL_DARK, 0.015)
 	b.box(Vector3(0, 0.0, 0.0), Vector3(0.5, 0.05, 0.12), Pal.STEEL.lightened(0.15), 0.01)
+
+
+# -----------------------------------------------------------------------------
+# Ovens and drink stations (pizza parlor, coffee shop, bar)
+# -----------------------------------------------------------------------------
+
+## Brick hearth oven: the pie (or pastry) bakes on the stone deck in front of
+## a glowing mouth.
+static func _oven(b: MeshBuilder) -> void:
+	var brick := Pal.BRICK
+	cabinet(b, Color("8a8378"), Color("9a9387"), 2)
+	b.block(Vector3(0, H - TOP_T, 0), Vector3(1.0, TOP_T, 0.97), Color("cfc6b4"), 0.015)
+	# Chamber and dome behind the deck
+	b.block(Vector3(0, H, -0.27), Vector3(0.9, 0.36, 0.42), brick, 0.03)
+	b.sphere(Vector3(0, H + 0.36, -0.27), Vector3(0.44, 0.22, 0.21), brick.darkened(0.05), 1, Color(0, 0, 0, 0), 0.02, 3)
+	# Mouth (dark) and a stone arch around it
+	b.block(Vector3(0, H + 0.04, -0.055), Vector3(0.46, 0.24, 0.012), Color("2a1d16"))
+	b.block(Vector3(0, H + 0.28, -0.05), Vector3(0.56, 0.06, 0.03), Color("e7dcc6"), 0.01)
+	# Chimney
+	b.cyl(Vector3(0.24, H + 0.5, -0.32), 0.05, 0.4, Pal.STEEL_DARK, 8)
+	# Thermometer dial on the front of the cabinet
+	knob(b, Vector3(0.36, H - 0.14, 0.48), Pal.STEEL, 0.05)
+
+
+static func _oven_glow(b: MeshBuilder) -> void:
+	b.block(Vector3(0, H + 0.05, -0.04), Vector3(0.4, 0.2, 0.006), Color("ff8a3d"))
+
+
+static func _soda_fountain(b: MeshBuilder) -> void:
+	cabinet(b)
+	worktop(b, Pal.STEEL)
+	b.block(Vector3(0, H, -0.24), Vector3(0.78, 0.5, 0.4), Pal.DINER_RED, 0.04)
+	b.block(Vector3(0, H + 0.3, -0.035), Vector3(0.6, 0.12, 0.012), Pal.CREAM, 0.004)
+	for k in 3:
+		b.cyl(Vector3(-0.18 + k * 0.18, H + 0.16, -0.02), 0.025, 0.06, Pal.STEEL, 6)
+	# Drip tray
+	b.block(Vector3(0, H, 0.17), Vector3(0.46, 0.04, 0.3), Pal.STEEL_DARK, 0.012)
+	for k in 4:
+		b.box(Vector3(0, H + 0.044, 0.07 + k * 0.065), Vector3(0.42, 0.008, 0.02), Pal.CHARCOAL)
+
+
+static func _syrup_level(b: MeshBuilder) -> void:
+	b.block(Vector3.ZERO, Vector3(0.16, 1.0, 0.1), Color("6a2a1c"))
+
+
+static func _beer_tap(b: MeshBuilder) -> void:
+	cabinet(b, Color("6b4a35"), Color("7a5640"), 2)
+	worktop(b, Color("4a3426"))
+	# Chrome tower with two tap handles
+	b.cyl(Vector3(0, H, -0.18), 0.05, 0.42, Pal.STEEL, 8)
+	b.push_at(Vector3(0, H + 0.42, -0.18), 0.0, Vector3.ONE, 0.0, PI / 2.0)
+	b.cyl(Vector3(0, -0.2, 0), 0.045, 0.4, Pal.STEEL, 8)
+	b.pop()
+	for x in [-0.12, 0.12]:
+		b.cyl(Vector3(x, H + 0.35, -0.12), 0.018, 0.08, Pal.STEEL_DARK, 6)
+		b.box(Vector3(x, H + 0.5, -0.17), Vector3(0.045, 0.14, 0.045), Pal.OAK, 0.012)
+	# Drip tray
+	b.block(Vector3(0, H, 0.17), Vector3(0.46, 0.04, 0.3), Pal.STEEL_DARK, 0.012)
+	for k in 4:
+		b.box(Vector3(0, H + 0.044, 0.07 + k * 0.065), Vector3(0.42, 0.008, 0.02), Pal.CHARCOAL)
+
+
+static func _keg_level(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.09, 1.0, Pal.STEEL, 10)

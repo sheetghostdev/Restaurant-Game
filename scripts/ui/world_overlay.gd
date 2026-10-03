@@ -61,17 +61,17 @@ func _ring(c: Vector2, r: float, t: float, col: Color) -> void:
 func _draw_fixture(cam: Camera3D, f: Fixture) -> void:
 	var cook := f.get_component("Cooker") as Cooker
 	if cook:
-		var it := cook.cooking_item()
-		if it and f.is_working():
-			_cook_ring(cam, it.global_position, it.def.cook_profile, it.cook)
+		var k := cook.cooking()
+		if not k.is_empty() and f.is_working():
+			_cook_ring(cam, (k["item"] as Item).global_position, k["profile"], Cooker.cook_of(k))
 		return
 	var brew := f.get_component("CoffeeBrewer") as CoffeeBrewer
 	if brew:
 		var s := f.slot(brew.slot_index)
 		if s and s.item is DishItem:
 			for c in (s.item as DishItem).contents:
-				if c["id"] == &"coffee":
-					_cook_ring(cam, s.item.global_position, Content.item(&"coffee").cook_profile, c.get("ck", 0.0))
+				if c["id"] == brew.product:
+					_cook_ring(cam, s.item.global_position, Content.item(brew.product).cook_profile, c.get("ck", 0.0))
 		return
 	var proc := f.get_component("Processor") as Processor
 	if proc:

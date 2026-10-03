@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_13fgt"]
+
+[resource]
+script = ExtResource("1_13fgt")
+id = &"supply_jam"
+display_name = "Jam"
+item_id = &"jam"
+quantity = 12
+price = 4.0
+container = "carton"
+default_order = 0
+description = "12 little pots of jam."

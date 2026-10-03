@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_xmec1"]
+
+[resource]
+script = ExtResource("1_xmec1")
+id = &"pizza"
+display_name = "Pizza"
+required = Array[StringName]([&"dough", &"sauce", &"cheese"])
+optional = Array[StringName]([&"pepperoni", &"mushroom_sliced"])
+price = 13.0
+menu_weight = 1.4
+eat_time = 13.0
+icon_color = Color(0.8862745, 0.3764706, 0.2901961, 1)
+prep_steps = PackedStringArray("Put dough on a plate", "Add sauce and cheese", "(Optional) pepperoni or sliced mushrooms", "Bake the plate in the oven until golden")

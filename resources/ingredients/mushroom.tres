@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_6k2ob"]
+
+[resource]
+script = ExtResource("1_6k2ob")
+id = &"mushroom"
+display_name = "Mushroom"
+model = &"mushroom"
+color = Color(0.84705883, 0.78431374, 0.65882355, 1)
+tags = PackedStringArray("choppable", "veg")
+unit_cost = 0.4
+chop_into = &"mushroom_sliced"
+chop_work = 1.6
+description = "Slice it for pizza."

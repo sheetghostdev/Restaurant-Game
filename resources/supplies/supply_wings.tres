@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_pm37r"]
+
+[resource]
+script = ExtResource("1_pm37r")
+id = &"supply_wings"
+display_name = "Chicken Wings"
+item_id = &"wings"
+price = 14.0
+container = "crate_cold"
+needs_cold = true
+default_order = 0
+description = "10 portions of wings. Keep cold."

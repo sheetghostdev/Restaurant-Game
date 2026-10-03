@@ -1,13 +1,18 @@
 class_name DishPlating
 ## Arranges food models on a plate so a finished dish reads at a glance:
-## burgers are stacked, fries sit in a paper boat, salads are piled.
+## burgers are stacked, fries sit in a paper boat, salads are piled, pizzas
+## are built up layer by layer, wings come with their dip.
 
 const BURGER_ORDER := [&"bun", &"patty", &"cheese", &"lettuce_chopped", &"tomato_sliced"]
 
 
 static func build(dish: DishItem, parent: Node3D, parts: Array[Node3D]) -> void:
 	var ids := dish.content_ids()
-	if ids.has(&"bun"):
+	if ids.has(&"dough"):
+		_pizza(dish, parent, parts)
+	elif ids.has(&"wings"):
+		_wings(dish, parent, parts)
+	elif ids.has(&"bun"):
 		_burger(dish, parent, parts)
 	elif ids.has(&"fries"):
 		_fries(dish, parent, parts)
@@ -81,6 +86,28 @@ static func _salad(dish: DishItem, parent: Node3D, parts: Array[Node3D]) -> void
 		_add(parent, parts, &"tomato_sliced", Vector3(0.02, 0.07 if not l.is_empty() else 0.03, 0.0), t, 0.8)
 
 
+## A pizza baked on the plate: crust, sauce, cheese and toppings all take the
+## dough's bake colour, so you can see it go from pale to golden to burnt.
+static func _pizza(dish: DishItem, parent: Node3D, parts: Array[Node3D]) -> void:
+	var dough := _find(dish, &"dough")
+	_add(parent, parts, &"pizza_base", Vector3(0, 0.03, 0), dough)
+	if not _find(dish, &"sauce").is_empty():
+		_add(parent, parts, &"pizza_sauce", Vector3(0, 0.052, 0), dough)
+	if not _find(dish, &"cheese").is_empty():
+		_add(parent, parts, &"pizza_cheese", Vector3(0, 0.058, 0), dough)
+	if not _find(dish, &"pepperoni").is_empty():
+		_add(parent, parts, &"pizza_pepperoni", Vector3(0, 0.064, 0), dough)
+	if not _find(dish, &"mushroom_sliced").is_empty():
+		_add(parent, parts, &"pizza_mushrooms", Vector3(0, 0.064, 0), dough, 0.4)
+
+
+static func _wings(dish: DishItem, parent: Node3D, parts: Array[Node3D]) -> void:
+	_add(parent, parts, &"wings", Vector3(-0.03, 0.03, 0.0), _find(dish, &"wings"))
+	var dip := _find(dish, &"dip")
+	if not dip.is_empty():
+		_add(parent, parts, &"dip", Vector3(0.12, 0.03, 0.06), dip)
+
+
 static func _generic(dish: DishItem, parent: Node3D, parts: Array[Node3D]) -> void:
 	var n := dish.contents.size()
 	for k in n:
@@ -115,12 +142,7 @@ static func make_order_model(r: RecipeDef, extras: Array) -> Node3D:
 	var parts: Array[Node3D] = []
 	if r.container == "mug":
 		root.add_child(Models.instance(&"mug"))
-		var fill := Models.instance(&"coffee_fill")
-		fill.position = Vector3(0, 0.122, 0)   # just above the mug's cap
-		root.add_child(fill)
-		if not contents.is_empty():
-			fill.set_meta(&"content", contents[0])
-			parts.push_back(fill)
+		fill_mug(contents, root, parts)
 	else:
 		root.add_child(Models.instance(&"plate"))
 		var fake := DishItem.new()
@@ -128,6 +150,36 @@ static func make_order_model(r: RecipeDef, extras: Array) -> Node3D:
 		build(fake, root, parts)
 		fake.free()
 	return root
+
+
+## The drink in a mug, just above the mug's cap: coffee (coloured by how far
+## it brewed), latte, beer, soda, or milk waiting for its coffee.
+static func fill_mug(contents: Array, parent: Node3D, parts: Array[Node3D]) -> void:
+	var ids := []
+	var coffee := {}
+	for c in contents:
+		ids.push_back(c["id"])
+		if c["id"] == &"coffee":
+			coffee = c
+	var key := &""
+	if ids.has(&"beer"):
+		key = &"beer_fill"
+	elif ids.has(&"soda"):
+		key = &"soda_fill"
+	elif ids.has(&"coffee") and ids.has(&"milk"):
+		key = &"latte_fill"
+	elif ids.has(&"coffee"):
+		key = &"coffee_fill"
+	elif ids.has(&"milk"):
+		key = &"milk_fill"
+	if key == &"":
+		return
+	var fill := Models.instance(key)
+	fill.position = Vector3(0, 0.122, 0)
+	parent.add_child(fill)
+	if key == &"coffee_fill" and not coffee.is_empty():
+		fill.set_meta(&"content", coffee)
+		parts.push_back(fill)
 
 
 ## Applies cooking colours to every part tagged with a "content" meta. Call it

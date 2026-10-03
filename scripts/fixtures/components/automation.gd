@@ -63,10 +63,12 @@ static func try_extract(f: Fixture) -> Item:
 	var it := s.item
 	# Never pull food that is still being prepared.
 	var cook := f.get_component("Cooker") as Cooker
-	if cook and it is FoodItem and cook.cooking_item() == it:
-		var p := (it as FoodItem).def.cook_profile
-		if p.stage_index((it as FoodItem).cook) < p.perfect_stage:
-			return null
+	if cook:
+		var k := cook.cooking()
+		if not k.is_empty() and k["item"] == it:
+			var p: CookProfile = k["profile"]
+			if p.stage_index(Cooker.cook_of(k)) < p.perfect_stage:
+				return null
 	var proc := f.get_component("Processor") as Processor
 	if proc and proc.work_item() == it:
 		return null

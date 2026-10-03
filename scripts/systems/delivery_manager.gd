@@ -134,8 +134,12 @@ func morning_delivery(first_day: bool) -> void:
 	var items := []
 	var cost := 0.0
 	if first_day:
-		for s in Content.sorted_values(Content.supplies):
-			for i in (s as SupplyDef).default_order:
+		var fmt := world.format
+		for s in Content.supplies_for(fmt):
+			var n: int = (s as SupplyDef).default_order
+			if fmt and not fmt.opening.is_empty():
+				n = int(fmt.opening.get(s.id, fmt.opening.get(String(s.id), 0)))
+			for i in n:
 				items.push_back({"supply": String(s.id)})
 		_publish_order()
 	else:

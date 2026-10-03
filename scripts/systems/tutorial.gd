@@ -17,11 +17,13 @@ func _physics_process(delta: float) -> void:
 	_t = 1.0
 	var phase := world.day.phase
 	if phase == GameConst.Phase.MORNING:
+		var since := world.day.hour - world.day.morning_hour()
+		_tip(&"format", "%s: %s" % [world.format.display_name, world.format.description])
 		if _crates_on_dock() > 0:
-			_tip(&"dock", "The delivery is on the dock! GRAB crates and carry them inside. Beef and lettuce go in the glass fridges — they spoil outside.")
-		elif world.day.hour > 8.4:
+			_tip(&"dock", "The delivery is on the dock! GRAB crates and carry them inside. Chilled crates go in the glass fridges — they spoil outside.")
+		elif since > 0.4:
 			_tip(&"prep", "Prep ahead: USE a crate to take one ingredient, chop on a cutting board (hold USE). Prepped food doesn't keep overnight.")
-		if world.day.hour > 9.0:
+		if since > 1.0:
 			_tip(&"open", "Ready? Hold USE on the OPEN sign by the front door to start service.")
 	elif phase == GameConst.Phase.SERVICE:
 		for g in world.customers.groups:
@@ -36,8 +38,8 @@ func _physics_process(delta: float) -> void:
 				break
 		for f in world.grid.all_fixtures():
 			var cook := f.get_component("Cooker") as Cooker
-			if cook and cook.cooking_item() and cook.cooking_item().cook > 0.95:
-				_tip(&"burn", "Watch the ring over the grill: green is perfect. Leave it too long and it burns — or catches fire.")
+			if cook and cook.cook_progress() > 0.95:
+				_tip(&"burn", "Watch the ring over the %s: green is perfect. Leave it too long and it burns — or catches fire." % f.def.display_name.to_lower())
 				break
 	elif phase == GameConst.Phase.CLOSING:
 		_tip(&"closing", "Closing time. Finish the last tables, then hold USE on the sign to end the day.")

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="CustomerArchetype" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/customer_archetype.gd" id="1_pyqvn"]
+
+[resource]
+script = ExtResource("1_pyqvn")
+id = &"night_owls"
+display_name = "Night Owls"
+patience = 1.2
+drink_chance = 1.0
+recipe_weights = {
+"beer": 1.6,
+"fries": 1.4,
+"soda": 0.8
+}
+tip = 1.2
+spawn_weight = 0.6
+hour_weights = {
+-1: 0.3,
+21: 1.5,
+22: 2.4,
+23: 2.6
+}
+outfit_colors = PackedColorArray()
+accessory = &"bandana"
+description = "Late-night regulars. Easygoing, good tippers."

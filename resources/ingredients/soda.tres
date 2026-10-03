@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/cook_profile.gd" id="1_p37gp"]
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="2_wif8i"]
+
+[sub_resource type="Resource" id="Resource_p37gp"]
+script = ExtResource("1_p37gp")
+heat = &"pour"
+rate = 0.25
+stage_names = PackedStringArray("Pouring", "Full", "Foamy", "Overflowing")
+stage_ends = PackedFloat32Array(0.5, 1.2, 1.55, 99)
+stage_quality = PackedFloat32Array(0.5, 1, 0.8, 0)
+stage_colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+perfect_stage = 1
+smoke_from = 99.0
+fire_at = 1.6
+
+[resource]
+script = ExtResource("2_wif8i")
+id = &"soda"
+display_name = "Soda"
+model = &"soda_fill"
+color = Color(0.47843137, 0.22745098, 0.16470589, 1)
+tags = PackedStringArray("drink")
+unit_cost = 0.4
+made_from = &"soda_syrup"
+cook_profile = SubResource("Resource_p37gp")

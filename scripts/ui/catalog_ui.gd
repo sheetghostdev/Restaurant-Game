@@ -241,7 +241,7 @@ func _build_supplies() -> void:
 		total.text = "Tomorrow's delivery: nothing ordered yet!"
 		total.add_theme_color_override("font_color", Pal.UI_BAD)
 	_content.add_child(total)
-	for s in Content.sorted_values(Content.supplies):
+	for s in Content.supplies_for(w.format):
 		var sd := s as SupplyDef
 		var id: StringName = sd.id
 		var box := HBoxContainer.new()

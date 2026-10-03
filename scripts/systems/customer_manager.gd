@@ -233,6 +233,26 @@ func _appearance_for(a: CustomerArchetype, index: int) -> Dictionary:
 		&"bow":
 			app["hat"] = &"bow"
 			app["hat_color"] = Pal.DINER_RED
+		&"scarf":
+			# Commuters: dark coats, the odd beanie, a bag on the back.
+			app["shirt"] = [Color("3f4f5f"), Color("6a4a3a"), Color("4a5a4a")][rng.randi_range(0, 2)]
+			app["accessory"] = &"backpack" if rng.randf() < 0.5 else &""
+			if rng.randf() < 0.4:
+				app["hat"] = &"beanie"
+				app["hat_color"] = Color("b5492e")
+		&"glasses":
+			app["glasses"] = true
+			app["accessory"] = &"backpack" if rng.randf() < 0.6 else &"notebook"
+			app["hat"] = &"beanie" if rng.randf() < 0.3 else &"none"
+			app["hat_color"] = Color("3d7fd1")
+		&"jersey":
+			# Same team, mostly: caps in the team colour.
+			app["hat"] = &"cap" if rng.randf() < 0.6 else &"none"
+			app["hat_color"] = app["shirt"]
+		&"bandana":
+			app["hat"] = &"bandana" if rng.randf() < 0.5 else &"none"
+			app["hat_color"] = Color("2e2622")
+			app["shirt"] = [Color("2e3440"), Color("3a2a3a"), Color("5a2a2a")][rng.randi_range(0, 2)]
 	return app
 
 
@@ -433,34 +453,41 @@ func choose_orders(a: CustomerArchetype, child: bool) -> Dictionary:
 		else:
 			food.push_back(r)
 	var res := {"orders": [], "penalty": 0.0, "note": ""}
+	var fmt := world.format
 	var n := 1 if child else randi_range(a.dishes_min, a.dishes_max)
+	if not child and fmt and randf() >= fmt.food_chance:
+		n = 0   # coffee shops and bars: plenty of people only want a drink
 	var picked := {}
 	for i in n:
-		var wish := _pick_recipe(food, a, picked, false)
-		if wish == null:
-			break
-		picked[wish.id] = true
-		var r := wish
-		if world.orders.recipe_blocked(wish):
-			res["penalty"] += MISSING_DISH_PENALTY
-			res["note"] = "No %s?" % wish.ticket_name().to_lower()
-			r = _pick_recipe(food, a, picked, true)
-			if r == null:
-				continue
-			picked[r.id] = true
-		res["orders"].push_back(_with_extras(r, res))
-	if not child and not drinks.is_empty() and randf() < a.drink_chance and res["orders"].size() < 2:
-		var d: RecipeDef = drinks[randi() % drinks.size()]
-		if world.orders.recipe_blocked(d):
-			res["penalty"] += MISSING_DISH_PENALTY * 0.5
-			res["note"] = "No %s?" % d.ticket_name().to_lower()
-		else:
-			res["orders"].push_back(_with_extras(d, res))
+		_order_one(food, a, picked, res, MISSING_DISH_PENALTY)
+	var drink_p := a.drink_chance + (fmt.drink_bonus if fmt else 0.0)
+	if not child and not drinks.is_empty() and randf() < drink_p and res["orders"].size() < 2:
+		_order_one(drinks, a, picked, res, MISSING_DISH_PENALTY * 0.5)
 	if res["orders"].is_empty() and res["note"] == "":
 		var fallback := _pick_recipe(food, a, {}, true)
+		if fallback == null:
+			fallback = _pick_recipe(drinks, a, {}, true)
 		if fallback:
 			res["orders"].push_back(_with_extras(fallback, res))
 	return res
+
+
+## Picks what the guest wants from `list`. If it's crossed off the menu they
+## are disappointed (penalty) and settle for something that is available.
+func _order_one(list: Array[RecipeDef], a: CustomerArchetype, picked: Dictionary, res: Dictionary, penalty: float) -> void:
+	var wish := _pick_recipe(list, a, picked, false)
+	if wish == null:
+		return
+	picked[wish.id] = true
+	var r := wish
+	if world.orders.recipe_blocked(wish):
+		res["penalty"] += penalty
+		res["note"] = "No %s?" % wish.ticket_name().to_lower()
+		r = _pick_recipe(list, a, picked, true)
+		if r == null:
+			return
+		picked[r.id] = true
+	res["orders"].push_back(_with_extras(r, res))
 
 
 func _pick_recipe(list: Array[RecipeDef], a: CustomerArchetype, exclude: Dictionary, available_only: bool) -> RecipeDef:

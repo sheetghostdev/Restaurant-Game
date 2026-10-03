@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/recipe_def.gd" id="1_j2nt7"]
+
+[resource]
+script = ExtResource("1_j2nt7")
+id = &"croissant"
+display_name = "Croissant"
+required = Array[StringName]([&"croissant"])
+optional = Array[StringName]([&"jam"])
+price = 4.0
+eat_time = 6.0
+icon_color = Color(0.8784314, 0.627451, 0.3137255, 1)
+prep_steps = PackedStringArray("Bake a croissant in the oven until golden", "Plate it", "(Optional) add jam")

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_m4qq5"]
+
+[resource]
+script = ExtResource("1_m4qq5")
+id = &"supply_mushrooms"
+display_name = "Mushrooms"
+item_id = &"mushroom"
+quantity = 8
+price = 5.0
+default_order = 0
+description = "8 mushrooms."

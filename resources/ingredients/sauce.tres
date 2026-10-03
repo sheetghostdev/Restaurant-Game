@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_wmw8a"]
+
+[resource]
+script = ExtResource("1_wmw8a")
+id = &"sauce"
+display_name = "Tomato Sauce"
+model = &"sauce"
+color = Color(0.78431374, 0.1882353, 0.16470589, 1)
+tags = PackedStringArray("plateable")
+unit_cost = 0.4
+plate_layer = 1
+description = "Spread on pizza dough."

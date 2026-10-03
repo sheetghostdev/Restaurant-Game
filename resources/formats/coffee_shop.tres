@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="RestaurantFormatDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/restaurant_format_def.gd" id="1_sknoc"]
+
+[resource]
+script = ExtResource("1_sknoc")
+id = &"coffee_shop"
+display_name = "Coffee Shop"
+menu = Array[StringName]([&"coffee", &"latte", &"croissant", &"muffin"])
+open_hour = 7
+close_hour = 15
+base_groups = 11.0
+hourly_demand = {
+7: 1.4,
+8: 2.3,
+9: 1.6,
+10: 0.8,
+11: 0.7,
+12: 1.3,
+13: 1.0,
+14: 0.7
+}
+archetypes = Array[StringName]([&"regular_folks", &"commuter", &"student", &"business", &"date", &"tourists", &"critic"])
+stations = Array[StringName]([&"oven", &"oven", &"counter", &"coffee_machine", &"counter", &"counter", &"coffee_machine", &"counter"])
+pantry = Array[Dictionary]([{
+"supply": "supply_croissants",
+"units": 6
+}, {
+"supply": "supply_muffins",
+"units": 6
+}, {
+"supply": "supply_jam",
+"units": 6
+}])
+supplies = Array[StringName]([&"supply_coffee", &"supply_milk", &"supply_croissants", &"supply_muffins", &"supply_jam"])
+opening = {
+"supply_coffee": 2,
+"supply_croissants": 1,
+"supply_milk": 1,
+"supply_muffins": 1
+}
+food_chance = 0.5
+drink_bonus = 0.45
+accent = Color(0.5411765, 0.3529412, 0.23529412, 1)
+tagline = "Early mornings, lattes and warm croissants."
+default_name = "Bean There"
+description = "Lots of small, quick orders. Keep the coffee machines loaded, bake croissants golden, and watch the morning rush."

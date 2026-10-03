@@ -102,6 +102,70 @@ func _items() -> void:
 		{"unit_cost": 0.8, "description": "Pour into the coffee machine's hopper (10 cups per bag)."})
 	_item("coffee", "Coffee", "food", "coffee_fill", Pal.COFFEE, ["drink"],
 		{"cook_profile": brew, "unit_cost": 0.8, "made_from": &"coffee_beans"})
+	# Coffee shop
+	var pastry := _cook(&"oven", 1.0 / 10.0,
+		["Raw", "Golden", "Dark", "Burnt"],
+		[0.5, 1.0, 1.3, 99.0],
+		[0.1, 1.0, 0.55, 0.0],
+		[Color("ffffff"), Color("f0b860"), Color("c07a3a"), Color("4a3428")],
+		1, 1.2, 2.0)
+	_item("milk", "Milk", "food", "milk", Color("f7f5ef"), ["plateable", "dairy"],
+		{"unit_cost": 0.4, "perishable": true, "spoil_seconds": 420.0,
+		"description": "Pour into a clean mug, then add coffee for a latte. Keep it in the fridge."})
+	_item("croissant", "Croissant", "food", "croissant", Color("e0a050"), ["ovenable", "plateable", "bread"],
+		{"cook_profile": pastry, "unit_cost": 0.6, "description": "Bake in the oven until golden."})
+	_item("muffin", "Muffin", "food", "muffin", Color("b07440"), ["plateable", "bread"],
+		{"unit_cost": 0.6, "description": "Ready to serve: just plate it."})
+	_item("jam", "Jam", "food", "jam", Color("b3263a"), ["plateable"],
+		{"unit_cost": 0.2, "plate_layer": 2, "description": "A little pot of jam for croissants."})
+	# Pizza parlor
+	var bake := _cook(&"oven", 1.0 / 16.0,
+		["Raw", "Golden", "Well Done", "Burnt"],
+		[0.55, 1.0, 1.3, 99.0],
+		[0.1, 1.0, 0.6, 0.0],
+		[Color("ffffff"), Color("f2c47a"), Color("c08048"), Color("4a3020")],
+		1, 1.25, 1.9)
+	_item("dough", "Pizza Dough", "food", "dough", Color("f6efd8"), ["plateable", "bread"],
+		{"cook_profile": bake, "unit_cost": 0.6,
+		"description": "Put it on a plate, add sauce and cheese, then bake the whole plate in the oven."})
+	_item("sauce", "Tomato Sauce", "food", "sauce", Color("c8302a"), ["plateable"],
+		{"unit_cost": 0.4, "plate_layer": 1, "description": "Spread on pizza dough."})
+	_item("cheese", "Cheese", "food", "cheese", Color("f2c94c"), ["plateable", "dairy"],
+		{"unit_cost": 0.6, "plate_layer": 2, "perishable": true, "spoil_seconds": 540.0,
+		"description": "Goes on every pizza. Keep it in the fridge."})
+	_item("pepperoni", "Pepperoni", "food", "pepperoni", Color("c0453a"), ["plateable", "meat"],
+		{"unit_cost": 0.5, "plate_layer": 3, "description": "A pizza topping."})
+	_item("mushroom", "Mushroom", "food", "mushroom", Color("d8c8a8"), ["choppable", "veg"],
+		{"chop_into": &"mushroom_sliced", "chop_work": 1.6, "unit_cost": 0.4, "description": "Slice it for pizza."})
+	_item("mushroom_sliced", "Sliced Mushrooms", "food", "mushroom_sliced", Color("d8c8a8"), ["plateable", "prepared", "veg"],
+		{"unit_cost": 0.4, "plate_layer": 3})
+	# Drinks poured by machines
+	var pour := _cook(&"pour", 1.0 / 4.0,
+		["Pouring", "Full", "Foamy", "Overflowing"],
+		[0.5, 1.2, 1.55, 99.0],
+		[0.5, 1.0, 0.8, 0.0],
+		[Color("ffffff"), Color("ffffff"), Color("ffffff"), Color("ffffff")],
+		1, 99.0, 1.6)
+	_item("soda", "Soda", "food", "soda_fill", Color("7a3a2a"), ["drink"],
+		{"cook_profile": pour, "unit_cost": 0.4, "made_from": &"soda_syrup"})
+	_item("beer", "Beer", "food", "beer_fill", Color("e8b04a"), ["drink"],
+		{"cook_profile": pour, "unit_cost": 1.2, "made_from": &"keg"})
+	_item("soda_syrup", "Soda Syrup", "food", "soda_syrup", Color("8a3a2a"), ["refill"],
+		{"unit_cost": 5.0, "description": "Load into the soda fountain (12 drinks per box)."})
+	_item("keg", "Beer Keg", "food", "keg", Color("b8bcc4"), ["refill"],
+		{"unit_cost": 13.0, "description": "Load into the beer tap (16 pints per keg)."})
+	# Bar food
+	var wing := _cook(&"fryer", 1.0 / 12.0,
+		["Raw", "Cooking", "Crispy", "Overdone", "Burnt"],
+		[0.4, 0.65, 1.0, 1.3, 99.0],
+		[0.0, 0.5, 1.0, 0.45, 0.0],
+		[Color("f2c8b8"), Color("e0a070"), Color("d06a32"), Color("8a4020"), Color("3a2418")],
+		2, 1.0, 1.8)
+	_item("wings", "Chicken Wings", "food", "wings", Color("d06a32"), ["fryable", "plateable", "meat"],
+		{"cook_profile": wing, "unit_cost": 1.4, "perishable": true, "spoil_seconds": 300.0,
+		"description": "Fry until crispy. Keep the crate in the fridge."})
+	_item("dip", "Dip", "food", "dip", Color("f0ece4"), ["plateable"],
+		{"unit_cost": 0.3, "plate_layer": 2, "description": "A pot of dip on the side of the wings."})
 	_item("dishware", "Plate", "dish", "plate", Pal.PLATE, ["dish"], {})
 	_item("crate", "Crate", "crate", "crate", Pal.CRATE, ["crate"],
 		{"heavy": true, "blocks_when_dropped": true})
@@ -136,6 +200,19 @@ func _supplies() -> void:
 	_supply("supply_lettuce", "Lettuce", "lettuce", 8, 6.0, "crate", true, 1, "8 heads of crisp lettuce.")
 	_supply("supply_tomatoes", "Tomatoes", "tomato", 8, 6.0, "crate", false, 1, "8 ripe tomatoes.")
 	_supply("supply_coffee", "Coffee Beans", "coffee_beans", 4, 8.0, "carton", false, 1, "4 bags of beans (10 cups each).")
+	_supply("supply_milk", "Milk", "milk", 6, 6.0, "crate_cold", true, 0, "6 cartons of milk. Keep cold.")
+	_supply("supply_croissants", "Croissants", "croissant", 10, 7.0, "carton", false, 0, "10 croissants, ready to bake.")
+	_supply("supply_muffins", "Muffins", "muffin", 10, 8.0, "carton", false, 0, "10 blueberry muffins.")
+	_supply("supply_jam", "Jam", "jam", 12, 4.0, "carton", false, 0, "12 little pots of jam.")
+	_supply("supply_dough", "Pizza Dough", "dough", 10, 6.0, "crate", false, 0, "10 balls of pizza dough.")
+	_supply("supply_sauce", "Tomato Sauce", "sauce", 10, 5.0, "carton", false, 0, "10 jars of tomato sauce.")
+	_supply("supply_cheese", "Cheese", "cheese", 10, 8.0, "crate_cold", true, 0, "10 portions of cheese. Keep cold.")
+	_supply("supply_pepperoni", "Pepperoni", "pepperoni", 10, 7.0, "carton", false, 0, "10 portions of pepperoni.")
+	_supply("supply_mushrooms", "Mushrooms", "mushroom", 8, 5.0, "crate", false, 0, "8 mushrooms.")
+	_supply("supply_syrup", "Soda Syrup", "soda_syrup", 2, 10.0, "carton", false, 0, "2 syrup boxes (12 sodas each).")
+	_supply("supply_kegs", "Beer Kegs", "keg", 2, 26.0, "crate", false, 0, "2 kegs (16 pints each).")
+	_supply("supply_wings", "Chicken Wings", "wings", 10, 14.0, "crate_cold", true, 0, "10 portions of wings. Keep cold.")
+	_supply("supply_dip", "Dip", "dip", 12, 4.0, "carton", false, 0, "12 pots of dip.")
 
 
 func _recipe(id: String, name: String, cont: String, req: Array, opt: Array, price: float, weight: float, eat: float, plating: String, color: Color, steps: Array, day := 1, short := "") -> void:
@@ -171,6 +248,20 @@ func _recipes() -> void:
 		["Chop lettuce", "Slice a tomato", "Plate both"], 1, "Salad")
 	_recipe("coffee", "Coffee", "mug", ["coffee"], [], 4.0, 1.0, 6.0, "drink", Pal.COFFEE,
 		["Put a clean mug under the coffee machine", "Take it when it's just right"])
+	_recipe("latte", "Latte", "mug", ["coffee", "milk"], [], 5.0, 0.9, 7.0, "drink", Color("e0c39a"),
+		["Pour milk into a clean mug", "Put it under the coffee machine", "Take it when it's just right"])
+	_recipe("croissant", "Croissant", "plate", ["croissant"], ["jam"], 4.0, 1.0, 6.0, "generic", Color("e0a050"),
+		["Bake a croissant in the oven until golden", "Plate it", "(Optional) add jam"])
+	_recipe("muffin", "Muffin", "plate", ["muffin"], [], 3.5, 0.8, 5.0, "generic", Color("b07440"),
+		["Put a muffin on a plate"])
+	_recipe("pizza", "Pizza", "plate", ["dough", "sauce", "cheese"], ["pepperoni", "mushroom_sliced"], 13.0, 1.4, 13.0, "generic", Color("e2604a"),
+		["Put dough on a plate", "Add sauce and cheese", "(Optional) pepperoni or sliced mushrooms", "Bake the plate in the oven until golden"])
+	_recipe("soda", "Soda", "mug", ["soda"], [], 3.0, 1.0, 5.0, "drink", Color("7a3a2a"),
+		["Put a clean mug under the soda fountain", "Take it when it's full"])
+	_recipe("beer", "Beer", "mug", ["beer"], [], 6.0, 1.2, 8.0, "drink", Color("e8b04a"),
+		["Put a clean mug under the beer tap", "Take it when it's full (not foaming over)"])
+	_recipe("wings", "Chicken Wings", "plate", ["wings"], ["dip"], 10.0, 1.3, 11.0, "generic", Color("d06a32"),
+		["Fry wings until crispy", "Plate them", "(Optional) add dip"], 1, "Wings")
 
 
 func _fixture(id: String, name: String, scene: String, cat: String, price: float, desc: String, opts := {}) -> void:
@@ -197,6 +288,9 @@ func _fixtures() -> void:
 	_fixture("grill", "Flat-top Grill", A + "grill.tscn", "appliance", 140.0, "Cooks patties. Watch the colour — and the smoke.", {"flammable": true, "can_break": true, "powered": true})
 	_fixture("fryer", "Deep Fryer", A + "fryer.tscn", "appliance", 160.0, "Turns cut potatoes into crispy fries. Grease fires happen.", {"flammable": true, "can_break": true, "powered": true})
 	_fixture("coffee_machine", "Coffee Machine", A + "coffee_machine.tscn", "appliance", 120.0, "Brews into clean mugs automatically. Refill the bean hopper.", {"can_break": true, "powered": true})
+	_fixture("oven", "Pizza Oven", A + "oven.tscn", "appliance", 180.0, "Bakes croissants, or a whole pizza on its plate. Watch the crust colour.", {"flammable": true, "can_break": true, "powered": true, "collision_height": 1.3})
+	_fixture("soda_fountain", "Soda Fountain", A + "soda_fountain.tscn", "appliance", 110.0, "Pours soda into clean mugs. Load syrup boxes into it.", {"can_break": true, "powered": true})
+	_fixture("beer_tap", "Beer Tap", A + "beer_tap.tscn", "appliance", 140.0, "Pours pints into clean mugs. Swap in a fresh keg when it runs dry.", {"can_break": true})
 	_fixture("fridge", "Glass Fridge", A + "fridge.tscn", "storage", 150.0, "Keeps one crate cold. Beef and lettuce spoil without it.", {"can_break": true, "collision_height": 1.9, "powered": true})
 	_fixture("sink", "Sink", A + "sink.tscn", "appliance", 70.0, "Drop dirty dishes in and hold USE to scrub.")
 	_fixture("dishwasher", "Hood Dishwasher", A + "dishwasher.tscn", "appliance", 220.0, "Load up to 10 dishes and press USE. Sometimes breaks down.", {"can_break": true, "collision_height": 1.4, "powered": true})
@@ -256,6 +350,20 @@ func _customers() -> void:
 		"recipe_weights": {"burger": 6.0, "fries": 0.3, "salad": 0.2}, "reputation_weight": 2.0,
 		"min_day": 2, "spawn_weight": 0.35, "max_per_day": 1, "fixed_look_seed": 4242, "hour_weights": {11: 3.0, 12: 1.5, -1: 0.3},
 		"accessory": &"bowtie", "description": "Comes in every day, always orders the burger and a coffee. Loyal — don't let them down."})
+	_arch("commuter", "Commuter", {"group_min": 1, "group_max": 1, "patience": 0.65, "drink_chance": 0.95, "eat_speed": 1.5,
+		"recipe_weights": {"coffee": 2.0, "croissant": 1.5, "latte": 1.2}, "spawn_weight": 0.9, "accessory": &"scarf",
+		"hour_weights": {7: 2.5, 8: 2.6, 9: 1.5, 17: 1.5, -1: 0.4}, "mess": 0.05, "description": "On the way to work. Coffee, now."})
+	_arch("student", "Students", {"group_min": 1, "group_max": 3, "patience": 1.15, "drink_chance": 0.6, "spend": 0.85, "tip": 0.6,
+		"recipe_weights": {"latte": 1.6, "muffin": 1.6, "pizza": 1.6, "soda": 1.4, "fries": 1.3}, "mess": 0.35, "spawn_weight": 0.8,
+		"accessory": &"glasses", "hour_weights": {10: 1.4, 14: 1.6, 15: 1.6, 16: 1.4, 20: 1.4, 21: 1.4, -1: 0.6},
+		"description": "Small budgets, big tables, in no hurry."})
+	_arch("sports_fans", "Sports Fans", {"group_min": 2, "group_max": 4, "patience": 0.9, "drink_chance": 0.95,
+		"recipe_weights": {"beer": 2.5, "wings": 2.2, "pizza": 1.6, "fries": 1.3}, "mess": 0.6, "spawn_weight": 0.8, "accessory": &"jersey",
+		"outfit_colors": PackedColorArray([Color("d9483b"), Color("3d7fd1")]), "hour_weights": {18: 1.6, 19: 2.4, 20: 2.4, 21: 1.6, -1: 0.4},
+		"description": "Here for the big game. Wings, pints and noise."})
+	_arch("night_owls", "Night Owls", {"group_min": 1, "group_max": 2, "patience": 1.2, "drink_chance": 1.0, "tip": 1.2,
+		"recipe_weights": {"beer": 1.6, "fries": 1.4, "soda": 0.8}, "spawn_weight": 0.6, "accessory": &"bandana",
+		"hour_weights": {21: 1.5, 22: 2.4, 23: 2.6, -1: 0.3}, "description": "Late-night regulars. Easygoing, good tippers."})
 	_arch("critic", "Food Critic", {"group_min": 1, "group_max": 1, "patience": 0.9, "drink_chance": 0.7, "strictness": 0.35,
 		"reputation_weight": 4.0, "tip": 2.0, "min_reputation": 2.5, "min_day": 3, "spawn_weight": 0.12, "accessory": &"beret",
 		"description": "Rare. Notices everything. One review can change your week."})
@@ -385,22 +493,70 @@ func _events() -> void:
 	_event("power_outage", "Power Cut", "disaster", 0.15, 4, {}, "", "Powered machines stop for a while and the lights flicker.")
 
 
-func _formats() -> void:
+func _format(id: String, name: String, opts: Dictionary) -> void:
 	var f := RestaurantFormatDef.new()
-	f.id = &"diner"
-	f.display_name = "Diner"
-	f.service_style = "table"
-	var menu: Array[StringName] = [&"burger", &"fries", &"salad", &"coffee"]
-	f.menu = menu
-	f.open_hour = 11
-	f.close_hour = 21
-	f.service_seconds = 420.0
-	f.base_groups = 8.0
-	f.hourly_demand = {11: 0.6, 12: 2.0, 13: 1.7, 14: 0.8, 15: 0.6, 16: 0.7, 17: 1.2, 18: 2.0, 19: 1.8, 20: 0.8}
-	var archs: Array[StringName] = [&"regular_folks", &"family", &"work_crew", &"business", &"date", &"tourists", &"traveler", &"regular", &"critic"]
-	f.archetypes = archs
-	f.description = "Classic table service: burgers, fries, salads and bottomless coffee."
-	_save(f, "%s/formats/diner.tres" % R)
+	f.id = StringName(id)
+	f.display_name = name
+	for k in opts:
+		var v = opts[k]
+		if k in ["menu", "archetypes", "stations", "supplies"]:
+			var arr: Array[StringName] = []
+			for x in v:
+				arr.push_back(StringName(x))
+			v = arr
+		elif k == "pantry":
+			var shelf: Array[Dictionary] = []
+			for x in v:
+				shelf.push_back(x)
+			v = shelf
+		f.set(k, v)
+	_save(f, "%s/formats/%s.tres" % [R, id])
+
+
+func _formats() -> void:
+	_format("diner", "Diner", {
+		"menu": ["burger", "fries", "salad", "coffee"], "open_hour": 11, "close_hour": 21, "base_groups": 8.0,
+		"hourly_demand": {11: 0.6, 12: 2.0, 13: 1.7, 14: 0.8, 15: 0.6, 16: 0.7, 17: 1.2, 18: 2.0, 19: 1.8, 20: 0.8},
+		"archetypes": ["regular_folks", "family", "work_crew", "business", "date", "tourists", "traveler", "regular", "critic"],
+		"stations": ["grill", "grill", "counter", "fryer", "cutting_board", "cutting_board", "coffee_machine", "counter"],
+		"pantry": [{"supply": "supply_potatoes", "units": 6}, {"supply": "supply_buns", "units": 8}, {"supply": "supply_tomatoes", "units": 4}],
+		"supplies": ["supply_beef", "supply_buns", "supply_potatoes", "supply_lettuce", "supply_tomatoes", "supply_coffee"],
+		"opening": {"supply_beef": 1, "supply_buns": 1, "supply_potatoes": 1, "supply_lettuce": 1, "supply_tomatoes": 1, "supply_coffee": 1},
+		"accent": Color("d9483b"), "default_name": "The Corner Diner", "tagline": "Burgers off the grill, crispy fries and bottomless coffee.",
+		"description": "Classic table service. Grill patties to medium, fry potatoes, chop salad. Busy at lunch and dinner."})
+	_format("coffee_shop", "Coffee Shop", {
+		"menu": ["coffee", "latte", "croissant", "muffin"], "open_hour": 7, "close_hour": 15, "base_groups": 11.0,
+		"hourly_demand": {7: 1.4, 8: 2.3, 9: 1.6, 10: 0.8, 11: 0.7, 12: 1.3, 13: 1.0, 14: 0.7},
+		"archetypes": ["regular_folks", "commuter", "student", "business", "date", "tourists", "critic"],
+		"stations": ["oven", "oven", "counter", "coffee_machine", "counter", "counter", "coffee_machine", "counter"],
+		"pantry": [{"supply": "supply_croissants", "units": 6}, {"supply": "supply_muffins", "units": 6}, {"supply": "supply_jam", "units": 6}],
+		"supplies": ["supply_coffee", "supply_milk", "supply_croissants", "supply_muffins", "supply_jam"],
+		"opening": {"supply_coffee": 2, "supply_milk": 1, "supply_croissants": 1, "supply_muffins": 1},
+		"food_chance": 0.5, "drink_bonus": 0.45,
+		"accent": Color("8a5a3c"), "default_name": "Bean There", "tagline": "Early mornings, lattes and warm croissants.",
+		"description": "Lots of small, quick orders. Keep the coffee machines loaded, bake croissants golden, and watch the morning rush."})
+	_format("pizza_parlor", "Pizza Parlor", {
+		"menu": ["pizza", "salad", "soda"], "open_hour": 12, "close_hour": 22, "base_groups": 8.0,
+		"hourly_demand": {12: 1.4, 13: 1.2, 14: 0.6, 15: 0.5, 16: 0.7, 17: 1.3, 18: 2.0, 19: 2.1, 20: 1.4, 21: 0.7},
+		"archetypes": ["regular_folks", "family", "student", "work_crew", "date", "tourists", "sports_fans", "critic"],
+		"stations": ["oven", "oven", "counter", "counter", "cutting_board", "cutting_board", "soda_fountain", "counter"],
+		"pantry": [{"supply": "supply_dough", "units": 6}, {"supply": "supply_sauce", "units": 6}, {"supply": "supply_pepperoni", "units": 6}],
+		"supplies": ["supply_dough", "supply_sauce", "supply_cheese", "supply_pepperoni", "supply_mushrooms", "supply_lettuce", "supply_tomatoes", "supply_syrup"],
+		"opening": {"supply_dough": 1, "supply_sauce": 1, "supply_cheese": 1, "supply_pepperoni": 1, "supply_mushrooms": 1, "supply_lettuce": 1, "supply_tomatoes": 1, "supply_syrup": 1},
+		"drink_bonus": 0.1,
+		"accent": Color("e2604a"), "default_name": "Slice of Life", "tagline": "Build it, bake it, serve it hot.",
+		"description": "Assemble pizzas on the plate (dough, sauce, cheese, toppings) and bake the whole plate. Big family tables in the evening."})
+	_format("bar", "Bar & Grill", {
+		"menu": ["beer", "soda", "wings", "fries"], "open_hour": 16, "close_hour": 24, "base_groups": 9.0,
+		"hourly_demand": {16: 0.6, 17: 1.0, 18: 1.4, 19: 2.0, 20: 2.0, 21: 1.6, 22: 1.4, 23: 0.9},
+		"archetypes": ["regular_folks", "sports_fans", "night_owls", "work_crew", "date", "business", "critic"],
+		"stations": ["fryer", "fryer", "counter", "counter", "cutting_board", "counter", "beer_tap", "soda_fountain"],
+		"pantry": [{"supply": "supply_potatoes", "units": 6}, {"supply": "supply_dip", "units": 6}],
+		"supplies": ["supply_kegs", "supply_syrup", "supply_wings", "supply_dip", "supply_potatoes"],
+		"opening": {"supply_kegs": 1, "supply_syrup": 1, "supply_wings": 1, "supply_dip": 1, "supply_potatoes": 1},
+		"food_chance": 0.6, "drink_bonus": 0.5,
+		"accent": Color("3f6d4e"), "default_name": "The Tipsy Tap", "tagline": "Pints, wings and the big game.",
+		"description": "Open late. Pour pints before they foam over, fry wings and fries, and keep the kegs coming."})
 
 
 func _locations() -> void:
