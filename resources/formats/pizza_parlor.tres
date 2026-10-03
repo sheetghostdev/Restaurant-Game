@@ -49,4 +49,5 @@ drink_bonus = 0.1
 accent = Color(0.8862745, 0.3764706, 0.2901961, 1)
 tagline = "Build it, bake it, serve it hot."
 default_name = "Slice of Life"
+sign_text = "PIZZA"
 description = "Assemble pizzas on the plate (dough, sauce, cheese, toppings) and bake the whole plate. Big family tables in the evening."

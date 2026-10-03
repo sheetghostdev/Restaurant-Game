@@ -1,0 +1,704 @@
+{
+ "name": "Orbital Galley",
+ "lot": [
+  -8,
+  -4,
+  32,
+  15
+ ],
+ "money": 250.0,
+ "reputation": 1.0,
+ "facade": "8f99a8",
+ "window_step": 2,
+ "theme": "space",
+ "ground_style": "space",
+ "rooms": [
+  {
+   "id": "airlock",
+   "type": "airlock",
+   "rect": [
+    -4,
+    3,
+    4,
+    3
+   ]
+  },
+  {
+   "id": "dining",
+   "type": "lounge",
+   "rect": [
+    0,
+    0,
+    9,
+    9
+   ]
+  },
+  {
+   "id": "kitchen",
+   "type": "space_galley",
+   "rect": [
+    9,
+    0,
+    7,
+    9
+   ]
+  },
+  {
+   "id": "hydro",
+   "type": "hydroponics",
+   "rect": [
+    16,
+    0,
+    5,
+    4
+   ]
+  },
+  {
+   "id": "cargo",
+   "type": "cargo",
+   "rect": [
+    16,
+    4,
+    5,
+    5
+   ]
+  }
+ ],
+ "openings": [
+  [
+   8,
+   3,
+   9,
+   3,
+   "swing"
+  ],
+  [
+   8,
+   6,
+   9,
+   6,
+   "swing"
+  ],
+  [
+   15,
+   4,
+   16,
+   4,
+   "door"
+  ],
+  [
+   15,
+   2,
+   16,
+   2,
+   "door"
+  ],
+  [
+   18,
+   3,
+   18,
+   4,
+   "door"
+  ]
+ ],
+ "front_door": [
+  0,
+  4,
+  -1,
+  4
+ ],
+ "delivery_zone": [
+  [
+   17,
+   5
+  ],
+  [
+   18,
+   5
+  ],
+  [
+   17,
+   6
+  ],
+  [
+   18,
+   6
+  ]
+ ],
+ "street": {
+  "spawn_a": [
+   -3,
+   3
+  ],
+  "spawn_b": [
+   -3,
+   5
+  ],
+  "queue": [
+   -1,
+   4
+  ],
+  "queue_dir": [
+   -1,
+   0
+  ],
+  "player_spawn": [
+   12,
+   5
+  ],
+  "staff_spawn": [
+   19,
+   6
+  ]
+ },
+ "props": [
+  {
+   "m": "shuttle",
+   "p": [
+    -6.2,
+    4.5
+   ],
+   "y": 90
+  },
+  {
+   "m": "solar_panel",
+   "p": [
+    3.0,
+    -1.6
+   ]
+  },
+  {
+   "m": "solar_panel",
+   "p": [
+    13.0,
+    -1.6
+   ]
+  },
+  {
+   "m": "antenna_mast",
+   "p": [
+    21.6,
+    1.0
+   ]
+  },
+  {
+   "m": "hull_greeble",
+   "p": [
+    8.5,
+    9.35
+   ]
+  },
+  {
+   "m": "hull_greeble",
+   "p": [
+    17.5,
+    9.35
+   ],
+   "y": 180
+  }
+ ],
+ "fixtures": [
+  {
+   "def": "table",
+   "cell": [
+    1,
+    2
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    1,
+    1
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    1,
+    3
+   ],
+   "rot": 2
+  },
+  {
+   "def": "table",
+   "cell": [
+    2,
+    2
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    2,
+    1
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    2,
+    3
+   ],
+   "rot": 2
+  },
+  {
+   "def": "table",
+   "cell": [
+    5,
+    2
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    5,
+    1
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    5,
+    3
+   ],
+   "rot": 2
+  },
+  {
+   "def": "table",
+   "cell": [
+    6,
+    2
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    6,
+    1
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    6,
+    3
+   ],
+   "rot": 2
+  },
+  {
+   "def": "table",
+   "cell": [
+    1,
+    6
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    1,
+    5
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    1,
+    7
+   ],
+   "rot": 2
+  },
+  {
+   "def": "table",
+   "cell": [
+    2,
+    6
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    2,
+    5
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    2,
+    7
+   ],
+   "rot": 2
+  },
+  {
+   "def": "table",
+   "cell": [
+    5,
+    6
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    5,
+    5
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    5,
+    7
+   ],
+   "rot": 2
+  },
+  {
+   "def": "table",
+   "cell": [
+    6,
+    6
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    6,
+    5
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    6,
+    7
+   ],
+   "rot": 2
+  },
+  {
+   "def": "open_sign",
+   "cell": [
+    3,
+    8
+   ],
+   "rot": 0
+  },
+  {
+   "def": "register",
+   "cell": [
+    5,
+    8
+   ],
+   "rot": 0
+  },
+  {
+   "def": "plant_pot",
+   "cell": [
+    0,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "plant_pot",
+   "cell": [
+    8,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "plant_pot",
+   "cell": [
+    0,
+    8
+   ],
+   "rot": 0
+  },
+  {
+   "def": "counter",
+   "cell": [
+    9,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "counter",
+   "cell": [
+    14,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "fridge",
+   "cell": [
+    15,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "fridge",
+   "cell": [
+    15,
+    1
+   ],
+   "rot": 3
+  },
+  {
+   "def": "pass_counter",
+   "cell": [
+    9,
+    1
+   ],
+   "rot": 1
+  },
+  {
+   "def": "mug_rack",
+   "cell": [
+    9,
+    5
+   ],
+   "rot": 1,
+   "state": {
+    "DishRack": {
+     "n": 6
+    }
+   }
+  },
+  {
+   "def": "plate_rack",
+   "cell": [
+    9,
+    7
+   ],
+   "rot": 1,
+   "state": {
+    "DishRack": {
+     "n": 8
+    }
+   }
+  },
+  {
+   "def": "counter",
+   "cell": [
+    9,
+    8
+   ],
+   "rot": 1
+  },
+  {
+   "def": "counter",
+   "cell": [
+    10,
+    8
+   ],
+   "rot": 2
+  },
+  {
+   "def": "sink",
+   "cell": [
+    11,
+    8
+   ],
+   "rot": 2
+  },
+  {
+   "def": "dishwasher",
+   "cell": [
+    12,
+    8
+   ],
+   "rot": 2
+  },
+  {
+   "def": "trash_bin",
+   "cell": [
+    13,
+    8
+   ],
+   "rot": 2
+  },
+  {
+   "def": "counter",
+   "cell": [
+    14,
+    8
+   ],
+   "rot": 2
+  },
+  {
+   "def": "extinguisher_station",
+   "cell": [
+    15,
+    6
+   ],
+   "rot": 3
+  },
+  {
+   "def": "mop_station",
+   "cell": [
+    15,
+    7
+   ],
+   "rot": 3
+  },
+  {
+   "def": "menu_board",
+   "cell": [
+    4,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "hydro_planter",
+   "cell": [
+    16,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "hydro_planter",
+   "cell": [
+    17,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "hydro_planter",
+   "cell": [
+    18,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "hydro_planter",
+   "cell": [
+    19,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "terminal",
+   "cell": [
+    20,
+    8
+   ],
+   "rot": 2
+  },
+  {
+   "def": "food_printer",
+   "cell": [
+    20,
+    5
+   ],
+   "rot": 3
+  },
+  {
+   "def": "dumpster",
+   "cell": [
+    20,
+    7
+   ],
+   "rot": 3
+  }
+ ],
+ "items": [
+  {
+   "cell": [
+    15,
+    6
+   ],
+   "def": "extinguisher"
+  },
+  {
+   "cell": [
+    15,
+    7
+   ],
+   "def": "mop"
+  }
+ ],
+ "stations": [
+  [
+   10,
+   0,
+   0
+  ],
+  [
+   11,
+   0,
+   0
+  ],
+  [
+   12,
+   0,
+   0
+  ],
+  [
+   13,
+   0,
+   0
+  ],
+  [
+   11,
+   3,
+   0
+  ],
+  [
+   12,
+   3,
+   0
+  ],
+  [
+   9,
+   4,
+   1
+  ],
+  [
+   13,
+   3,
+   0
+  ]
+ ],
+ "pantry": [
+  [
+   16,
+   8
+  ],
+  [
+   17,
+   8
+  ],
+  [
+   18,
+   8
+  ],
+  [
+   19,
+   8
+  ]
+ ]
+}

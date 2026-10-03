@@ -12,6 +12,7 @@ tags = PackedStringArray("choppable", "veg")
 unit_cost = 0.75
 chop_into = &"lettuce_chopped"
 chop_work = 2.2
+grow_seconds = 26.0
 perishable = true
 spoil_seconds = 420.0
 description = "Chop it on a cutting board. Wilts if left out of the fridge."

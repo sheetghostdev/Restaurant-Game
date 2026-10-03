@@ -294,7 +294,7 @@ func set_lifted(on: bool) -> void:
 
 
 func can_lift() -> bool:
-	return not is_blocked()
+	return not is_blocked() and (def == null or def.movable)
 
 
 # -----------------------------------------------------------------------------

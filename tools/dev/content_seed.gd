@@ -85,21 +85,21 @@ func _items() -> void:
 	_item("bun", "Burger Bun", "food", "bun", Pal.BUN, ["plateable", "bread"],
 		{"unit_cost": 0.5, "description": "The foundation of every burger."})
 	_item("lettuce", "Lettuce", "food", "lettuce_head", Pal.LETTUCE, ["choppable", "veg"],
-		{"chop_into": &"lettuce_chopped", "chop_work": 2.2, "unit_cost": 0.75, "perishable": true, "spoil_seconds": 420.0,
+		{"chop_into": &"lettuce_chopped", "chop_work": 2.2, "unit_cost": 0.75, "perishable": true, "spoil_seconds": 420.0, "grow_seconds": 26.0,
 		"description": "Chop it on a cutting board. Wilts if left out of the fridge."})
 	_item("lettuce_chopped", "Chopped Lettuce", "food", "lettuce_chopped", Pal.LETTUCE, ["plateable", "prepared", "veg"],
 		{"unit_cost": 0.75, "perishable": true, "spoil_seconds": 360.0, "plate_layer": 2})
 	_item("tomato", "Tomato", "food", "tomato", Pal.TOMATO, ["choppable", "veg"],
-		{"chop_into": &"tomato_sliced", "chop_work": 1.8, "unit_cost": 0.75, "perishable": true, "spoil_seconds": 900.0,
+		{"chop_into": &"tomato_sliced", "chop_work": 1.8, "unit_cost": 0.75, "perishable": true, "spoil_seconds": 900.0, "grow_seconds": 24.0,
 		"description": "Slice it for burgers and salads."})
 	_item("tomato_sliced", "Tomato Slices", "food", "tomato_sliced", Pal.TOMATO, ["plateable", "prepared", "veg"],
 		{"unit_cost": 0.75, "perishable": true, "spoil_seconds": 600.0, "plate_layer": 3})
 	_item("potato", "Potato", "food", "potato", Pal.POTATO, ["choppable", "veg"],
-		{"chop_into": &"fries", "chop_work": 2.2, "unit_cost": 0.5, "description": "Cut into fries, then fry until crispy."})
+		{"chop_into": &"fries", "chop_work": 2.2, "unit_cost": 0.5, "grow_seconds": 22.0, "description": "Cut into fries, then fry until crispy."})
 	_item("fries", "Fries", "food", "potato_cut", Pal.FRIES, ["fryable", "plateable", "prepared"],
 		{"cook_profile": fryer, "unit_cost": 0.5})
 	_item("coffee_beans", "Coffee Beans", "food", "coffee_beans", Pal.BEANS, ["beans"],
-		{"unit_cost": 0.8, "description": "Pour into the coffee machine's hopper (10 cups per bag)."})
+		{"unit_cost": 0.8, "grow_seconds": 70.0, "description": "Pour into the coffee machine's hopper (10 cups per bag)."})
 	_item("coffee", "Coffee", "food", "coffee_fill", Pal.COFFEE, ["drink"],
 		{"cook_profile": brew, "unit_cost": 0.8, "made_from": &"coffee_beans"})
 	# Coffee shop
@@ -136,7 +136,7 @@ func _items() -> void:
 	_item("pepperoni", "Pepperoni", "food", "pepperoni", Color("c0453a"), ["plateable", "meat"],
 		{"unit_cost": 0.5, "plate_layer": 3, "description": "A pizza topping."})
 	_item("mushroom", "Mushroom", "food", "mushroom", Color("d8c8a8"), ["choppable", "veg"],
-		{"chop_into": &"mushroom_sliced", "chop_work": 1.6, "unit_cost": 0.4, "description": "Slice it for pizza."})
+		{"chop_into": &"mushroom_sliced", "chop_work": 1.6, "unit_cost": 0.4, "grow_seconds": 20.0, "description": "Slice it for pizza."})
 	_item("mushroom_sliced", "Sliced Mushrooms", "food", "mushroom_sliced", Color("d8c8a8"), ["plateable", "prepared", "veg"],
 		{"unit_cost": 0.4, "plate_layer": 3})
 	# Drinks poured by machines
@@ -304,6 +304,9 @@ func _fixtures() -> void:
 	_fixture("chair", "Diner Chair", F + "chair.tscn", "furniture", 20.0, "Face it toward a table to add a seat.", {"blocks_movement": false, "allowed_outdoors": true})
 	_fixture("terminal", "Manager's Desk", F + "terminal.tscn", "service", 0.0, "Order supplies, equipment and staff.", {"purchasable": false})
 	_fixture("menu_board", "Menu Board", F + "menu_board.tscn", "service", 40.0, "Cross ingredients off the menu when they run out.", {"collision_height": 1.7})
+	_fixture("hydro_planter", "Hydroponic Planter", A + "hydro_planter.tscn", "appliance", 120.0, "Grows vegetables for free, slowly. USE to choose the crop, GRAB to harvest.", {"only_theme": "space", "powered": true, "collision_height": 1.0})
+	_fixture("food_printer", "Food Printer", A + "food_printer.tscn", "appliance", 300.0, "Prints any ingredient, one portion at a time, for credits. USE to choose what it prints.", {"only_theme": "space", "powered": true, "can_break": true, "collision_height": 1.5})
+	_fixture("market_stall", "Market Stall", F + "market_stall.tscn", "service", 0.0, "Sells crates on a station platform.", {"purchasable": false, "movable": false, "allowed_outdoors": true, "collision_height": 1.0})
 	_fixture("open_sign", "Open Sign", F + "open_sign.tscn", "service", 0.0, "Hold USE to open the restaurant.", {"purchasable": false, "collision_height": 1.6})
 	_fixture("register", "Cash Register", F + "register.tscn", "service", 80.0, "Ka-ching. Purely for the vibes (and a spare counter).")
 	_fixture("plant_pot", "Potted Plant", F + "plant_pot.tscn", "decor", 25.0, "Makes the dining room a little nicer.", {"ambience": 0.02, "collision_height": 1.0, "allowed_outdoors": true})
@@ -385,10 +388,22 @@ func _room(id: String, name: String, style: String, a: Color, b: Color, wall: Co
 func _rooms() -> void:
 	_room("dining", "Dining Room", "planks", Color("d2a779"), Color("b98a5e"), Pal.PLASTER, {"customer_area": true, "light_color": Color("ffd9a8")})
 	_room("kitchen", "Kitchen", "tile_checker", Pal.TILE_CREAM, Pal.TILE_SAGE, Color("eef0e8"), {"light_color": Color("fff1dc")})
-	_room("storage", "Storage", "concrete", Pal.CONCRETE, Pal.CONCRETE_DARK, Pal.PLASTER_SHADE, {"light_color": Color("ffe9c9")})
+	_room("storage", "Storage", "concrete", Pal.CONCRETE, Pal.CONCRETE_DARK, Pal.PLASTER_SHADE, {"light_color": Color("ffe9c9"), "has_windows": false})
 	_room("loading", "Loading Dock", "loading", Color("b8b4aa"), Color("a8a49a"), Pal.FACADE, {"outdoor": true})
-	_room("cooler", "Walk-in Cooler", "cold_tile", Pal.COLD_TILE, Color("b7d3de"), Color("dfeef3"), {"cold": true, "light_color": Color("d9f0ff")})
+	_room("cooler", "Walk-in Cooler", "cold_tile", Pal.COLD_TILE, Color("b7d3de"), Color("dfeef3"), {"cold": true, "light_color": Color("d9f0ff"), "has_windows": false})
 	_room("patio", "Patio", "patio", Color("cdb79a"), Color("b9a283"), Pal.FACADE, {"outdoor": true, "customer_area": true})
+	# The train
+	_room("coach", "Passenger Coach", "carpet", Color("7a2e34"), Color("8e3c42"), Color("efe2c6"), {"light_color": Color("ffd9a8")})
+	_room("dining_car", "Dining Car", "planks", Color("b07a4c"), Color("8e5e38"), Color("f1e4c8"), {"customer_area": true, "light_color": Color("ffd59a")})
+	_room("galley", "Galley", "tile_checker", Color("e6e2d6"), Color("b9c2c4"), Color("eef0e8"), {"light_color": Color("fff1dc")})
+	_room("baggage", "Baggage Car", "planks", Color("a88a62"), Color("8f7350"), Color("d8c4a0"), {"light_color": Color("ffe9c9"), "has_windows": false})
+	_room("platform", "Station Platform", "none", Color("bdb7ab"), Color("a9a397"), Pal.FACADE, {"outdoor": true})
+	# The space station
+	_room("airlock", "Docking Airlock", "grate", Color("5d6675"), Color("3c434f"), Color("c9d0da"), {"light_color": Color("d9ecff"), "has_windows": false})
+	_room("lounge", "Star Lounge", "carpet", Color("2e3a5c"), Color("3b4a72"), Color("dfe4ee"), {"customer_area": true, "light_color": Color("e8e4ff")})
+	_room("space_galley", "Galley", "deck", Color("d7dce3"), Color("a9b2bf"), Color("eef1f5"), {"light_color": Color("f2f6ff")})
+	_room("hydroponics", "Hydroponics Bay", "grate", Color("557a55"), Color("3f5a43"), Color("e3efe0"), {"light_color": Color("e9ffd9"), "has_windows": false})
+	_room("cargo", "Cargo Hold", "deck", Color("9aa3ae"), Color("6f7883"), Color("c9cfd6"), {"light_color": Color("e6eeff"), "has_windows": false})
 
 
 func _expansion(id: String, name: String, type: String, rect: Rect2i, price: float, doors: Array, fixtures: Array, desc: String) -> void:
@@ -424,6 +439,14 @@ func _expansions() -> void:
 		[Vector4i(17, -1, 17, 0)],
 		[{"def": "cold_shelf", "cell": Vector2i(16, -4), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(17, -4), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(18, -4), "rot": 0}],
 		"Everything stored inside stays fresh. No more fridge Tetris.")
+	_expansion("cooler_car", "Cold Storage Car", "cooler", Rect2i(21, 0, 4, 6), 600.0,
+		[Vector4i(20, 2, 21, 2)],
+		[{"def": "cold_shelf", "cell": Vector2i(21, 0), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(22, 0), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(23, 0), "rot": 0}],
+		"Couple a refrigerated car behind the baggage car. Everything stored inside stays fresh.")
+	_expansion("hydro_bay", "Hydroponics Bay II", "hydroponics", Rect2i(16, -4, 5, 4), 500.0,
+		[Vector4i(18, -1, 18, 0)],
+		[{"def": "hydro_planter", "cell": Vector2i(16, -4), "rot": 0}, {"def": "hydro_planter", "cell": Vector2i(17, -4), "rot": 0}, {"def": "hydro_planter", "cell": Vector2i(19, -4), "rot": 0}, {"def": "hydro_planter", "cell": Vector2i(20, -4), "rot": 0}],
+		"A second grow bay with four more planters.")
 	_expansion("patio", "Sidewalk Patio", "patio", Rect2i(-5, 2, 5, 7), 300.0,
 		[Vector4i(-1, 4, 0, 4)],
 		[{"def": "table", "cell": Vector2i(-3, 4), "rot": 0}, {"def": "chair", "cell": Vector2i(-3, 3), "rot": 0}, {"def": "chair", "cell": Vector2i(-3, 5), "rot": 2}],
@@ -522,7 +545,7 @@ func _formats() -> void:
 		"pantry": [{"supply": "supply_potatoes", "units": 6}, {"supply": "supply_buns", "units": 8}, {"supply": "supply_tomatoes", "units": 4}],
 		"supplies": ["supply_beef", "supply_buns", "supply_potatoes", "supply_lettuce", "supply_tomatoes", "supply_coffee"],
 		"opening": {"supply_beef": 1, "supply_buns": 1, "supply_potatoes": 1, "supply_lettuce": 1, "supply_tomatoes": 1, "supply_coffee": 1},
-		"accent": Color("d9483b"), "default_name": "The Corner Diner", "tagline": "Burgers off the grill, crispy fries and bottomless coffee.",
+		"accent": Color("d9483b"), "sign_text": "DINER", "default_name": "The Corner Diner", "tagline": "Burgers off the grill, crispy fries and bottomless coffee.",
 		"description": "Classic table service. Grill patties to medium, fry potatoes, chop salad. Busy at lunch and dinner."})
 	_format("coffee_shop", "Coffee Shop", {
 		"menu": ["coffee", "latte", "croissant", "muffin"], "open_hour": 7, "close_hour": 15, "base_groups": 11.0,
@@ -533,7 +556,7 @@ func _formats() -> void:
 		"supplies": ["supply_coffee", "supply_milk", "supply_croissants", "supply_muffins", "supply_jam"],
 		"opening": {"supply_coffee": 2, "supply_milk": 1, "supply_croissants": 1, "supply_muffins": 1},
 		"food_chance": 0.5, "drink_bonus": 0.45,
-		"accent": Color("8a5a3c"), "default_name": "Bean There", "tagline": "Early mornings, lattes and warm croissants.",
+		"accent": Color("8a5a3c"), "sign_text": "CAFE", "default_name": "Bean There", "tagline": "Early mornings, lattes and warm croissants.",
 		"description": "Lots of small, quick orders. Keep the coffee machines loaded, bake croissants golden, and watch the morning rush."})
 	_format("pizza_parlor", "Pizza Parlor", {
 		"menu": ["pizza", "salad", "soda"], "open_hour": 12, "close_hour": 22, "base_groups": 8.0,
@@ -544,7 +567,7 @@ func _formats() -> void:
 		"supplies": ["supply_dough", "supply_sauce", "supply_cheese", "supply_pepperoni", "supply_mushrooms", "supply_lettuce", "supply_tomatoes", "supply_syrup"],
 		"opening": {"supply_dough": 1, "supply_sauce": 1, "supply_cheese": 1, "supply_pepperoni": 1, "supply_mushrooms": 1, "supply_lettuce": 1, "supply_tomatoes": 1, "supply_syrup": 1},
 		"drink_bonus": 0.1,
-		"accent": Color("e2604a"), "default_name": "Slice of Life", "tagline": "Build it, bake it, serve it hot.",
+		"accent": Color("e2604a"), "sign_text": "PIZZA", "default_name": "Slice of Life", "tagline": "Build it, bake it, serve it hot.",
 		"description": "Assemble pizzas on the plate (dough, sauce, cheese, toppings) and bake the whole plate. Big family tables in the evening."})
 	_format("bar", "Bar & Grill", {
 		"menu": ["beer", "soda", "wings", "fries"], "open_hour": 16, "close_hour": 24, "base_groups": 9.0,
@@ -555,17 +578,38 @@ func _formats() -> void:
 		"supplies": ["supply_kegs", "supply_syrup", "supply_wings", "supply_dip", "supply_potatoes"],
 		"opening": {"supply_kegs": 1, "supply_syrup": 1, "supply_wings": 1, "supply_dip": 1, "supply_potatoes": 1},
 		"food_chance": 0.6, "drink_bonus": 0.5,
-		"accent": Color("3f6d4e"), "default_name": "The Tipsy Tap", "tagline": "Pints, wings and the big game.",
+		"accent": Color("3f6d4e"), "sign_text": "BAR", "default_name": "The Tipsy Tap", "tagline": "Pints, wings and the big game.",
 		"description": "Open late. Pour pints before they foam over, fry wings and fries, and keep the kegs coming."})
 
 
-func _locations() -> void:
+func _location(id: String, name: String, opts: Dictionary) -> void:
 	var l := LocationDef.new()
-	l.id = &"main_street"
-	l.display_name = "Main Street"
-	l.layout_path = "res://data/layouts/main_street.json"
-	l.demand = 1.0
-	var ex: Array[StringName] = [&"dining_annex", &"dish_room", &"walk_in_cooler", &"patio"]
-	l.expansions = ex
-	l.description = "A small-town storefront with room to grow out back."
-	_save(l, "%s/locations/main_street.tres" % R)
+	l.id = StringName(id)
+	l.display_name = name
+	for k in opts:
+		var v = opts[k]
+		if k == "expansions":
+			var arr: Array[StringName] = []
+			for x in v:
+				arr.push_back(StringName(x))
+			v = arr
+		elif k == "stops":
+			v = PackedStringArray(v)
+		l.set(k, v)
+	_save(l, "%s/locations/%s.tres" % [R, id])
+
+
+func _locations() -> void:
+	_location("main_street", "Main Street", {"layout_path": "res://data/layouts/main_street.json",
+		"expansions": ["dining_annex", "dish_room", "walk_in_cooler", "patio"], "theme": "street", "supply_mode": "truck",
+		"accent": Color("4f8f8a"), "tagline": "A small-town storefront with room to grow.",
+		"description": "The classic. Order tomorrow's ingredients from the manager's desk; a truck delivers them every morning."})
+	_location("express", "Dining Car Express", {"layout_path": "res://data/layouts/train.json",
+		"expansions": ["cooler_car"], "theme": "train", "supply_mode": "market",
+		"stops": ["Central Depot", "Millbrook", "Cedar Falls", "Port Quinn", "Ashdown", "Harlow Junction", "Briar Hill", "Stonebridge", "Lark Valley"],
+		"accent": Color("2f5d50"), "tagline": "A restaurant on rails. Shop at every stop.",
+		"description": "No delivery truck: buy ingredients from market stalls on the platform at each stop, and get back aboard before the whistle. Every stop has different deals."})
+	_location("orbital", "Orbital Galley", {"layout_path": "res://data/layouts/space.json",
+		"expansions": ["hydro_bay"], "theme": "space", "supply_mode": "grow",
+		"accent": Color("3d4f7a"), "tagline": "Feeding hungry travellers in orbit.",
+		"description": "Nothing gets delivered up here: grow vegetables in hydroponic planters and print everything else on the food printer (it costs credits). Alien guests welcome."})

@@ -133,6 +133,11 @@ func apply_shared_standing(d: Dictionary) -> void:
 func morning_delivery(first_day: bool) -> void:
 	var items := []
 	var cost := 0.0
+	if not first_day and world.location and world.location.supply_mode != "truck":
+		# The train buys at its stops and the space station grows its own:
+		# only the free opening stock ever arrives.
+		order.clear()
+		return
 	if first_day:
 		var fmt := world.format
 		for s in Content.supplies_for(fmt):

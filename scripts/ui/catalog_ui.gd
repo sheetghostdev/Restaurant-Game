@@ -185,8 +185,9 @@ func _build_equipment() -> void:
 	var defs: Array = Content.sorted_values(Content.fixtures)
 	defs.sort_custom(func(a, b): return a.category < b.category or (a.category == b.category and a.price < b.price))
 	var last_cat := ""
+	var theme := w.location.theme if w.location else "street"
 	for fd in defs:
-		if not fd.purchasable:
+		if not fd.purchasable or (fd.only_theme != "" and fd.only_theme != theme):
 			continue
 		if fd.category != last_cat:
 			last_cat = fd.category
@@ -233,6 +234,15 @@ func _build_menu() -> void:
 
 func _build_supplies() -> void:
 	var w := hud.world
+	var mode := w.location.supply_mode if w.location else "truck"
+	if mode != "truck":
+		var txt := "There is no delivery truck on the train. When it stops, market stalls open on the platform: GRAB a stall to buy a crate, then carry it aboard before the whistle. Every stop sells different things, and one item is always a DEAL. The depot market in the morning sells everything."
+		if mode == "grow":
+			txt = "Nothing gets delivered in orbit. Hydroponic planters grow vegetables for free (USE to pick the crop, GRAB to harvest). The food printer prints everything else, one portion at a time, for credits (USE to choose, GRAB to take). Buy more of both under Equipment."
+		var info := UITheme.label(txt, 18, "regular", Pal.UI_INK)
+		info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_content.add_child(info)
+		return
 	var hint := UITheme.label("The truck brings only what you order here, next morning (paid on delivery). Tick Auto to have it come every day. Rush orders cost %d%% more and arrive in under a minute." % roundi((DeliveryManager.RUSH_MARKUP - 1.0) * 100), 16, "regular", Pal.UI_INK_SOFT)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_content.add_child(hint)

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="LocationDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/location_def.gd" id="1_whrw5"]
+
+[resource]
+script = ExtResource("1_whrw5")
+id = &"orbital"
+display_name = "Orbital Galley"
+layout_path = "res://data/layouts/space.json"
+expansions = Array[StringName]([&"hydro_bay"])
+theme = "space"
+supply_mode = "grow"
+stops = PackedStringArray()
+accent = Color(0.23921569, 0.30980393, 0.47843137, 1)
+tagline = "Feeding hungry travellers in orbit."
+description = "Nothing gets delivered up here: grow vegetables in hydroponic planters and print everything else on the food printer (it costs credits). Alien guests welcome."

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_6i6rv"]
+
+[resource]
+script = ExtResource("1_6i6rv")
+id = &"hydroponics"
+display_name = "Hydroponics Bay"
+floor_style = "grate"
+floor_a = Color(0.33333334, 0.47843137, 0.33333334, 1)
+floor_b = Color(0.24705882, 0.3529412, 0.2627451, 1)
+wall_color = Color(0.8901961, 0.9372549, 0.8784314, 1)
+has_windows = false
+light_color = Color(0.9137255, 1, 0.8509804, 1)

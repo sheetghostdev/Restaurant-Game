@@ -10,4 +10,5 @@ model = &"coffee_beans"
 color = Color(0.3529412, 0.21176471, 0.13333334, 1)
 tags = PackedStringArray("beans")
 unit_cost = 0.8
+grow_seconds = 70.0
 description = "Pour into the coffee machine's hopper (10 cups per bag)."

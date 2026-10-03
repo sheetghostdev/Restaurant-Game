@@ -232,6 +232,10 @@ func _hat(b: MeshBuilder, hat: StringName, col: Color) -> void:
 		&"bow":
 			b.box(Vector3(0.1, 0.02, 0.0), Vector3(0.09, 0.07, 0.06), col, 0.02)
 			b.box(Vector3(0.19, 0.02, 0.0), Vector3(0.09, 0.07, 0.06), col, 0.02)
+		&"antennae":
+			for x in [-0.09, 0.09]:
+				b.box(Vector3(x, 0.06, 0.0), Vector3(0.025, 0.18, 0.025), col.darkened(0.2))
+				b.sphere(Vector3(x, 0.17, 0.0), Vector3(0.045, 0.045, 0.045), col.lightened(0.25), 0)
 		_:
 			pass
 

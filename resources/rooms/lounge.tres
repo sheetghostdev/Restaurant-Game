@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_dqe76"]
+
+[resource]
+script = ExtResource("1_dqe76")
+id = &"lounge"
+display_name = "Star Lounge"
+floor_style = "carpet"
+floor_a = Color(0.18039216, 0.22745098, 0.36078432, 1)
+floor_b = Color(0.23137255, 0.2901961, 0.44705883, 1)
+wall_color = Color(0.8745098, 0.89411765, 0.93333334, 1)
+customer_area = true
+light_color = Color(0.9098039, 0.89411765, 1, 1)

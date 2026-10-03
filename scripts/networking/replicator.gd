@@ -193,6 +193,9 @@ func apply_shared(key: StringName, data: Dictionary) -> void:
 		&"standing": world.deliveries.apply_shared_standing(data)
 		&"menu": world.orders.apply_shared_menu(data)
 		&"power": world.disasters.apply_shared_power(data)
+		&"train", &"orbit":
+			if world.theme_node and world.theme_node.has_method("apply_shared"):
+				world.theme_node.apply_shared(data)
 		&"results": Events.day_results.emit(data)
 		&"layout":
 			world.grid.load_layout(data)

@@ -18,6 +18,7 @@ extends Resource
 @export var chop_work := 2.0                      ## Seconds of chopping.
 @export var cook_profile: CookProfile
 @export var plate_layer := 0                      ## Stacking order when plated.
+@export var grow_seconds := 0.0                   ## > 0: hydroponic planters can grow it (seconds per unit).
 @export_group("Freshness")
 @export var perishable := false
 @export var spoil_seconds := 300.0                ## Time out of cold storage before spoiling.

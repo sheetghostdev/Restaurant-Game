@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_2dnj1"]
+
+[resource]
+script = ExtResource("1_2dnj1")
+id = &"coach"
+display_name = "Passenger Coach"
+floor_style = "carpet"
+floor_a = Color(0.47843137, 0.18039216, 0.20392157, 1)
+floor_b = Color(0.5568628, 0.23529412, 0.25882354, 1)
+wall_color = Color(0.9372549, 0.8862745, 0.7764706, 1)
+light_color = Color(1, 0.8509804, 0.65882355, 1)

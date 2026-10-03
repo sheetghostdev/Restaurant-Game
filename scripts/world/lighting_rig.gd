@@ -12,6 +12,9 @@ var builder: RestaurantBuilder
 
 var _current := {}
 var _target := {}
+## In orbit there's no sky and no sunset: a hard white sun that slowly
+## circles as the station turns, black space and lights always on.
+var space := false
 
 const KEYS := {
 	# hour: [sun_color, sun_energy, sun_pitch, sun_yaw, ambient_color, ambient_energy, sky_top, sky_horizon, sky_bottom, interior, street, windows]
@@ -83,6 +86,10 @@ func set_hour(hour: float, instant := false) -> void:
 
 
 func _sample(hour: float) -> Dictionary:
+	if space:
+		var d := _to_dict([Color("fff6ea"), 1.55, -52.0, 0.0, Color("aab4d6"), 0.36, Color("05070f"), Color("0b1022"), Color("02030a"), 1.25, 0.0, 0.85])
+		d["yaw"] = hour * 12.0 - 150.0
+		return d
 	var hours := KEYS.keys()
 	hours.sort()
 	var h0: float = hours[0]

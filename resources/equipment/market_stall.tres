@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/market_stall.tscn" id="1_5ymv7"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_262td"]
+
+[resource]
+script = ExtResource("2_262td")
+id = &"market_stall"
+display_name = "Market Stall"
+scene = ExtResource("1_5ymv7")
+category = "service"
+price = 0.0
+purchasable = false
+movable = false
+model = &"market_stall"
+collision_height = 1.0
+allowed_outdoors = true
+description = "Sells crates on a station platform."

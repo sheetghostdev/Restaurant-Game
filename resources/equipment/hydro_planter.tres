@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/hydro_planter.tscn" id="1_4wuik"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_j5uis"]
+
+[resource]
+script = ExtResource("2_j5uis")
+id = &"hydro_planter"
+display_name = "Hydroponic Planter"
+scene = ExtResource("1_4wuik")
+price = 120.0
+only_theme = "space"
+model = &"hydro_planter"
+powered = true
+collision_height = 1.0
+description = "Grows vegetables for free, slowly. USE to choose the crop, GRAB to harvest."

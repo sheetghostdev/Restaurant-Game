@@ -19,8 +19,13 @@ func _physics_process(delta: float) -> void:
 	if phase == GameConst.Phase.MORNING:
 		var since := world.day.hour - world.day.morning_hour()
 		_tip(&"format", "%s: %s" % [world.format.display_name, world.format.description])
+		var mode := world.location.supply_mode
+		if mode == "market" and since > 0.2:
+			_tip(&"market", "No delivery truck on a train: the depot market is open on the platform. GRAB a stall to buy a crate. During service the train stops a few times — new stalls, new deals. Get back aboard before the whistle or your shopping stays on the platform!")
+		elif mode == "grow" and since > 0.2:
+			_tip(&"grow", "Nothing is delivered in orbit. Planters grow vegetables (USE to choose the crop, GRAB to harvest). The food printer prints everything else for credits (USE to choose, GRAB to take).")
 		if _crates_on_dock() > 0:
-			_tip(&"dock", "The delivery is on the dock! GRAB crates and carry them inside. Chilled crates go in the glass fridges — they spoil outside.")
+			_tip(&"dock", "Your opening stock has arrived! GRAB crates and carry them to the shelves. Chilled crates go in the glass fridges — they spoil outside.")
 		elif since > 0.4:
 			_tip(&"prep", "Prep ahead: USE a crate to take one ingredient, chop on a cutting board (hold USE). Prepped food doesn't keep overnight.")
 		if since > 1.0:
@@ -44,15 +49,19 @@ func _physics_process(delta: float) -> void:
 	elif phase == GameConst.Phase.CLOSING:
 		_tip(&"closing", "Closing time. Finish the last tables, then hold USE on the sign to end the day.")
 	elif phase == GameConst.Phase.EVENING:
-		_tip(&"evening", "Evening is for planning. The truck only brings what you order: use the manager's desk in storage to order tomorrow's supplies (tick Auto for things you want every day), buy equipment and hire help.")
+		if world.location.supply_mode == "truck":
+			_tip(&"evening", "Evening is for planning. The truck only brings what you order: use the manager's desk in storage to order tomorrow's supplies (tick Auto for things you want every day), buy equipment and hire help.")
+		else:
+			_tip(&"evening", "Evening is for planning: buy equipment and hire help at the manager's desk.")
 
 
 func _crates_on_dock() -> int:
 	var n := 0
 	for it in world.items_root.get_children():
 		if it is CrateItem and (it as CrateItem).count > 0:
-			var rt := world.grid.room_type_at(GameConst.world_to_cell((it as CrateItem).global_position))
-			if rt and rt.id == &"loading":
+			var c := GameConst.world_to_cell((it as CrateItem).global_position)
+			var rt := world.grid.room_type_at(c)
+			if (rt and rt.id == &"loading") or c in world.grid.delivery_zone:
 				n += 1
 	return n
 

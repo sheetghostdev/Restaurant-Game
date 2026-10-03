@@ -9,6 +9,8 @@ extends Resource
 @export_enum("appliance", "furniture", "storage", "automation", "decor", "service") var category := "appliance"
 @export var price := 50.0
 @export var purchasable := true
+@export var movable := true                       ## Can be lifted in build mode.
+@export var only_theme := ""                      ## Sold only at locations with this theme ("space").
 @export var unlock_day := 1
 @export var unlock_reputation := 0.0
 @export var model: StringName                     ## Catalog / preview model.

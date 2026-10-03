@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_j8y1f"]
+
+[resource]
+script = ExtResource("1_j8y1f")
+id = &"baggage"
+display_name = "Baggage Car"
+floor_a = Color(0.65882355, 0.5411765, 0.38431373, 1)
+floor_b = Color(0.56078434, 0.4509804, 0.3137255, 1)
+wall_color = Color(0.84705883, 0.76862746, 0.627451, 1)
+has_windows = false
+light_color = Color(1, 0.9137255, 0.7882353, 1)

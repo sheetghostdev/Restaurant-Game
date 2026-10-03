@@ -1,0 +1,770 @@
+{
+ "name": "Dining Car Express",
+ "lot": [
+  -8,
+  -3,
+  34,
+  13
+ ],
+ "money": 250.0,
+ "reputation": 1.0,
+ "facade": "2f5d50",
+ "window_step": 2,
+ "theme": "train",
+ "rooms": [
+  {
+   "id": "coach",
+   "type": "coach",
+   "rect": [
+    -6,
+    0,
+    6,
+    6
+   ]
+  },
+  {
+   "id": "dining",
+   "type": "dining_car",
+   "rect": [
+    0,
+    0,
+    10,
+    6
+   ]
+  },
+  {
+   "id": "kitchen",
+   "type": "galley",
+   "rect": [
+    10,
+    0,
+    7,
+    6
+   ]
+  },
+  {
+   "id": "baggage",
+   "type": "baggage",
+   "rect": [
+    17,
+    0,
+    4,
+    6
+   ]
+  },
+  {
+   "id": "platform",
+   "type": "platform",
+   "rect": [
+    -6,
+    6,
+    27,
+    3
+   ]
+  }
+ ],
+ "openings": [
+  [
+   9,
+   2,
+   10,
+   2,
+   "swing"
+  ],
+  [
+   16,
+   2,
+   17,
+   2,
+   "door"
+  ],
+  [
+   18,
+   5,
+   18,
+   6,
+   "train_door"
+  ],
+  [
+   19,
+   5,
+   19,
+   6,
+   "train_door"
+  ],
+  [
+   -4,
+   5,
+   -4,
+   6,
+   "train_door"
+  ],
+  [
+   -3,
+   5,
+   -3,
+   6,
+   "train_door"
+  ]
+ ],
+ "front_door": [
+  0,
+  2,
+  -1,
+  2
+ ],
+ "delivery_zone": [
+  [
+   18,
+   2
+  ],
+  [
+   19,
+   2
+  ],
+  [
+   18,
+   3
+  ],
+  [
+   19,
+   3
+  ]
+ ],
+ "street": {
+  "spawn_a": [
+   -5,
+   1
+  ],
+  "spawn_b": [
+   -5,
+   4
+  ],
+  "queue": [
+   -2,
+   2
+  ],
+  "queue_dir": [
+   -1,
+   0
+  ],
+  "player_spawn": [
+   13,
+   2
+  ],
+  "staff_spawn": [
+   19,
+   4
+  ],
+  "inside_door": [
+   18,
+   4
+  ]
+ },
+ "ground": [
+  {
+   "type": "ballast",
+   "rect": [
+    -8,
+    -3,
+    34,
+    2
+   ]
+  },
+  {
+   "type": "ballast",
+   "rect": [
+    -8,
+    0,
+    2,
+    6
+   ]
+  },
+  {
+   "type": "ballast",
+   "rect": [
+    21,
+    0,
+    5,
+    6
+   ]
+  }
+ ],
+ "props": [
+  {
+   "m": "coach_seat",
+   "p": [
+    -5.5,
+    0.45
+   ],
+   "y": 90
+  },
+  {
+   "m": "coach_seat",
+   "p": [
+    -5.5,
+    5.55
+   ],
+   "y": 90
+  },
+  {
+   "m": "coach_seat",
+   "p": [
+    -4.5,
+    0.45
+   ],
+   "y": 90
+  },
+  {
+   "m": "coach_seat",
+   "p": [
+    -4.5,
+    5.55
+   ],
+   "y": 90
+  },
+  {
+   "m": "coach_seat",
+   "p": [
+    -3.5,
+    0.45
+   ],
+   "y": 90
+  },
+  {
+   "m": "coach_seat",
+   "p": [
+    -3.5,
+    5.55
+   ],
+   "y": 90
+  },
+  {
+   "m": "coach_seat",
+   "p": [
+    -2.5,
+    0.45
+   ],
+   "y": 90
+  },
+  {
+   "m": "coach_seat",
+   "p": [
+    -2.5,
+    5.55
+   ],
+   "y": 90
+  },
+  {
+   "m": "coach_seat",
+   "p": [
+    -1.5,
+    0.45
+   ],
+   "y": 90
+  },
+  {
+   "m": "coach_seat",
+   "p": [
+    -1.5,
+    5.55
+   ],
+   "y": 90
+  },
+  {
+   "m": "gangway",
+   "p": [
+    0.0,
+    -0.16
+   ]
+  },
+  {
+   "m": "gangway",
+   "p": [
+    10.0,
+    -0.16
+   ]
+  },
+  {
+   "m": "gangway",
+   "p": [
+    17.0,
+    -0.16
+   ]
+  }
+ ],
+ "fixtures": [
+  {
+   "def": "table",
+   "cell": [
+    2,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    1,
+    0
+   ],
+   "rot": 1
+  },
+  {
+   "def": "chair",
+   "cell": [
+    3,
+    0
+   ],
+   "rot": 3
+  },
+  {
+   "def": "table",
+   "cell": [
+    2,
+    1
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    1,
+    1
+   ],
+   "rot": 1
+  },
+  {
+   "def": "chair",
+   "cell": [
+    3,
+    1
+   ],
+   "rot": 3
+  },
+  {
+   "def": "table",
+   "cell": [
+    2,
+    4
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    1,
+    4
+   ],
+   "rot": 1
+  },
+  {
+   "def": "chair",
+   "cell": [
+    3,
+    4
+   ],
+   "rot": 3
+  },
+  {
+   "def": "table",
+   "cell": [
+    2,
+    5
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    1,
+    5
+   ],
+   "rot": 1
+  },
+  {
+   "def": "chair",
+   "cell": [
+    3,
+    5
+   ],
+   "rot": 3
+  },
+  {
+   "def": "table",
+   "cell": [
+    6,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    5,
+    0
+   ],
+   "rot": 1
+  },
+  {
+   "def": "chair",
+   "cell": [
+    7,
+    0
+   ],
+   "rot": 3
+  },
+  {
+   "def": "table",
+   "cell": [
+    6,
+    1
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    5,
+    1
+   ],
+   "rot": 1
+  },
+  {
+   "def": "chair",
+   "cell": [
+    7,
+    1
+   ],
+   "rot": 3
+  },
+  {
+   "def": "table",
+   "cell": [
+    6,
+    4
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    5,
+    4
+   ],
+   "rot": 1
+  },
+  {
+   "def": "chair",
+   "cell": [
+    7,
+    4
+   ],
+   "rot": 3
+  },
+  {
+   "def": "table",
+   "cell": [
+    6,
+    5
+   ],
+   "rot": 0
+  },
+  {
+   "def": "chair",
+   "cell": [
+    5,
+    5
+   ],
+   "rot": 1
+  },
+  {
+   "def": "chair",
+   "cell": [
+    7,
+    5
+   ],
+   "rot": 3
+  },
+  {
+   "def": "open_sign",
+   "cell": [
+    0,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "register",
+   "cell": [
+    0,
+    5
+   ],
+   "rot": 2
+  },
+  {
+   "def": "menu_board",
+   "cell": [
+    4,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "plant_pot",
+   "cell": [
+    9,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "plant_pot",
+   "cell": [
+    9,
+    5
+   ],
+   "rot": 0
+  },
+  {
+   "def": "counter",
+   "cell": [
+    10,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "fridge",
+   "cell": [
+    15,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "fridge",
+   "cell": [
+    16,
+    0
+   ],
+   "rot": 0
+  },
+  {
+   "def": "plate_rack",
+   "cell": [
+    10,
+    5
+   ],
+   "rot": 2,
+   "state": {
+    "DishRack": {
+     "n": 8
+    }
+   }
+  },
+  {
+   "def": "mug_rack",
+   "cell": [
+    11,
+    5
+   ],
+   "rot": 2,
+   "state": {
+    "DishRack": {
+     "n": 6
+    }
+   }
+  },
+  {
+   "def": "counter",
+   "cell": [
+    12,
+    5
+   ],
+   "rot": 2
+  },
+  {
+   "def": "sink",
+   "cell": [
+    13,
+    5
+   ],
+   "rot": 2
+  },
+  {
+   "def": "dishwasher",
+   "cell": [
+    14,
+    5
+   ],
+   "rot": 2
+  },
+  {
+   "def": "trash_bin",
+   "cell": [
+    15,
+    5
+   ],
+   "rot": 2
+  },
+  {
+   "def": "counter",
+   "cell": [
+    16,
+    5
+   ],
+   "rot": 2
+  },
+  {
+   "def": "mop_station",
+   "cell": [
+    16,
+    3
+   ],
+   "rot": 3
+  },
+  {
+   "def": "extinguisher_station",
+   "cell": [
+    16,
+    4
+   ],
+   "rot": 3
+  },
+  {
+   "def": "shelf",
+   "cell": [
+    17,
+    5
+   ],
+   "rot": 2
+  },
+  {
+   "def": "terminal",
+   "cell": [
+    20,
+    5
+   ],
+   "rot": 2
+  },
+  {
+   "def": "dumpster",
+   "cell": [
+    20,
+    3
+   ],
+   "rot": 3
+  }
+ ],
+ "items": [
+  {
+   "cell": [
+    16,
+    4
+   ],
+   "def": "extinguisher"
+  },
+  {
+   "cell": [
+    16,
+    3
+   ],
+   "def": "mop"
+  }
+ ],
+ "stations": [
+  [
+   11,
+   0,
+   0
+  ],
+  [
+   12,
+   0,
+   0
+  ],
+  [
+   13,
+   0,
+   0
+  ],
+  [
+   14,
+   0,
+   0
+  ],
+  [
+   12,
+   3,
+   2
+  ],
+  [
+   13,
+   3,
+   2
+  ],
+  [
+   11,
+   3,
+   2
+  ],
+  [
+   14,
+   3,
+   2
+  ]
+ ],
+ "pantry": [
+  [
+   17,
+   0
+  ],
+  [
+   18,
+   0
+  ],
+  [
+   19,
+   0
+  ],
+  [
+   20,
+   0
+  ]
+ ],
+ "market_cells": [
+  [
+   16,
+   8
+  ],
+  [
+   14,
+   8
+  ],
+  [
+   12,
+   8
+  ],
+  [
+   20,
+   8
+  ],
+  [
+   10,
+   8
+  ],
+  [
+   8,
+   8
+  ],
+  [
+   6,
+   8
+  ],
+  [
+   4,
+   8
+  ]
+ ]
+}

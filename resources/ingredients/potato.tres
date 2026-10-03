@@ -12,4 +12,5 @@ tags = PackedStringArray("choppable", "veg")
 unit_cost = 0.5
 chop_into = &"fries"
 chop_work = 2.2
+grow_seconds = 22.0
 description = "Cut into fries, then fry until crispy."

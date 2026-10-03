@@ -197,10 +197,17 @@ func buy_fixture(def_id: StringName) -> bool:
 	var fd := Content.fixture(def_id)
 	if fd == null or not fd.purchasable:
 		return false
+	if fd.only_theme != "" and world.location and fd.only_theme != world.location.theme:
+		return false
 	if not world.economy.spend(fd.price, fd.display_name):
 		return false
 	world.deliveries.order_package(def_id)
-	Events.notify("%s ordered — it'll be on the loading dock" % fd.display_name, &"info")
+	var where := "on the loading dock"
+	if not world.grid.delivery_zone.is_empty():
+		var rt := world.grid.room_type_at(world.grid.delivery_zone[0])
+		if rt and not rt.outdoor:
+			where = "in the %s" % rt.display_name.to_lower()
+	Events.notify("%s ordered — it'll be %s" % [fd.display_name, where], &"info")
 	return true
 
 

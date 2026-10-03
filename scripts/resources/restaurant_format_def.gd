@@ -24,6 +24,7 @@ extends Resource
 @export var drink_bonus := 0.0                    ## Added to every guest's chance of ordering a drink.
 @export var accent := Color.WHITE                 ## Card colour on the new-game screen.
 @export var tagline := ""
-@export var default_name := ""                    ## Restaurant name when the player doesn't pick one.                         ## One line for the new-game screen.
+@export var default_name := ""                    ## Restaurant name when the player doesn't pick one.
+@export var sign_text := "DINER"                  ## The big word on the street sign.                         ## One line for the new-game screen.
 @export var playable := true
 @export_multiline var description := ""

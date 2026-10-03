@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ExpansionDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/expansion_def.gd" id="1_246av"]
+
+[resource]
+script = ExtResource("1_246av")
+id = &"hydro_bay"
+display_name = "Hydroponics Bay II"
+room_type = &"hydroponics"
+rect = Rect2i(16, -4, 5, 4)
+price = 500.0
+doors = Array[Vector4i]([Vector4i(18, -1, 18, 0)])
+starter_fixtures = Array[Dictionary]([{
+"cell": Vector2i(16, -4),
+"def": "hydro_planter",
+"rot": 0
+}, {
+"cell": Vector2i(17, -4),
+"def": "hydro_planter",
+"rot": 0
+}, {
+"cell": Vector2i(19, -4),
+"def": "hydro_planter",
+"rot": 0
+}, {
+"cell": Vector2i(20, -4),
+"def": "hydro_planter",
+"rot": 0
+}])
+description = "A second grow bay with four more planters."

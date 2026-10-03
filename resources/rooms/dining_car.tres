@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_juu5e"]
+
+[resource]
+script = ExtResource("1_juu5e")
+id = &"dining_car"
+display_name = "Dining Car"
+floor_a = Color(0.6901961, 0.47843137, 0.29803923, 1)
+floor_b = Color(0.5568628, 0.36862746, 0.21960784, 1)
+wall_color = Color(0.94509804, 0.89411765, 0.78431374, 1)
+customer_area = true
+light_color = Color(1, 0.8352941, 0.6039216, 1)

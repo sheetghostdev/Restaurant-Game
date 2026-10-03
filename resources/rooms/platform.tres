@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_np361"]
+
+[resource]
+script = ExtResource("1_np361")
+id = &"platform"
+display_name = "Station Platform"
+floor_style = "none"
+floor_a = Color(0.7411765, 0.7176471, 0.67058825, 1)
+floor_b = Color(0.6627451, 0.6392157, 0.5921569, 1)
+wall_color = Color(0.18431373, 0.49803922, 0.47843137, 1)
+outdoor = true

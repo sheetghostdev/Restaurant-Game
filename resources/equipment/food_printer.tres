@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/food_printer.tscn" id="1_cvolh"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_v8utt"]
+
+[resource]
+script = ExtResource("2_v8utt")
+id = &"food_printer"
+display_name = "Food Printer"
+scene = ExtResource("1_cvolh")
+price = 300.0
+only_theme = "space"
+model = &"food_printer"
+can_break = true
+powered = true
+collision_height = 1.5
+description = "Prints any ingredient, one portion at a time, for credits. USE to choose what it prints."

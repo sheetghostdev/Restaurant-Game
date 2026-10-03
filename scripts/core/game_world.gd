@@ -36,6 +36,7 @@ var entities := {}               ## net_id -> Node
 var location: LocationDef
 var format: RestaurantFormatDef
 var restaurant_name := "The Corner Diner"
+var theme_node: Node             ## Train timetable / space station extras, if any.
 var unlocks: Array[StringName] = []
 var _next_id := 1
 var _layout := {}
@@ -81,6 +82,7 @@ func start_new(location_id: StringName, format_id: StringName, name_text := "") 
 	_layout = layout
 	grid.load_layout(layout)
 	builder.setup(grid, layout)
+	builder.sign_text = format.sign_text
 	builder.rebuild()
 	if Net.is_authority():
 		for f in layout.get("fixtures", []):
@@ -105,6 +107,7 @@ func load_save(data: Dictionary) -> void:
 	_layout = _read_json(location.layout_path)
 	grid.load_layout(data.get("layout", _layout))
 	builder.setup(grid, _layout)
+	builder.sign_text = format.sign_text
 	builder.rebuild()
 	unlocks.clear()
 	for u in data.get("unlocks", []):
@@ -169,6 +172,7 @@ func _ensure_layout_fixtures() -> void:
 
 func _after_start() -> void:
 	_started = true
+	_start_theme()
 	var amb := Ambience.new()
 	amb.world = self
 	effects_root.add_child(amb)
@@ -184,6 +188,24 @@ func _after_start() -> void:
 	Events.world_ready.emit(self)
 
 
+## Locations with their own rules get a theme node: the train's timetable
+## and platform, the space station's starfield.
+func _start_theme() -> void:
+	match location.theme:
+		"train":
+			var tl := TrainLine.new()
+			tl.name = "Train"
+			tl.world = self
+			theme_node = tl
+			add_child(tl)
+		"space":
+			var so := SpaceOrbit.new()
+			so.name = "Orbit"
+			so.world = self
+			theme_node = so
+			add_child(so)
+
+
 ## Client: build the static restaurant from the host's data; entities arrive
 ## through replication.
 func start_client(meta: Dictionary, layout: Dictionary) -> void:
@@ -194,6 +216,7 @@ func start_client(meta: Dictionary, layout: Dictionary) -> void:
 	_layout = _read_json(location.layout_path)
 	grid.load_layout(layout)
 	builder.setup(grid, _layout)
+	builder.sign_text = format.sign_text
 	builder.rebuild()
 	_after_start()
 

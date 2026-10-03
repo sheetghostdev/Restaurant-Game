@@ -9,6 +9,7 @@ var icons: IconRenderer
 
 var _day_label: Label
 var _phase_label: Label
+var _theme_label: Label          ## Train: "Next stop: Millbrook · 42 s"
 var _clock_label: Label
 var _day_bar: DayBar
 var _money_label: Label
@@ -99,6 +100,9 @@ func _build_top_left() -> void:
 	row.add_child(_clock_label)
 	_phase_label = UITheme.label("Morning Prep", 18, "bold", Pal.UI_ACCENT)
 	v.add_child(_phase_label)
+	_theme_label = UITheme.label("", 16, "bold", Pal.UI_INK_SOFT)
+	_theme_label.visible = false
+	v.add_child(_theme_label)
 	_day_bar = DayBar.new()
 	_day_bar.hud = self
 	_day_bar.custom_minimum_size = Vector2(230, 16)
@@ -217,6 +221,10 @@ func _process(delta: float) -> void:
 	else:
 		_phase_label.add_theme_color_override("font_color", Pal.UI_ACCENT if d.phase != GameConst.Phase.SERVICE else Pal.UI_GOOD)
 	_phase_label.text = phase_text
+	var tn := world.theme_node
+	var tl: String = tn.status_line() if tn and tn.has_method("status_line") else ""
+	_theme_label.visible = tl != ""
+	_theme_label.text = tl
 	_day_bar.queue_redraw()
 	# Money count-up
 	var target := world.economy.money
@@ -282,17 +290,29 @@ func _refresh_forecast() -> void:
 			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			l.custom_minimum_size = Vector2(270, 0)
 			_forecast_body.add_child(l)
-		var tip := UITheme.label("Unload the truck, stock the fridge, prep food — then hold USE on the OPEN sign.", 15, "regular", Pal.UI_INK_SOFT)
+		var mode := world.location.supply_mode if world.location else "truck"
+		var morning_tip := "Unload the truck, stock the fridge, prep food — then hold USE on the OPEN sign."
+		if mode == "market":
+			morning_tip = "Shop at the depot market on the platform, stock the fridges, prep food — then hold USE on the OPEN sign to depart."
+		elif mode == "grow":
+			morning_tip = "Harvest the planters, print what you need, prep food — then hold USE on the OPEN sign."
+		var tip := UITheme.label(morning_tip, 15, "regular", Pal.UI_INK_SOFT)
 		tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		tip.custom_minimum_size = Vector2(270, 0)
 		_forecast_body.add_child(tip)
 	elif d.phase == GameConst.Phase.EVENING:
 		_forecast_body.add_child(UITheme.heading("Evening", 26))
-		var tip2 := UITheme.label("Order tomorrow's supplies at the manager's desk: the truck only brings what you order. Hold GRAB on furniture to move it, Q to rotate. Expand at the FOR SALE signs. Hold USE on the sign to end the day.", 15, "regular", Pal.UI_INK_SOFT)
+		var truck := world.location == null or world.location.supply_mode == "truck"
+		var evening_tip := "Order tomorrow's supplies at the manager's desk: the truck only brings what you order. "
+		if not truck:
+			evening_tip = "Buy equipment, staff and upgrades at the manager's desk. "
+		var tip2 := UITheme.label(evening_tip + "Hold GRAB on furniture to move it, Q to rotate. Expand at the FOR SALE signs. Hold USE on the sign to end the day.", 15, "regular", Pal.UI_INK_SOFT)
 		tip2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		tip2.custom_minimum_size = Vector2(270, 0)
 		_forecast_body.add_child(tip2)
-		if world.deliveries.ordered_crates() == 0:
+		if not truck:
+			pass
+		elif world.deliveries.ordered_crates() == 0:
 			_forecast_body.add_child(UITheme.label("Nothing ordered for tomorrow!", 17, "bold", Pal.UI_BAD))
 		else:
 			var cost := world.deliveries.order_cost()

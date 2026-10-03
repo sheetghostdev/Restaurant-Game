@@ -41,4 +41,5 @@ drink_bonus = 0.5
 accent = Color(0.24705882, 0.42745098, 0.30588236, 1)
 tagline = "Pints, wings and the big game."
 default_name = "The Tipsy Tap"
+sign_text = "BAR"
 description = "Open late. Pour pints before they foam over, fry wings and fries, and keep the kegs coming."

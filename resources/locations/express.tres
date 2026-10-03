@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="LocationDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/location_def.gd" id="1_q3alb"]
+
+[resource]
+script = ExtResource("1_q3alb")
+id = &"express"
+display_name = "Dining Car Express"
+layout_path = "res://data/layouts/train.json"
+expansions = Array[StringName]([&"cooler_car"])
+theme = "train"
+supply_mode = "market"
+stops = PackedStringArray("Central Depot", "Millbrook", "Cedar Falls", "Port Quinn", "Ashdown", "Harlow Junction", "Briar Hill", "Stonebridge", "Lark Valley")
+accent = Color(0.18431373, 0.3647059, 0.3137255, 1)
+tagline = "A restaurant on rails. Shop at every stop."
+description = "No delivery truck: buy ingredients from market stalls on the platform at each stop, and get back aboard before the whistle. Every stop has different deals."

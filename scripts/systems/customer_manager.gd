@@ -253,6 +253,12 @@ func _appearance_for(a: CustomerArchetype, index: int) -> Dictionary:
 			app["hat"] = &"bandana" if rng.randf() < 0.5 else &"none"
 			app["hat_color"] = Color("2e2622")
 			app["shirt"] = [Color("2e3440"), Color("3a2a3a"), Color("5a2a2a")][rng.randi_range(0, 2)]
+	if world.location and world.location.theme == "space" and rng.randf() < 0.6:
+		# Travellers from all over: green, blue, violet... some with antennae.
+		app["skin"] = [Color("8fd17f"), Color("7fb3e6"), Color("b28fd6"), Color("6fd3c0"), Color("e79ac7")][rng.randi_range(0, 4)]
+		if app.get("hat", &"none") == &"none" or rng.randf() < 0.5:
+			app["hat"] = &"antennae"
+			app["hat_color"] = app["skin"]
 	return app
 
 

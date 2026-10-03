@@ -12,4 +12,5 @@ tags = PackedStringArray("choppable", "veg")
 unit_cost = 0.4
 chop_into = &"mushroom_sliced"
 chop_work = 1.6
+grow_seconds = 20.0
 description = "Slice it for pizza."

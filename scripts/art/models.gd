@@ -113,6 +113,8 @@ static func mesh(key: StringName) -> Mesh:
 		pass
 	elif ModelsProps.build(key, b):
 		pass
+	elif ModelsWorld.build(key, b):
+		pass
 	else:
 		push_warning("Models: unknown model key '%s'" % key)
 		b.block(Vector3.ZERO, Vector3(0.3, 0.3, 0.3), Color.MAGENTA, 0.03)

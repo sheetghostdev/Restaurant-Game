@@ -10,7 +10,7 @@ extends Node
 signal layout_changed
 signal occupancy_changed
 
-const OPEN_TYPES := ["door", "front", "roller", "arch", "swing"]
+const OPEN_TYPES := ["door", "front", "roller", "arch", "swing", "train_door", "airlock"]
 
 var lot := Rect2i(-4, -8, 34, 24)
 var rooms: Array[Dictionary] = []          ## {id, type, rect: Rect2i}
@@ -19,6 +19,7 @@ var front_door := Vector4i.ZERO            ## inside cell (x,z) -> outside cell
 var delivery_zone: Array[Vector2i] = []
 var street := {}                           ## spawn/exit/queue points
 var built_expansions: Array[StringName] = []
+var locked := {}                           ## opening type -> true while those doors are shut (train doors between stops)
 
 var _cell_room := {}                       ## Vector2i -> room index
 var _fixtures := {}                        ## Vector2i -> Fixture
@@ -85,6 +86,17 @@ func save_layout() -> Dictionary:
 		"street": street,
 		"built_expansions": ex,
 	}
+
+
+## Shuts (or opens) every opening of `type`, e.g. the train's platform doors.
+func set_locked(type: String, on: bool) -> void:
+	if locked.has(type) == on:
+		return
+	if on:
+		locked[type] = true
+	else:
+		locked.erase(type)
+	nav.mark_dirty()
 
 
 func add_room(id: StringName, type: StringName, rect: Rect2i) -> void:
@@ -171,8 +183,9 @@ func wall_between(a: Vector2i, b: Vector2i) -> bool:
 	var rb := room_index(b)
 	if ra == rb:
 		return false
-	if openings.has(edge_key(a, b)):
-		return false
+	var op: String = openings.get(edge_key(a, b), "")
+	if op != "":
+		return locked.has(op)
 	var ta := room_type_at(a)
 	var tb := room_type_at(b)
 	var a_out := ta == null or ta.outdoor

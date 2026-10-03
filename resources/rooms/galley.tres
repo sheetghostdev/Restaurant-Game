@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomTypeDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/room_type_def.gd" id="1_0jr25"]
+
+[resource]
+script = ExtResource("1_0jr25")
+id = &"galley"
+display_name = "Galley"
+floor_style = "tile_checker"
+floor_a = Color(0.9019608, 0.8862745, 0.8392157, 1)
+floor_b = Color(0.7254902, 0.7607843, 0.76862746, 1)
+wall_color = Color(0.93333334, 0.9411765, 0.9098039, 1)
+light_color = Color(1, 0.94509804, 0.8627451, 1)

@@ -1,0 +1,19 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/fixtures/fixture.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/art/procedural_model.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/fixtures/components/breakable.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/fixtures/components/food_printer.gd" id="4"]
+
+[node name="FoodPrinter" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Model" type="MeshInstance3D" parent="."]
+script = ExtResource("2")
+model_key = &"food_printer"
+
+[node name="Breakable" type="Node" parent="."]
+script = ExtResource("3")
+
+[node name="FoodPrinter" type="Node" parent="."]
+script = ExtResource("4")

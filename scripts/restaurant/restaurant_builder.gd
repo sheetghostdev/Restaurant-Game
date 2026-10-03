@@ -26,12 +26,20 @@ var window_glass: Array[MeshInstance3D] = []
 var swing_doors: Array[Node3D] = []
 var _layout_props: Array = []
 var _ground_rects: Array = []
+var _facade := Pal.FACADE
+var _window_step := 3
+var _space := false
+var sign_text := "DINER"           ## Big word on the pole sign (the restaurant type).
+var sliding_doors: Array[SlidingDoor] = []
 
 
 func setup(g: RestaurantGrid, layout: Dictionary) -> void:
 	grid = g
 	_layout_props = layout.get("props", [])
 	_ground_rects = layout.get("ground", [])
+	_facade = Color(layout["facade"]) if layout.has("facade") else Pal.FACADE
+	_window_step = int(layout.get("window_step", 3))
+	_space = layout.get("ground_style", "") == "space"
 
 
 func rebuild() -> void:
@@ -41,6 +49,7 @@ func rebuild() -> void:
 	room_lights.clear()
 	window_glass.clear()
 	swing_doors.clear()
+	sliding_doors.clear()
 	_static = Node3D.new()
 	_static.name = "Static"
 	add_child(_static)
@@ -79,6 +88,9 @@ func _mi(mesh: Mesh, parent: Node3D = null, cast_shadows := true) -> MeshInstanc
 # -----------------------------------------------------------------------------
 
 func _build_plinth_and_ground() -> void:
+	if _space:
+		_build_hull()
+		return
 	var b := MeshBuilder.new()
 	b.ao_strength = 0.0
 	b.contact_shade = 0.0
@@ -129,6 +141,16 @@ func _build_plinth_and_ground() -> void:
 				_layer(b, rect, 0.008, Pal.ASPHALT.lightened(0.06))
 			"dirt":
 				_layer(b, rect, 0.005, Pal.DIRT)
+			"ballast":
+				# Railway gravel: speckled stones on a grey bed.
+				_layer(b, rect, 0.012, Color("8d877c"))
+				for x in range(int(rect.position.x), int(rect.end.x)):
+					for z in range(int(rect.position.y), int(rect.end.y)):
+						for k in 3:
+							var sp := Vector3(x + rng.randf(), GROUND_Y + 0.012, z + rng.randf())
+							b.block(sp, Vector3(0.12, 0.012, 0.1), Color("a29b8e").darkened(rng.randf() * 0.2))
+			"hull":
+				_layer(b, rect, 0.01, Color("4a5260"))
 			"parking":
 				_layer(b, rect, 0.008, Pal.ASPHALT.lightened(0.04))
 				var px := rect.position.x
@@ -136,6 +158,23 @@ func _build_plinth_and_ground() -> void:
 					_layer(b, Rect2(px - 0.04, rect.position.y + 0.2, 0.08, rect.size.y - 0.4), 0.014, Pal.ROAD_LINE)
 					px += 2.5
 	_mi(b.commit(Models.mat_main()), _static, false)
+
+
+## Space stations float: no plinth or grass, just the hull under each room,
+## with a lit trim line and some machinery hanging underneath.
+func _build_hull() -> void:
+	var b := MeshBuilder.new()
+	b.ao_strength = 0.0
+	var trim := MeshBuilder.new()
+	for room in grid.rooms:
+		var r: Rect2 = Rect2(room["rect"]).grow(0.12)
+		var c := r.get_center()
+		b.box(Vector3(c.x, -0.42, c.y), Vector3(r.size.x, 0.6, r.size.y), Color("5d6675"), 0.05)
+		b.box(Vector3(c.x, -0.85, c.y), Vector3(r.size.x - 0.6, 0.3, r.size.y - 0.6), Color("454c58"), 0.05)
+		trim.box(Vector3(c.x, -0.3, r.end.y + 0.005), Vector3(r.size.x - 0.2, 0.05, 0.02), Color("6fd3e0"))
+	_mi(b.commit(Models.mat_main()), _static)
+	var gm := _mi(trim.commit(Models.mat_emissive(Color("6fd3e0"), 1.6)), _static, false)
+	gm.name = "HullTrim"
 
 
 ## A flat slab lying on the grass whose top is `top` above it. Slabs are inset
@@ -166,6 +205,8 @@ func _build_floors() -> void:
 		# Grout / base slab under the tiles
 		# (Rect2i.get_center() rounds to whole cells: use the exact float centre,
 		# or slabs of odd-sized rooms slide half a cell under their neighbours.)
+		if rt.floor_style == "none":
+			continue   # drawn by the theme (the train's sliding platform)
 		var rc := Rect2(rect).get_center()
 		b.box(Vector3(rc.x, FLOOR_Y - 0.06, rc.y), Vector3(rect.size.x, 0.1, rect.size.y), rt.floor_b.darkened(0.25))
 		for x in range(rect.position.x, rect.end.x):
@@ -213,6 +254,21 @@ func _floor_cell(b: MeshBuilder, rt: RoomTypeDef, c: Vector2i, rng: RandomNumber
 		"loading":
 			var col5 := rt.floor_a.darkened(rng.randf() * 0.04)
 			b.box(Vector3(x + 0.5, FLOOR_Y - 0.01, z + 0.5), Vector3(0.99, 0.02, 0.99), col5, 0.003)
+		"carpet":
+			# Woven carpet: one piece per cell with a faint diamond motif.
+			b.box(Vector3(x + 0.5, FLOOR_Y - 0.01, z + 0.5), Vector3(1.0, 0.02, 1.0), rt.floor_a)
+			b.block(Vector3(x + 0.5, FLOOR_Y, z + 0.5), Vector3(0.22, 0.006, 0.22), rt.floor_b)
+		"deck":
+			# Ship deck plating with rivets at the corners.
+			var col6 := rt.floor_a.lerp(rt.floor_b, 0.15 if (c.x + c.y) % 2 == 0 else 0.0)
+			b.box(Vector3(x + 0.5, FLOOR_Y - 0.01, z + 0.5), Vector3(0.97, 0.02, 0.97), col6, 0.01)
+			for dx in [0.15, 0.85]:
+				for dz in [0.15, 0.85]:
+					b.block(Vector3(x + dx, FLOOR_Y, z + dz), Vector3(0.05, 0.006, 0.05), rt.floor_b.darkened(0.2))
+		"grate":
+			b.box(Vector3(x + 0.5, FLOOR_Y - 0.01, z + 0.5), Vector3(0.98, 0.02, 0.98), rt.floor_b, 0.004)
+			for k in 4:
+				b.block(Vector3(x + 0.5, FLOOR_Y, z + 0.17 + k * 0.22), Vector3(0.9, 0.006, 0.06), rt.floor_a)
 		_:
 			b.box(Vector3(x + 0.5, FLOOR_Y - 0.01, z + 0.5), Vector3(0.98, 0.02, 0.98), rt.floor_a, 0.005)
 
@@ -224,7 +280,7 @@ func _floor_cell(b: MeshBuilder, rt: RoomTypeDef, c: Vector2i, rng: RandomNumber
 func _wall_color_for(c: Vector2i) -> Color:
 	var rt := grid.room_type_at(c)
 	if rt == null or rt.outdoor:
-		return Pal.FACADE
+		return _facade
 	return rt.wall_color
 
 
@@ -336,9 +392,9 @@ func _wall_segment(b: MeshBuilder, glass: MeshBuilder, a: Vector2i, n: Vector2i)
 	if not low and along_x and (grid.room_index(a) < 0 or grid.room_index(n) < 0):
 		var inner := a if grid.room_index(a) >= 0 else n
 		var rt := grid.room_type_at(inner)
-		if rt and not rt.outdoor and rt.id != &"storage" and rt.id != &"cooler":
+		if rt and not rt.outdoor and rt.has_windows:
 			var coord := inner.x if along_x else inner.y
-			window = posmod(coord, 3) == 1
+			window = posmod(coord, _window_step) == 1 % _window_step
 	var half := Vector3(length if along_x else WALL_T * 0.5, h, WALL_T * 0.5 if along_x else length)
 	var off := side_a * WALL_T * 0.25
 	if window:
@@ -412,7 +468,7 @@ func _door(b: MeshBuilder, a: Vector2i, n: Vector2i, type: String) -> void:
 	var h := WALL_LOW if low else WALL_TALL
 	var axis := Vector3(1, 0, 0) if along_x else Vector3(0, 0, 1)
 	var frame_col := Pal.DOOR_WOOD
-	if type == "roller":
+	if type == "roller" or type == "train_door" or type == "airlock":
 		frame_col = Pal.STEEL_DARK
 	# Door posts (substantial frames)
 	var post_h := maxf(h, 1.0) if low else 2.15
@@ -445,6 +501,16 @@ func _door(b: MeshBuilder, a: Vector2i, n: Vector2i, type: String) -> void:
 		b.block(mat_pos + Vector3(0, 0.015, 0), Vector3(0.6, 0.004, 0.35), Pal.MUSTARD)
 	if type == "swing" or type == "front":
 		_swing_door(center, along_x, type == "front")
+	elif type == "train_door" or type == "airlock":
+		var sd := SlidingDoor.new()
+		sd.position = center
+		sd.rotation.y = 0.0 if along_x else PI * 0.5
+		sd.door_type = type
+		sd.grid = grid
+		sd.color = _facade if type == "train_door" else Color("aeb6c2")
+		sd.low = low
+		_doors.add_child(sd)
+		sliding_doors.push_back(sd)
 
 
 func _swing_door(center: Vector3, along_x: bool, front: bool) -> void:
@@ -581,7 +647,7 @@ func _build_pole_sign() -> void:
 	b.box(board + Vector3(0, 0.62, 0), Vector3(1.4, 0.3, 0.2), Pal.MUSTARD, 0.06)
 	_mi(b.commit(Models.mat_main()), _props)
 	var lbl := Label3D.new()
-	lbl.text = "DINER"
+	lbl.text = sign_text
 	lbl.font = load("res://art/fonts/AlfaSlabOne-Regular.ttf")
 	lbl.font_size = 96
 	lbl.pixel_size = 0.0055
