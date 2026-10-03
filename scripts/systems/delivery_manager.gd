@@ -1,9 +1,9 @@
 class_name DeliveryManager
 extends Node
-## Physical deliveries. A truck brings the standing order every morning and
-## drops crates on the loading dock — they're in the way until somebody
-## carries them inside. Rush orders and equipment arrive by van, sometimes in
-## the middle of service.
+## Physical deliveries. A truck brings tomorrow's order every morning (only
+## what the players ordered; lines marked auto repeat daily) and drops crates
+## on the loading dock — they're in the way until somebody carries them
+## inside. Rush orders and equipment arrive by van, sometimes mid-service.
 
 const RUSH_MARKUP := 1.5
 const RUSH_DELAY := 22.0
@@ -11,7 +11,8 @@ const PACKAGE_DELAY := 6.0
 const EMPTY_DEPOSIT := 1.0
 
 var world: GameWorld
-var standing_order := {}     ## supply_id -> crates per morning
+var order := {}             ## supply_id -> crates for tomorrow morning
+var auto_order := {}        ## supply_id -> true: keep ordering it every day
 var pending: Array = []      ## [{at: float, vehicle: "truck"|"van", items: [...], label}]
 var _clock := 0.0
 var _active: DeliveryTruck
@@ -21,18 +22,7 @@ func _ready() -> void:
 	world = get_parent().get_parent() as GameWorld
 
 
-func _default_order() -> void:
-	standing_order.clear()
-	for s in Content.supplies.values():
-		if s.default_order > 0:
-			standing_order[s.id] = s.default_order
-	_publish_standing()
-
-
 func save_data() -> Dictionary:
-	var so := {}
-	for k in standing_order:
-		so[String(k)] = standing_order[k]
 	# Deliveries still on the road (including the truck currently unloading)
 	# are saved so nothing paid for is lost.
 	var road := []
@@ -40,77 +30,128 @@ func save_data() -> Dictionary:
 		road.push_back({"vehicle": d["vehicle"], "items": d["items"], "label": d["label"]})
 	if _active and is_instance_valid(_active) and not _active.items.is_empty():
 		road.push_back({"vehicle": _active.vehicle, "items": _active.items, "label": "Delivery"})
-	return {"standing_order": so, "pending": road}
+	return {"order": _order_strings(), "auto": _auto_strings(), "pending": road}
 
 
 func load_data(d: Dictionary) -> void:
-	standing_order.clear()
-	var so: Dictionary = d.get("standing_order", {})
-	for k in so:
-		standing_order[StringName(k)] = int(so[k])
-	if standing_order.is_empty():
-		_default_order()
-	_publish_standing()
+	order.clear()
+	auto_order.clear()
+	if d.has("order"):
+		var o: Dictionary = d["order"]
+		for k in o:
+			order[StringName(k)] = int(o[k])
+		for k in d.get("auto", []):
+			auto_order[StringName(k)] = true
+	else:
+		# Saves from before ordering was manual: their standing order keeps
+		# coming every day (as it did), now as auto-orders.
+		var so: Dictionary = d.get("standing_order", {})
+		for k in so:
+			order[StringName(k)] = int(so[k])
+			auto_order[StringName(k)] = true
+	_publish_order()
 	pending.clear()
 	for r in d.get("pending", []):
 		pending.push_back({"at": _clock + 2.0, "vehicle": r.get("vehicle", "truck"), "items": r.get("items", []), "label": r.get("label", "Delivery")})
 
 
-func standing_order_cost() -> float:
+func order_cost() -> float:
 	var total := 0.0
-	for k in standing_order:
+	for k in order:
 		var s := Content.supply(k)
 		if s:
-			total += s.price * standing_order[k]
+			total += s.price * order[k]
 	return total
 
 
-func set_standing(supply_id: StringName, crates: int) -> void:
-	standing_order[supply_id] = clampi(crates, 0, 9)
-	_publish_standing()
+func ordered_crates() -> int:
+	var n := 0
+	for k in order:
+		n += int(order[k])
+	return n
+
+
+func set_order(supply_id: StringName, crates: int) -> void:
+	order[supply_id] = clampi(crates, 0, 9)
+	if order[supply_id] == 0:
+		order.erase(supply_id)
+	_publish_order()
 
 
 ## Relative change, so two players pressing +/- at once both count.
-func adjust_standing(supply_id: StringName, delta: int) -> void:
-	set_standing(supply_id, int(standing_order.get(supply_id, 0)) + delta)
+func adjust_order(supply_id: StringName, delta: int) -> void:
+	set_order(supply_id, int(order.get(supply_id, 0)) + delta)
 
 
-func _publish_standing() -> void:
+func set_auto(supply_id: StringName, on: bool) -> void:
+	if on:
+		auto_order[supply_id] = true
+	else:
+		auto_order.erase(supply_id)
+	_publish_order()
+
+
+func is_auto(supply_id: StringName) -> bool:
+	return auto_order.has(supply_id)
+
+
+func _publish_order() -> void:
 	if world and world.replicator:
-		world.replicator.publish(&"standing", {"o": _so_strings()})
+		world.replicator.publish(&"standing", {"o": _order_strings(), "a": _auto_strings()})
 
 
-func _so_strings() -> Dictionary:
+func _order_strings() -> Dictionary:
 	var out := {}
-	for k in standing_order:
-		out[String(k)] = standing_order[k]
+	for k in order:
+		out[String(k)] = order[k]
+	return out
+
+
+func _auto_strings() -> Array:
+	var out := []
+	for k in auto_order:
+		out.push_back(String(k))
 	return out
 
 
 func apply_shared_standing(d: Dictionary) -> void:
-	standing_order.clear()
+	order.clear()
+	auto_order.clear()
 	var o: Dictionary = d.get("o", {})
 	for k in o:
-		standing_order[StringName(k)] = int(o[k])
+		order[StringName(k)] = int(o[k])
+	for k in d.get("a", []):
+		auto_order[StringName(k)] = true
 
 
 # -----------------------------------------------------------------------------
 # Scheduling
 # -----------------------------------------------------------------------------
 
+## The morning truck brings exactly what was ordered (day one: a free
+## opening stock). One-off lines are then cleared; auto-order lines stay.
 func morning_delivery(first_day: bool) -> void:
-	if standing_order.is_empty():
-		_default_order()
 	var items := []
 	var cost := 0.0
-	for k in standing_order:
-		var s := Content.supply(k)
-		if s == null:
-			continue
-		for i in standing_order[k]:
-			items.push_back({"supply": String(k)})
-			cost += s.price
+	if first_day:
+		for s in Content.sorted_values(Content.supplies):
+			for i in (s as SupplyDef).default_order:
+				items.push_back({"supply": String(s.id)})
+		_publish_order()
+	else:
+		for k in order:
+			var s := Content.supply(k)
+			if s == null:
+				continue
+			for i in order[k]:
+				items.push_back({"supply": String(k)})
+				cost += s.price
+		for k in order.keys():
+			if not auto_order.has(k):
+				order.erase(k)
+		_publish_order()
 	if items.is_empty():
+		Events.notify("No delivery today: nothing was ordered", &"warning")
 		return
 	if first_day:
 		Events.notify("Opening stock — on the house!", &"info")

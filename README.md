@@ -75,7 +75,7 @@ All verbs are contextual. **GRAB** moves things and **USE** operates things.
 
 ```
 MORNING PREP (calm, untimed)
-  The delivery truck reverses to the loading dock and drops your standing order.
+  The delivery truck reverses to the loading dock and drops what you ordered.
   Carry crates inside (cold stock goes in the fridge), chop, arrange, plan.
   The forecast card shows expected guests, rush hours and special events.
         ↓  hold USE on the OPEN sign
@@ -92,9 +92,9 @@ RESULTS
   ingredient usage and waste.
         ↓
 EVENING (calm, build mode)
-  Buy equipment (it arrives boxed at the dock), hire staff, set tomorrow's
-  standing order, build expansions at the FOR SALE signs, knock doorways
-  through walls, and rearrange.
+  Order tomorrow's supplies (the truck brings nothing else), buy equipment (it
+  arrives boxed at the dock), hire staff, build expansions at the FOR SALE
+  signs, knock doorways through walls, and rearrange.
         ↓  hold USE on the sign: lights out → next morning (autosave)
 ```
 
@@ -120,9 +120,11 @@ burnt or spoiled food.
 * **Physical inventory.** Ingredients arrive in crates, sacks and cartons, and
   you can see every unit inside them. Beef and lettuce spoil outside cold
   storage. Low-stock alerts work from the actual crates.
-* **Deliveries and logistics.** A delivery truck reverses to the dock every
-  morning, and crates land as obstacles. Rush orders and equipment come by van,
-  sometimes mid-service. The driver takes empty crates left on the dock.
+* **Deliveries and logistics.** The truck brings only what you order at the
+  manager's desk (tick *Auto* on a supply to get it every morning). It reverses
+  to the dock and the crates land as obstacles. Day one comes with free opening
+  stock. Rush orders and equipment come by van, sometimes mid-service. The
+  driver takes empty crates left on the dock.
 * **Finite dishware.** Plates and mugs get dirty and must go through the sink
   or the hood dishwasher. If nobody washes up, you can't serve anything.
 * **Customers.** Nine archetypes (townsfolk, families, work crews, business

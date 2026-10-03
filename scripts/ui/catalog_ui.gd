@@ -1,7 +1,7 @@
 class_name CatalogUI
 extends Control
 ## The manager's desk: buy equipment (delivered as boxes to the loading dock),
-## set the standing supply order or place rush orders, hire staff, buy
+## order supplies for tomorrow (one-off or auto) or rush them, hire staff, buy
 ## upgrades and expansions. Fully navigable with keyboard or gamepad.
 
 var hud: HUD
@@ -201,16 +201,20 @@ func _build_equipment() -> void:
 
 func _build_supplies() -> void:
 	var w := hud.world
-	var hint := UITheme.label("Standing order arrives every morning (paid on delivery). Rush orders cost %d%% more and arrive in under a minute." % roundi((DeliveryManager.RUSH_MARKUP - 1.0) * 100), 16, "regular", Pal.UI_INK_SOFT)
+	var hint := UITheme.label("The truck brings only what you order here, next morning (paid on delivery). Tick Auto to have it come every day. Rush orders cost %d%% more and arrive in under a minute." % roundi((DeliveryManager.RUSH_MARKUP - 1.0) * 100), 16, "regular", Pal.UI_INK_SOFT)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_content.add_child(hint)
-	_content.add_child(UITheme.label("Tomorrow's delivery: %s" % GameConst.money(w.deliveries.standing_order_cost()), 18, "bold"))
+	var total := UITheme.label("Tomorrow's delivery: %s" % GameConst.money(w.deliveries.order_cost()), 18, "bold")
+	if w.deliveries.ordered_crates() == 0:
+		total.text = "Tomorrow's delivery: nothing ordered yet!"
+		total.add_theme_color_override("font_color", Pal.UI_BAD)
+	_content.add_child(total)
 	for s in Content.sorted_values(Content.supplies):
 		var sd := s as SupplyDef
 		var id: StringName = sd.id
 		var box := HBoxContainer.new()
 		box.add_theme_constant_override("separation", 6)
-		var qty: int = w.deliveries.standing_order.get(id, 0)
+		var qty: int = w.deliveries.order.get(id, 0)
 		var minus := UITheme.button("−", func():
 			Net.request("standing", [String(id), -1])
 			_refresh_later())
@@ -220,10 +224,18 @@ func _build_supplies() -> void:
 		var plus := UITheme.button("+", func():
 			Net.request("standing", [String(id), 1])
 			_refresh_later())
+		var auto := CheckBox.new()
+		auto.text = "Auto"
+		auto.tooltip_text = "Order this every day"
+		auto.button_pressed = w.deliveries.is_auto(id)
+		auto.toggled.connect(func(on: bool):
+			Net.request("auto_order", [String(id), on])
+			_refresh_later())
 		var rush := _buy_button("Rush ×1", sd.price * DeliveryManager.RUSH_MARKUP, func(): Net.request("rush_order", [String(id), 1]))
 		box.add_child(minus)
 		box.add_child(lbl)
 		box.add_child(plus)
+		box.add_child(auto)
 		box.add_child(rush)
 		var stock := w.inventory.units(sd.item_id)
 		var desc := "%d per %s · %s each · in stock: %d%s" % [sd.quantity, sd.container.replace("_", " "), GameConst.money(sd.price), stock, " · keep cold!" if sd.needs_cold else ""]

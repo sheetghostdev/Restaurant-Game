@@ -652,8 +652,24 @@ func t_close_day() -> void:
 	check(not w.grid.wall_between(Vector2i(-1, 4), Vector2i(0, 4)), "patio door opens to the dining room")
 	check(w.grid.nav.reachable(w.grid.street_point("spawn_a"), Vector2i(-2, 4)), "patio reachable via the front door")
 	check(w.build.buy_fixture(&"conveyor"), "ordered a conveyor")
+	# Supplies: the truck only brings what's ordered; auto lines repeat.
+	check(w.deliveries.ordered_crates() == 0, "nothing on tomorrow's order by default")
+	w.deliveries.adjust_order(&"supply_beef", 1)
+	w.deliveries.adjust_order(&"supply_buns", 1)
+	w.deliveries.set_auto(&"supply_buns", true)
+	var pending_before := w.deliveries.pending.size()
 	use(sign_f, 1.0)
 	check(w.day.phase == GameConst.Phase.MORNING and w.day.day == 2, "day 2 morning")
+	var truck_items := []
+	for d in w.deliveries.pending.slice(pending_before):
+		if d["label"] == "Morning delivery":
+			truck_items = d["items"]
+	var kinds := []
+	for it in truck_items:
+		kinds.push_back(it.get("supply", ""))
+	kinds.sort()
+	check(kinds == ["supply_beef", "supply_buns"], "the morning truck brings exactly the order %s" % str(kinds))
+	check(w.deliveries.order.get(&"supply_buns", 0) == 1 and not w.deliveries.order.has(&"supply_beef"), "auto lines stay on the order, one-offs are cleared")
 
 
 func t_save_load() -> void:

@@ -290,12 +290,15 @@ func _refresh_forecast() -> void:
 		_forecast_body.add_child(tip)
 	elif d.phase == GameConst.Phase.EVENING:
 		_forecast_body.add_child(UITheme.heading("Evening", 26))
-		var tip2 := UITheme.label("Build mode: hold GRAB on furniture to move it, Q to rotate. Use the manager's desk to buy equipment, hire staff and set tomorrow's delivery. Expand at the FOR SALE signs. Hold USE on the sign to end the day.", 15, "regular", Pal.UI_INK_SOFT)
+		var tip2 := UITheme.label("Order tomorrow's supplies at the manager's desk: the truck only brings what you order. Hold GRAB on furniture to move it, Q to rotate. Expand at the FOR SALE signs. Hold USE on the sign to end the day.", 15, "regular", Pal.UI_INK_SOFT)
 		tip2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		tip2.custom_minimum_size = Vector2(270, 0)
 		_forecast_body.add_child(tip2)
-		var cost := world.deliveries.standing_order_cost()
-		_forecast_body.add_child(UITheme.label("Tomorrow's delivery: %s" % GameConst.money(cost), 17, "bold"))
+		if world.deliveries.ordered_crates() == 0:
+			_forecast_body.add_child(UITheme.label("Nothing ordered for tomorrow!", 17, "bold", Pal.UI_BAD))
+		else:
+			var cost := world.deliveries.order_cost()
+			_forecast_body.add_child(UITheme.label("Tomorrow's delivery: %d crates, %s" % [world.deliveries.ordered_crates(), GameConst.money(cost)], 17, "bold"))
 
 
 func _refresh_tickets() -> void:

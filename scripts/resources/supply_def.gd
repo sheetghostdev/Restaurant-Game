@@ -9,5 +9,5 @@ extends Resource
 @export var price := 10.0
 @export_enum("crate", "crate_cold", "sack", "carton") var container := "crate"
 @export var needs_cold := false
-@export var default_order := 1                    ## Starting standing-order quantity.
+@export var default_order := 1                    ## Crates in the free opening stock (day one).
 @export_multiline var description := ""

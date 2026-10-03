@@ -178,7 +178,7 @@ func _c_buttons(net_id: int, grab: bool, use: bool, alt: bool, sprint: bool) -> 
 	p.set_input(p.input_move, grab, use, alt, sprint)
 
 
-## UI actions (catalog purchases, standing order, results continue...).
+## UI actions (catalog purchases, supply orders, results continue...).
 func request(action: String, args: Array = []) -> void:
 	if is_authority():
 		_do_request(action, args, my_id())
@@ -206,7 +206,8 @@ func _do_request(action: String, args: Array, _from: int) -> void:
 			if wk:
 				w.staff.dismiss(wk)
 		"rush_order": w.deliveries.rush_order(StringName(args[0]), int(args[1]) if args.size() > 1 else 1)
-		"standing": w.deliveries.adjust_standing(StringName(args[0]), clampi(int(args[1]), -9, 9))
+		"standing": w.deliveries.adjust_order(StringName(args[0]), clampi(int(args[1]), -9, 9))
+		"auto_order": w.deliveries.set_auto(StringName(args[0]), bool(args[1]))
 		"continue_results": w.day.continue_from_results()
 		"save": Saves.save_game(w)
 		"debug": w.debug_command(String(args[0]), args.slice(1))

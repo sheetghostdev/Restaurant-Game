@@ -80,10 +80,12 @@ building are available.
   thresholds set per supply.
 
 ### Deliveries
-* Each morning the truck brings the standing order (set in the catalog). It
-  is paid on delivery, and day one is free.
+* Each morning the truck brings exactly what was ordered in the catalog: a
+  quantity per supply, either one-off or marked *Auto* to repeat every day.
+  Nothing arrives that nobody ordered. It is paid on delivery; day one brings
+  a free opening stock.
 * Rush orders cost 50% more and arrive by van in about 20 seconds. Equipment
-  also comes by van. Surprise deliveries can land mid-service.
+  also comes by van.
 * Crates drop onto marked dock pads and spill onto the floor nearby when the
   pads are full. They block movement until somebody hauls them in.
 * The driver takes empty crates left in the loading area, for a deposit.

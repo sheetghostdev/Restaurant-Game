@@ -30,6 +30,8 @@ func _host() -> void:
 	w.day.open_restaurant()
 	w.customers.spawn_group(Content.archetype(&"work_crew"), true)
 	w.economy.earn(123.0, "net test")
+	w.deliveries.set_order(&"supply_beef", 2)
+	w.deliveries.set_auto(&"supply_beef", true)
 	var t := 0.0
 	while Net.multiplayer.get_peers().is_empty() and t < 20.0:
 		await get_tree().create_timer(0.25).timeout
@@ -109,7 +111,7 @@ func _client() -> void:
 		if (c as Node3D).global_position.distance_to(GameConst.cell_center(Vector2i(-5, 9))) > 1.5 and (c as Node3D).global_position.distance_to(GameConst.cell_center(Vector2i(29, 9))) > 1.5:
 			moved = true
 	if not moved: fails += 1; print("CLIENT FAIL: customers didn't move")
-	if w.deliveries.standing_order.is_empty(): fails += 1; print("CLIENT FAIL: standing order not replicated")
+	if w.deliveries.order.get(&"supply_beef", 0) != 2 or not w.deliveries.is_auto(&"supply_beef"): fails += 1; print("CLIENT FAIL: supply order not replicated")
 	# Groups only exist on the server; tables mirror enough for client hints.
 	var seated := 0
 	for c in w.all_of_kind(&"customer"):

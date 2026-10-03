@@ -42,7 +42,7 @@ func _physics_process(delta: float) -> void:
 	elif phase == GameConst.Phase.CLOSING:
 		_tip(&"closing", "Closing time. Finish the last tables, then hold USE on the sign to end the day.")
 	elif phase == GameConst.Phase.EVENING:
-		_tip(&"evening", "Evening is for planning: use the manager's desk in storage to buy equipment and hire help, or buy an expansion at a FOR SALE sign.")
+		_tip(&"evening", "Evening is for planning. The truck only brings what you order: use the manager's desk in storage to order tomorrow's supplies (tick Auto for things you want every day), buy equipment and hire help.")
 
 
 func _crates_on_dock() -> int:
