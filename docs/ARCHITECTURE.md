@@ -44,7 +44,7 @@ Autoloads: `Events` (signal bus), `Content` (ContentDB), `Settings`, `Inputs`
 | Economy | `EconomyManager` | money, reputation, ledger |
 | Orders | `OrderManager` | active tickets (replicated as a compact list) |
 | Customers | `CustomerManager` | arrival schedule, queue, table clusters, seating |
-| Deliveries | `DeliveryManager` | standing order, rush orders, packages, trucks |
+| Deliveries | `DeliveryManager` | supply orders (one-off / auto), rush orders, packages, trucks |
 | Build | `BuildManager` | lifting and placing, unpacking, purchases, expansions, wall edits |
 | Disasters | `EventManager` | daily events, fires, mess, hand tools, inspections |
 | Staff | `StaffManager` | hiring, wages |
@@ -257,7 +257,7 @@ inspector.
   "meta": {"name", "location", "format", "day", "money", "reputation", "saved_at"},
   "layout": {rooms, openings, front_door, delivery_zone, street, built_expansions},
   "entities": [{"k": "fixture", "id": 12, "def": "grill", "st": {...}, "loc": {"cell": [10, 0], "rot": 0}}, ...],
-  "economy": {...}, "deliveries": {"standing_order", "pending"}, "staff": {}, "build": {"upgrades"},
+  "economy": {...}, "deliveries": {"order", "auto", "pending"}, "staff": {}, "build": {"upgrades"},
   "day": {"day": 3}, "unlocks": []
 }
 ```
