@@ -7,7 +7,6 @@ script = ExtResource("1_q3alb")
 id = &"express"
 display_name = "Dining Car Express"
 layout_path = "res://data/layouts/train.json"
-expansions = Array[StringName]([&"cooler_car"])
 theme = "train"
 supply_mode = "market"
 stops = PackedStringArray("Central Depot", "Millbrook", "Cedar Falls", "Port Quinn", "Ashdown", "Harlow Junction", "Briar Hill", "Stonebridge", "Lark Valley")

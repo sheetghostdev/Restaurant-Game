@@ -6,14 +6,14 @@
 [sub_resource type="Resource" id="Resource_7k1aj"]
 script = ExtResource("1_7k1aj")
 heat = &"brew"
-rate = 0.2
+rate = 0.25
 stage_names = PackedStringArray("Weak", "Just Right", "Strong", "Overflowing")
-stage_ends = PackedFloat32Array(0.55, 1, 1.35, 99)
-stage_quality = PackedFloat32Array(0.5, 1, 0.8, 0)
+stage_ends = PackedFloat32Array(0.5, 1.1, 1.5, 99)
+stage_quality = PackedFloat32Array(0.5, 1, 0.85, 0)
 stage_colors = PackedColorArray(0.6901961, 0.47843137, 0.2901961, 1, 0.3529412, 0.21176471, 0.13333334, 1, 0.22745098, 0.1254902, 0.08627451, 1, 0.10980392, 0.07058824, 0.047058824, 1)
 perfect_stage = 1
 smoke_from = 99.0
-fire_at = 1.6
+fire_at = 1.9
 
 [resource]
 script = ExtResource("2_lc12r")

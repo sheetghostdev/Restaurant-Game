@@ -14,7 +14,7 @@ script = ExtResource("2")
 model_key = &"soda_fountain"
 
 [node name="Beans" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 0.3, 1.31, -0.24)
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 0.44, 0.87, -0.24)
 script = ExtResource("2")
 model_key = &"syrup_level"
 

@@ -6,9 +6,9 @@
 [sub_resource type="Resource" id="Resource_p37gp"]
 script = ExtResource("1_a8sas")
 heat = &"pour"
-rate = 0.25
+rate = 0.3333333333333333
 stage_names = PackedStringArray("Pouring", "Full", "Foamy", "Overflowing")
-stage_ends = PackedFloat32Array(0.5, 1.2, 1.55, 99)
+stage_ends = PackedFloat32Array(0.45, 1.2, 1.55, 99)
 stage_quality = PackedFloat32Array(0.5, 1, 0.8, 0)
 stage_colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
 perfect_stage = 1

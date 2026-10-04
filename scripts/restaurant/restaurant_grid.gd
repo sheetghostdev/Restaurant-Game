@@ -206,7 +206,7 @@ func fence_between(a: Vector2i, b: Vector2i) -> bool:
 	if ta != null and tb != null:
 		return false
 	var inner := ta if ta != null else tb
-	return inner != null and inner.outdoor and inner.customer_area
+	return inner != null and inner.outdoor and (inner.customer_area or inner.fenced)
 
 
 ## True if the straight line from `a` to `b` (world positions) crosses a wall

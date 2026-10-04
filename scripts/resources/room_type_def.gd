@@ -12,5 +12,6 @@ extends Resource
 @export var cold := false                         ## Everything stored inside stays fresh.
 @export var customer_area := false                ## Customers may walk and sit here.
 @export var has_windows := true                   ## Back walls get windows.
+@export var fenced := false                       ## Outdoor area nobody may wander off (a station platform).
 @export var light_color := Color(1, 0.9, 0.75)
 @export_multiline var description := ""

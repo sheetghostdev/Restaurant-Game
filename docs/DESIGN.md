@@ -204,6 +204,20 @@ knock doorways through or wall them up. Expansions are rooms bought at plots
 next to the building. They add walls automatically, open doorways, and move
 any fixture that blocks a new door.
 
+### Pressure and stakes
+
+* **The clock runs the day.** Morning prep is timed (about two minutes) and
+  the doors open by themselves; after closing the day ends once the last
+  guests leave. Nobody gets to stall.
+* **Easy hands, tight clock.** Chopping and cooking are quick with generous
+  perfect windows; guests' patience is short. Difficulty comes from doing
+  many simple things at once, not from any one fiddly task.
+* **Consequences you can see.** A walkout announces itself with its cost in
+  stars and money, the stars flash, and the results connect today's
+  reputation to tomorrow's guest count.
+* **Something to chase.** Streaks of happy tables raise tips; two daily goals
+  pay a bonus at the end of the day.
+
 ### Difficulty
 Three presets in Settings, defined in one table in `scripts/core/difficulty.gd`.
 Systems on the host multiply their base numbers by the preset's factors:

@@ -69,6 +69,7 @@ func show_results(r: Dictionary) -> void:
 	_row(right, "Dishes washed", str(r.get("dishes_washed", 0)))
 	_row(right, "Fires", str(r.get("fires", 0)), Pal.UI_BAD if r.get("fires", 0) > 0 else Pal.UI_INK)
 	_row(right, "Repairs", str(r.get("repairs", 0)))
+	_consequences(r)
 	var verdict := UITheme.label(_verdict(r), 20, "bold", Pal.UI_INK_SOFT)
 	verdict.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	verdict.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -82,6 +83,45 @@ func show_results(r: Dictionary) -> void:
 	create_tween().tween_property(_card, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_continue.grab_focus.call_deferred()
 	Audio.play_ui(&"day_end")
+
+
+## What today means for tomorrow, in plain words: walkouts cost stars and
+## sales, and stars decide how many guests come.
+func _consequences(r: Dictionary) -> void:
+	var lines := []
+	var lost := int(r.get("groups_lost", 0))
+	if lost > 0:
+		lines.push_back(["%d group%s walked out: −%.2f★ and %s in lost sales" % [lost, "" if lost == 1 else "s", float(r.get("rep_walkouts", 0.0)), GameConst.money(r.get("lost_sales", 0.0))], Pal.UI_BAD])
+	var refused := int(r.get("refused", 0))
+	if refused > 0:
+		lines.push_back(["%d dish%s sent back (burnt, raw or spoiled)" % [refused, "" if refused == 1 else "es"], Pal.UI_BAD])
+	var today := int(r.get("groups_planned", 0))
+	var tomorrow := int(r.get("groups_tomorrow", 0))
+	var rd := float(r.get("reputation_delta", 0.0))
+	if tomorrow > 0:
+		var why := "your reputation went up" if rd > 0.005 else ("your reputation dropped" if rd < -0.005 else "steady reputation")
+		var col := Pal.UI_GOOD if rd > 0.005 else (Pal.UI_BAD if rd < -0.005 else Pal.UI_INK)
+		lines.push_back(["Tomorrow: about %d groups (today %d) — %s" % [tomorrow, today, why], col])
+	for g in r.get("goals", []):
+		if g.get("done", false):
+			lines.push_back(["Goal done: %s (+%s)" % [String(g["text"]), GameConst.money(g["reward"])], Pal.UI_GOOD])
+		else:
+			lines.push_back(["Goal missed: %s" % String(g["text"]), Pal.UI_INK_SOFT])
+	var best := int(r.get("best_streak", 0))
+	if best >= 3:
+		lines.push_back(["Best streak: %d happy tables in a row" % best, Pal.UI_GOOD])
+	if lines.is_empty():
+		return
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", UITheme.card(Color("fff7e6"), Pal.UI_INK_SOFT, 10, 2, false))
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 2)
+	box.add_child(v)
+	for l in lines:
+		var lab := UITheme.label("• " + String(l[0]), 18, "bold", l[1])
+		lab.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		v.add_child(lab)
+	_body.add_child(box)
 
 
 func _row(parent: Control, k: String, v: String, col := Pal.UI_INK, big := false) -> void:

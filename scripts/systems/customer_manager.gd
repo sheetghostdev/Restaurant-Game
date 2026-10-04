@@ -35,16 +35,21 @@ func _ready() -> void:
 # Schedule
 # -----------------------------------------------------------------------------
 
+## Groups expected on `day` at this reputation (the forecast's number).
+func expected_groups(day: int, reputation: float) -> int:
+	var fmt := world.format
+	var loc_demand := world.location.demand if world.location else 1.0
+	var growth := minf(1.0 + (day - 1) * 0.16, 2.6)
+	var rep_mult := 0.75 + reputation * 0.13
+	return maxi(int(round(fmt.base_groups * growth * rep_mult * loc_demand * Difficulty.factor("groups"))), 3)
+
+
 func plan_day(day: int, reputation: float) -> void:
 	schedule.clear()
 	forecast.clear()
 	_sched_i = 0
 	var fmt := world.format
-	var loc_demand := world.location.demand if world.location else 1.0
-	var growth := minf(1.0 + (day - 1) * 0.16, 2.6)
-	var rep_mult := 0.75 + reputation * 0.13
-	var n := int(round(fmt.base_groups * growth * rep_mult * loc_demand * Difficulty.factor("groups")))
-	n = maxi(n, 3)
+	var n := expected_groups(day, reputation)
 	var hours: Array[int] = []
 	var weights: Array[float] = []
 	var total_w := 0.0
@@ -150,7 +155,9 @@ func _physics_process(delta: float) -> void:
 		_update_queue()
 
 
-func spawn_group(a: CustomerArchetype, force := false) -> CustomerGroup:
+## `at`: where they appear (a train platform at a stop); by default they
+## arrive along the street (or from the train's other cars).
+func spawn_group(a: CustomerArchetype, force := false, at := Vector2i(-99999, 0)) -> CustomerGroup:
 	if a == null:
 		return null
 	var waiting := 0
@@ -170,6 +177,8 @@ func spawn_group(a: CustomerArchetype, force := false) -> CustomerGroup:
 		return null
 	var from_left := randf() < 0.5
 	var spawn := world.grid.street_point("spawn_a" if from_left else "spawn_b", Vector2i(-3, 12))
+	if at.x > -99999:
+		spawn = at
 	for i in group_size:
 		var app := _appearance_for(a, i)
 		var child: bool = i > 0 and randf() < a.child_chance
@@ -542,6 +551,14 @@ func on_closing() -> void:
 			g._leave()
 
 
+## After last orders: anyone still seated finishes up and leaves (paying for
+## what they ate), so the day can end.
+func send_everyone_home() -> void:
+	for g in groups.duplicate():
+		if not g.is_leaving():
+			g.go_home()
+
+
 func active_groups() -> int:
 	return groups.size()
 
@@ -554,6 +571,17 @@ func seated_or_waiting_people() -> int:
 
 
 ## Removes everyone immediately (debug / reset).
+## Removes one group without counting it as a walkout (they missed the train).
+func drop_group(g: CustomerGroup) -> void:
+	world.orders.cancel_group(g)
+	release_tables(g)
+	for m in g.members.duplicate():
+		world.despawn(m)
+	g.members.clear()
+	groups.erase(g)
+	_update_queue(true)
+
+
 func clear_all() -> void:
 	for g in groups.duplicate():
 		for m in g.members.duplicate():

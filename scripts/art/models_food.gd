@@ -263,14 +263,19 @@ static func _soda_fill(b: MeshBuilder) -> void:
 
 
 static func _croissant(b: MeshBuilder) -> void:
-	# A crescent of tapering puffs; pale so the oven colour shows.
-	var col := Color("f2dcae")
-	for k in 5:
-		var t := (k - 2) / 2.0
-		var a := t * 1.1
-		var r := 0.042 - absf(t) * 0.012
-		b.sphere(Vector3(sin(a) * 0.1, r * 0.9, -cos(a) * 0.05 + 0.04), Vector3(r * 1.2, r, r), col, 1, Color(0, 0, 0, 0), 0.0, k)
-
+	# A fat crescent of rolled layers, thick in the middle and pointed at the
+	# tips, with darker ridges between the rolls. Light so the oven's golden
+	# colour shows on top.
+	var col := Color("f0d29a")
+	var ridge := Color("d9b47a")
+	for k in 7:
+		var t := (k - 3) / 3.0
+		var a := t * 1.25
+		var r := 0.05 - absf(t) * 0.028
+		var p := Vector3(sin(a) * 0.11, r * 0.85, -cos(a) * 0.06 + 0.05)
+		b.push_at(p, -a)
+		b.sphere(Vector3.ZERO, Vector3(r * 0.85, r, r * 1.25), col if k % 2 == 0 else ridge, 1, Color(0, 0, 0, 0), 0.0, k)
+		b.pop()
 
 static func _muffin(b: MeshBuilder) -> void:
 	b.cyl(Vector3.ZERO, 0.06, 0.06, Color("e7e1d4"), 10, 0.0, Color(0, 0, 0, 0), 0.075)
@@ -308,16 +313,33 @@ static func _pepperoni(b: MeshBuilder) -> void:
 
 
 static func _mushroom(b: MeshBuilder) -> void:
-	b.cyl(Vector3.ZERO, 0.025, 0.05, Color("efe6d4"), 7)
-	b.sphere(Vector3(0, 0.06, 0), Vector3(0.065, 0.04, 0.065), Color("b8956a"), 1, Color(0, 0, 0, 0), 0.04, 4)
-
+	# Lying on its side so you see the classic shape from above: pale stem,
+	# wide brown dome, dark gills.
+	b.push_at(Vector3(-0.03, 0.06, 0.0), 0.0, Vector3.ONE, 0.0, PI * 0.5 - 0.25)
+	b.cyl(Vector3(0, -0.02, 0), 0.026, 0.075, Color("f3ece0"), 8, 0.004)
+	b.cyl(Vector3(0, 0.05, 0), 0.07, 0.012, Color("6e5440"), 10)
+	b.sphere(Vector3(0, 0.061, 0), Vector3(0.078, 0.045, 0.078), Color("9a6f4a"), 1, Color("b08258"), 0.03, 4)
+	b.pop()
 
 static func _mushroom_sliced(b: MeshBuilder) -> void:
+	# Three thick slices lying flat, each with the mushroom's T-shaped outline.
 	for k in 3:
-		b.push_at(Vector3(-0.05 + k * 0.05, 0.0, 0.0), k * 0.5, Vector3.ONE, PI / 2.0)
-		_mushroom_slice(b)
+		b.push_at(Vector3(-0.055 + k * 0.055, 0.0, (k % 2) * 0.03 - 0.015), k * 0.6)
+		var stem := PackedVector2Array([Vector2(-0.012, 0.0), Vector2(0.012, 0.0), Vector2(0.012, 0.03), Vector2(-0.012, 0.03)])
+		b.extrude(stem, 0.0, 0.014, Color("efe4cf"))
+		var cap := PackedVector2Array()
+		for i in 9:
+			var a := PI * i / 8.0
+			cap.push_back(Vector2(cos(a) * 0.035, -sin(a) * 0.028))
+		var capf := PackedVector2Array()
+		for i in range(cap.size() - 1, -1, -1):
+			capf.push_back(cap[i])
+		b.extrude(capf, 0.0, 0.016, Color("e6d6b8"), Color("efe4cf"))
 		b.pop()
-
+		# Brown skin along the cap edge
+		for i in 7:
+			var a2 := PI * (i + 0.5) / 7.0
+			b.block(Vector3(-0.055 + k * 0.055, 0.0, (k % 2) * 0.03 - 0.015) + Vector3(cos(a2) * 0.034, 0.0, -sin(a2) * 0.027).rotated(Vector3.UP, k * 0.6), Vector3(0.014, 0.017, 0.014), Color("8a6444"))
 
 static func _mushroom_slice(b: MeshBuilder) -> void:
 	b.extrude(PackedVector2Array([Vector2(-0.03, 0.0), Vector2(0.03, 0.0), Vector2(0.03, 0.02), Vector2(0.015, 0.035), Vector2(-0.015, 0.035), Vector2(-0.03, 0.02)]), 0.0, 0.008, Color("e3d2b3"))
@@ -359,18 +381,21 @@ static func _pizza_mushrooms(b: MeshBuilder) -> void:
 
 
 static func _wings(b: MeshBuilder) -> void:
+	# A pile of drumettes: plump meat with a little pale bone end.
 	var offs := [Vector3(-0.05, 0.0, -0.02), Vector3(0.03, 0.0, -0.04), Vector3(0.0, 0.0, 0.04), Vector3(0.06, 0.03, 0.01), Vector3(-0.03, 0.035, 0.02)]
 	for k in offs.size():
 		b.push_at(offs[k] + Vector3(0, 0.03, 0), k * 1.1)
-		b.sphere(Vector3.ZERO, Vector3(0.05, 0.028, 0.032), COOK_BASE, 1, Color(0, 0, 0, 0), 0.0, k)
-		b.sphere(Vector3(0.05, 0.0, 0.0), Vector3(0.022, 0.018, 0.02), COOK_BASE, 0)
+		b.sphere(Vector3.ZERO, Vector3(0.05, 0.03, 0.034), COOK_BASE, 1, Color(0, 0, 0, 0), 0.08, k)
+		b.sphere(Vector3(0.045, 0.0, 0.0), Vector3(0.024, 0.02, 0.022), COOK_BASE, 0)
 		b.pop()
 
-
 static func _dip(b: MeshBuilder) -> void:
-	b.cyl(Vector3.ZERO, 0.04, 0.035, Color("f0ece4"), 9, 0.004, Color(0, 0, 0, 0), 0.046)
-	b.cyl(Vector3(0, 0.035, 0), 0.04, 0.005, Color("f7f2df"), 9, 0.0, Color("e9e4c8"))
-
+	# A little pot of creamy dip with a sprinkle of herbs.
+	b.cyl(Vector3.ZERO, 0.042, 0.04, Color("e9e4dc"), 10, 0.004, Color(0, 0, 0, 0), 0.048)
+	b.cyl(Vector3(0, 0.038, 0), 0.042, 0.008, Color("f2e2b8"), 10)
+	for k in 4:
+		var a := k * 1.7
+		b.block(Vector3(cos(a) * 0.02, 0.046, sin(a) * 0.02), Vector3(0.008, 0.004, 0.008), Color("4f8f3a"))
 
 static func _soda_syrup(b: MeshBuilder) -> void:
 	b.block(Vector3.ZERO, Vector3(0.16, 0.13, 0.11), Color("8a3a2a"), 0.008)

@@ -35,8 +35,13 @@ var _speed := 0.0
 var _scroll := 0.0
 var _platform: Node3D
 var _platform_parts: Array = []    ## [node, home_x]
-var _scenery_parts: Array = []     ## [node, home_x, kind] kind: 0 always, 1 own-track sleeper, 2 hidden at a platform
-var _wheels: Array[Node3D] = []
+var _scenery_parts: Array = []     ## [node, home_x, kind] kind: 0 always, 2 only between stations
+var _spinners: Array = []          ## [wheel node, radius]
+var _rods: Array = []              ## [rod node, centre wheel position]
+var _cars: Node3D
+var _loco_x := 0.0
+var _smoke_t := 0.0
+var _ground := -0.95
 var _x0 := -8.0
 var _x1 := 26.0
 var _sync_t := 0.0
@@ -48,10 +53,9 @@ func _ready() -> void:
 	var lot := world.grid.lot
 	_x0 = lot.position.x
 	_x1 = lot.end.x
-	_build_static()
-	world.grid.layout_changed.connect(func():
-		_build_static()
-		_build_wheels())
+	_ground = world.builder.ground_y
+	_build_cars()
+	world.grid.layout_changed.connect(_build_cars)
 	_build_scenery()
 	_build_platform()
 	if Net.is_authority():
@@ -169,13 +173,16 @@ func _stopped() -> void:
 	var deal := _open_market(false)
 	next_station = _station_name(stops_done + 1) if stops_done < STOP_AT.size() else _stops()[_stops().size() - 1]
 	Events.notify("%s! Market's open for %d seconds%s" % [station, int(STOP_TIME), (" — %s is cheap here" % deal) if deal != "" else ""], &"big", Pal.UI_GOOD)
-	# A few passengers board here and head for the dining car.
+	# Hungry passengers hop on here: they walk in from the platform through
+	# the coach doors and queue for the dining car.
 	if world.day.phase == GameConst.Phase.SERVICE:
 		var archs := world.format.archetypes
-		for i in randi_range(1, 2):
+		var spots: Array = world.layout_data().get("street", {}).get("board", [[-4, 7]])
+		for i in randi_range(2, 3):
 			var a := Content.archetype(archs[randi() % archs.size()])
 			if a and a.min_day <= world.day.day:
-				world.customers.spawn_group(a, false)
+				var c: Array = spots[i % spots.size()]
+				world.customers.spawn_group(a, false, Vector2i(int(c[0]), int(c[1])))
 
 
 # -----------------------------------------------------------------------------
@@ -246,6 +253,16 @@ func _leave_behind() -> void:
 			n.global_position = GameConst.cell_center(inside) + Vector3(randf_range(-0.3, 0.3), 0, randf_range(-0.3, 0.3))
 			if n is PlayerCharacter:
 				Events.notify("%s nearly missed the train!" % (n as PlayerCharacter).display_name(), &"warning")
+	# Passengers still on the platform wait for the next train.
+	var missed := 0
+	for g in world.customers.groups.duplicate():
+		for m in g.members:
+			if not world.grid.is_inside(GameConst.world_to_cell(m.global_position)):
+				missed += g.members.size()
+				world.customers.drop_group(g)
+				break
+	if missed > 0:
+		Events.notify("%d passenger%s missed the train" % [missed, "" if missed == 1 else "s"], &"info")
 
 
 # -----------------------------------------------------------------------------
@@ -309,20 +326,20 @@ func _process(delta: float) -> void:
 	_speed = move_toward(_speed, target, delta * 4.0)
 	_scroll += _speed * delta
 	var span := _x1 - _x0
-	var train := _train_rect()
 	for e in _scenery_parts:
 		var n: Node3D = e[0]
 		n.position.x = _x0 + fposmod(float(e[1]) - _scroll - _x0, span)
-		match int(e[2]):
-			1:
-				# Sleepers of the train's own track only show past its ends.
-				n.visible = n.position.x < train.position.x - 0.2 or n.position.x > train.end.x + 0.2
-			2:
-				n.visible = state == State.MOVING
+		if int(e[2]) == 2:
+			n.visible = state == State.MOVING
+	# Wheels roll and the locomotive's coupling rods go round.
+	for sp in _spinners:
+		(sp[0] as Node3D).rotation.z -= _speed * delta / float(sp[1])
+	for r in _rods:
+		var wheel: Node3D = r[2]
+		var a := wheel.rotation.z
+		(r[0] as Node3D).position = (r[1] as Vector3) + Vector3(cos(a), sin(a), 0) * 0.36
+	_smoke(delta)
 	var platform_here := state != State.MOVING
-	for w in _wheels:
-		w.visible = not platform_here
-		w.rotation.z -= _speed * delta / 0.24
 	_platform.visible = platform_here
 	if platform_here:
 		for e in _platform_parts:
@@ -336,27 +353,21 @@ func _process(delta: float) -> void:
 			lbl.text = want
 
 
-func _build_static() -> void:
-	# Rails: the train's own track (seen past both ends) and a second line
-	# behind it. They don't move; the sleepers under them scroll. Rails stop
-	# at the cars so they never poke through a floor.
-	var old := get_node_or_null("Rails")
-	if old:
-		old.queue_free()
-	var b := MeshBuilder.new()
-	var y := RestaurantBuilder.GROUND_Y + 0.012
-	for z in [-2.5, -1.1]:
-		b.block(Vector3((_x0 + _x1) * 0.5, y, z), Vector3(_x1 - _x0 - 0.02, 0.05, 0.07), Color("8c8f94"), 0.01)
-	var train := _train_rect()
-	for z in [2.3, 3.7]:
-		for seg in [[_x0, float(train.position.x)], [float(train.end.x), _x1]]:
-			var len: float = seg[1] - seg[0] - 0.06
-			if len > 0.1:
-				b.block(Vector3((seg[0] + seg[1]) * 0.5, y, z), Vector3(len, 0.05, 0.07), Color("8c8f94"), 0.01)
-	var mi := MeshInstance3D.new()
-	mi.name = "Rails"
-	mi.mesh = b.commit(Models.mat_main())
-	add_child(mi)
+## Smoke from the locomotive's chimney: thick and fast on the move, a lazy
+## wisp while standing.
+func _smoke(delta: float) -> void:
+	if world == null or world.fx == null:
+		return
+	_smoke_t -= delta
+	if _smoke_t > 0.0:
+		return
+	var fast := _speed / CRUISE
+	_smoke_t = lerpf(1.6, 0.18, fast)
+	var at := Vector3(_loco_x + 7.95, 4.3, 3.0)
+	if fast > 0.1:
+		world.fx.smoke(at, 0.8 + fast * 0.8, true)
+	else:
+		world.fx.steam(at, 0.6, Color(1, 1, 1, 0.5), true)
 
 
 ## The cars (indoor rooms only, not the platform).
@@ -369,9 +380,129 @@ func _train_rect() -> Rect2i:
 	return r
 
 
+## Everything that makes the building read as a train: rails, the
+## undercarriage and bogies of every car, arched car ends, a roof edge, two
+## closed passenger cars behind and the locomotive in front.
+func _build_cars() -> void:
+	if _cars:
+		_cars.queue_free()
+	_cars = Node3D.new()
+	_cars.name = "Cars"
+	add_child(_cars)
+	var r := dress(_cars, world.grid, _ground, _x0, _x1)
+	_spinners = r["spinners"]
+	_rods = r["rods"]
+	_loco_x = r["loco_x"]
+
+
+## Builds the train's rolling stock under `parent` (also used by the title
+## screen's preview). Returns the wheels and rods that turn while moving.
+static func dress(parent: Node3D, grid: RestaurantGrid, ground: float, x0: float, x1: float) -> Dictionary:
+	var spinners := []
+	var rods := []
+	var b := MeshBuilder.new()
+	var rail_y := ground + 0.012
+	var steel := Color("8c8f94")
+	for z in [-0.2, 6.2, -2.3, -1.3]:
+		b.block(Vector3((x0 + x1) * 0.5, rail_y, z), Vector3(x1 - x0 - 0.02, 0.05, 0.07), steel, 0.01)
+	# The playable cars, west to east
+	var spans := []
+	var train := Rect2i()
+	for room in grid.rooms:
+		var rt := Content.room_type(room["type"])
+		if rt == null or rt.outdoor:
+			continue
+		var rr: Rect2i = room["rect"]
+		spans.push_back([float(rr.position.x), float(rr.end.x)])
+		train = rr if train.size == Vector2i.ZERO else train.merge(rr)
+	spans.sort_custom(func(a, c): return a[0] < c[0])
+	var done := {}
+	for sp in spans:
+		var cx0: float = sp[0]
+		var cx1: float = sp[1]
+		if cx1 - cx0 < 3.0:
+			continue   # the gangway between the coach and the next car
+		_undercarriage(parent, b, spinners, ground, cx0, cx1)
+		for bx in [cx0, cx1]:
+			if not done.has(bx):
+				done[bx] = true
+				_arch(b, bx)
+		b.block(Vector3((cx0 + cx1) * 0.5, 2.56, 0.12), Vector3(cx1 - cx0, 0.13, 0.5), ModelsWorld.LIVERY, 0.02)
+	# Two passenger cars behind (you can't go in) and the engine in front.
+	var west := float(train.position.x)
+	for k in 2:
+		var px1 := west - k * 7.95
+		var px0 := px1 - 7.8
+		var car := Models.instance(&"passenger_car")
+		car.position = Vector3((px0 + px1) * 0.5, 0, 0)
+		parent.add_child(car)
+		_undercarriage(parent, b, spinners, ground, px0, px1)
+	var loco_x := float(train.end.x) + 0.15
+	var loco := Models.instance(&"locomotive")
+	loco.position = Vector3(loco_x, 0, 0)
+	parent.add_child(loco)
+	var wy := rail_y + 0.05 + 0.85
+	var drivers: Array[Node3D] = []
+	for x in [3.4, 5.2, 7.0]:
+		var w := Models.instance(&"loco_wheel")
+		w.position = Vector3(loco_x + x, wy, 5.62)
+		parent.add_child(w)
+		spinners.push_back([w, 0.85])
+		drivers.push_back(w)
+	var rod := Models.instance(&"coupling_rod")
+	rod.position = drivers[1].position + Vector3(0.36, 0, 0.14)
+	parent.add_child(rod)
+	rods.push_back([rod, drivers[1].position + Vector3(0, 0, 0.14), drivers[1]])
+	for x in [0.9, 8.4]:
+		var pw := Models.instance(&"train_wheel")
+		pw.scale = Vector3.ONE * 1.6
+		pw.position = Vector3(loco_x + x, rail_y + 0.05 + 0.38, 5.55)
+		parent.add_child(pw)
+		spinners.push_back([pw, 0.38])
+	var mi := MeshInstance3D.new()
+	mi.mesh = b.commit(Models.mat_main())
+	parent.add_child(mi)
+	return {"spinners": spinners, "rods": rods, "loco_x": loco_x}
+
+
+## Chassis, the body's skirt below the floor, and two bogies with wheels.
+static func _undercarriage(parent: Node3D, b: MeshBuilder, spinners: Array, ground: float, x0: float, x1: float) -> void:
+	var cx := (x0 + x1) * 0.5
+	var l := x1 - x0
+	b.block(Vector3(cx, -0.36, 3.0), Vector3(l - 0.3, 0.34, 5.6), Color("26282c"), 0.02)
+	b.block(Vector3(cx, -0.38, 6.03), Vector3(l - 0.1, 0.38, 0.08), ModelsWorld.LIVERY, 0.01)
+	b.block(Vector3(cx, -0.38, -0.03), Vector3(l - 0.1, 0.38, 0.08), ModelsWorld.LIVERY, 0.01)
+	b.block(Vector3(cx, -0.12, 6.08), Vector3(l - 0.2, 0.04, 0.02), ModelsWorld.CREAM)
+	var rail_top := ground + 0.062
+	for bx in [x0 + 1.4, x1 - 1.4]:
+		var bogie := Models.instance(&"bogie")
+		bogie.position = Vector3(bx, rail_top + 0.36, 6.32)
+		parent.add_child(bogie)
+		b.block(Vector3(bx, rail_top + 0.48, 3.0), Vector3(0.5, -0.36 - rail_top - 0.48, 6.0), Color("1f2124"))
+		for dx in [-0.6, 0.6]:
+			var w := Models.instance(&"train_wheel")
+			w.scale = Vector3.ONE * 1.5
+			w.position = Vector3(bx + dx, rail_top + 0.36, 6.2)
+			parent.add_child(w)
+			spinners.push_back([w, 0.36])
+
+
+## The rounded top of a car end, standing on the end wall at x.
+static func _arch(b: MeshBuilder, x: float) -> void:
+	var n := 12
+	for i in n:
+		var z0 := 6.0 * i / n
+		var zc := z0 + 3.0 / n
+		var h := 0.55 * sqrt(maxf(1.0 - pow((zc - 3.0) / 3.0, 2.0), 0.0))
+		if h < 0.04:
+			continue
+		b.block(Vector3(x, 2.55, zc), Vector3(0.24, h, 6.0 / n + 0.005), ModelsWorld.LIVERY)
+		b.block(Vector3(x, 2.55 + h, zc), Vector3(0.27, 0.04, 6.0 / n + 0.005), Pal.WALL_CAP)
+
+
 func _scenery(key: StringName, x: float, z: float, yaw := 0.0, s := 1.0, kind := 0) -> void:
 	var n := Models.instance(key)
-	var y := RestaurantBuilder.GROUND_Y + (0.012 if key == &"rail_sleeper" else 0.02)
+	var y := _ground + (0.012 if key == &"rail_sleeper" or key == &"long_sleeper" else 0.02)
 	n.position = Vector3(x, y, z)
 	n.rotation.y = deg_to_rad(yaw)
 	n.scale = Vector3.ONE * s
@@ -383,21 +514,21 @@ func _build_scenery() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 77
 	var x := _x0
-	# Sleepers on both tracks (the train's own are under the cars and only
-	# show past its ends).
+	# Sleepers under both tracks scroll by (the train's own show past its
+	# ends and, between stations, along its side).
 	while x < _x1:
 		_scenery(&"rail_sleeper", x + 0.3, -1.8)
-		_scenery(&"rail_sleeper", x + 0.3, 3.0, 0.0, 1.0, 1)
+		_scenery(&"long_sleeper", x + 0.3, 3.0)
 		x += 0.6
-	# Telegraph poles, trees and bushes behind; fence and bushes in front.
+	# Telegraph poles, trees and hills behind; a fence and bushes in front.
 	x = _x0
 	while x < _x1:
-		_scenery(&"telegraph_pole", x + 1.0, -0.6)
+		_scenery(&"telegraph_pole", x + 1.0, -0.75)
 		x += 6.0
 	x = _x0
 	while x < _x1:
 		var key: StringName = [&"tree", &"tree", &"bush", &"hill"][rng.randi_range(0, 3)]
-		_scenery(key, x + rng.randf() * 1.5, rng.randf_range(-3.0, -2.75) if key != &"hill" else -3.0, rng.randf() * 360.0, rng.randf_range(0.7, 1.15))
+		_scenery(key, x + rng.randf() * 1.5, rng.randf_range(-3.0, -2.8) if key != &"hill" else -3.0, rng.randf() * 360.0, rng.randf_range(0.7, 1.15))
 		x += rng.randf_range(1.6, 3.2)
 	x = _x0
 	while x < _x1:
@@ -407,34 +538,16 @@ func _build_scenery() -> void:
 	x = _x0
 	while x < _x1:
 		var key2: StringName = [&"grass_tuft", &"grass_tuft", &"hay_bale", &"bush"][rng.randi_range(0, 3)]
-		_scenery(key2, x, rng.randf_range(6.6, 8.8), rng.randf() * 360.0, rng.randf_range(0.6, 1.0), 2)
+		_scenery(key2, x, rng.randf_range(6.9, 8.8), rng.randf() * 360.0, rng.randf_range(0.6, 1.0), 2)
 		x += rng.randf_range(0.8, 2.2)
 	x = _x0 + 3.0
 	while x < _x1:
 		_scenery(&"telegraph_pole", x, 8.9, 0.0, 1.0, 2)
 		x += 9.0
-	_build_wheels()
 	x = _x0 + 0.7
 	while x < _x1:
 		_scenery([&"bush", &"tree"][rng.randi_range(0, 1)], x, rng.randf_range(9.5, 9.8), rng.randf() * 360.0, rng.randf_range(0.5, 0.8))
 		x += rng.randf_range(3.0, 6.0)
-
-
-## Bogies along the side facing the camera, spinning while the train moves
-## (hidden at stations, where the platform covers them).
-func _build_wheels() -> void:
-	for w in _wheels:
-		w.queue_free()
-	_wheels.clear()
-	var train := _train_rect()
-	var x := float(train.position.x) + 0.9
-	while x < train.end.x - 0.5:
-		for dx in [0.0, 0.62]:
-			var w := Models.instance(&"train_wheel")
-			w.position = Vector3(x + dx, 0.1, float(train.end.y) + 0.14)
-			add_child(w)
-			_wheels.push_back(w)
-		x += 3.4
 
 
 func _platform_part(key: StringName, x: float, z: float, yaw := 0.0, s := 1.0) -> Node3D:
@@ -447,6 +560,8 @@ func _platform_part(key: StringName, x: float, z: float, yaw := 0.0, s := 1.0) -
 	return n
 
 
+## A raised platform level with the train's doors (the track is lower), as
+## long as the model, with lamps, benches and the station's name.
 func _build_platform() -> void:
 	_platform = Node3D.new()
 	_platform.name = "Platform"
@@ -456,11 +571,11 @@ func _build_platform() -> void:
 	while x < int(_x1):
 		_platform_part(&"platform_slab", x + 0.5, 7.5)
 		x += 1
-	for lx in [-4.5, 3.0, 18.5, 23.5]:
-		_platform_part(&"lamp_post", lx, 9.2, 180.0)
-	for bx in [-2.0, 22.5]:
-		_platform_part(&"bench", bx, 8.75, 180.0)
-	var sign := _platform_part(&"station_sign", 0.8, 8.8)
+	for lx in [-5.5, 2.5, 17.5, 23.5, 30.5, -12.5, -19.5]:
+		_platform_part(&"lamp_post", lx, 8.75, 180.0)
+	for bx in [-2.0, 26.5, -15.5]:
+		_platform_part(&"bench", bx, 8.55, 180.0)
+	var sign := _platform_part(&"station_sign", 0.6, 8.6)
 	var lbl := Label3D.new()
 	lbl.font = load("res://art/fonts/AlfaSlabOne-Regular.ttf")
 	lbl.font_size = 64
@@ -472,4 +587,3 @@ func _build_platform() -> void:
 	lbl.name = "StationName"
 	sign.add_child(lbl)
 	_platform.set_meta(&"label", lbl)
-

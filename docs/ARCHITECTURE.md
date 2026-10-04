@@ -71,12 +71,23 @@ A location's `theme` can add a **theme node** (`GameWorld.theme_node`):
   cars and pull players back in. It publishes a `train` shared channel; every
   peer animates the sliding platform, scrolling scenery and wheels from it.
   The HUD shows `theme_node.status_line()` under the clock.
+  `TrainLine.dress()` builds the rolling stock (rails, bogies, arched car
+  ends, the passenger cars and locomotive); the title screen's preview uses
+  it too. The train layout sets `ground_y` lower than the floors, so the
+  cars stand on their wheels and the platform is a raised slab.
 * `SpaceOrbit` sets the lighting rig's space mode and adds the starfield and
   planet. Planters (`Grower`) and the `FoodPrinter` are ordinary fixture
   components.
 
 `LocationDef.supply_mode` (`truck`, `market`, `grow`) decides whether the
 morning truck runs after day one and what the catalog's Supplies tab shows.
+
+`DayManager` runs the day on a clock: `prep_left` counts down the morning and
+opens the doors; closing ends itself once `CustomerManager.active_groups()`
+is zero. It also keeps the serving streak (`tip_bonus()`) and the daily
+goals. The HUD reserves a band at the top for the clock, tickets and money
+and tells `DioramaCamera` (`safe_top`, `safe_bottom`), which frames the
+restaurant in the space between.
 
 Managers hold state that has no physical home: the schedule, money, the
 ledger. Anything with a place in the world is an entity, and its behaviour

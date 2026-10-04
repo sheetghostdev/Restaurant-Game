@@ -15,6 +15,8 @@ var _day_bar: DayBar
 var _money_label: Label
 var _money_delta: Label
 var _stars: StarMeter
+var _star_delta: Label
+var _streak: Label
 var _tickets: HBoxContainer
 var _alerts: VBoxContainer
 var _toasts: VBoxContainer
@@ -33,8 +35,12 @@ var debug_panel: DebugPanel
 var _shown_money := 0.0
 var _ticket_key := ""
 var _ticket_bars := {}       ## table number -> PaperTicket
+var _top_left: Control
+var _top_right: Control
 
-const TICKET_GAP := 14.0
+const TICKET_GAP := 10.0
+const TOP := 12.0            ## the ticket rail's top edge
+const BOTTOM_BAND := 54.0    ## kept clear for the player chips
 
 
 func _ready() -> void:
@@ -70,7 +76,7 @@ func _ready() -> void:
 	Events.toast.connect(_on_toast)
 	Events.alert.connect(_on_alert)
 	Events.money_changed.connect(_on_money)
-	Events.reputation_changed.connect(func(v, _d): _stars.value = v)
+	Events.reputation_changed.connect(_on_reputation)
 	Events.orders_changed.connect(_refresh_tickets)
 	Events.phase_changed.connect(_on_phase)
 	Events.day_results.connect(func(r): results.show_results(r))
@@ -83,6 +89,7 @@ func _ready() -> void:
 
 func _build_top_left() -> void:
 	var p := UITheme.panel()
+	_top_left = p
 	p.position = Vector2(18, 16)
 	p.custom_minimum_size = Vector2(250, 0)
 	add_child(p)
@@ -111,6 +118,7 @@ func _build_top_left() -> void:
 
 func _build_top_right() -> void:
 	var p := UITheme.panel()
+	_top_right = p
 	p.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	p.position = Vector2(-18, 16)   # right edge 18 px in; grows leftwards
 	p.custom_minimum_size = Vector2(220, 0)
@@ -126,8 +134,16 @@ func _build_top_right() -> void:
 	_money_delta = UITheme.label("", 18, "bold", Pal.UI_MONEY)
 	_money_delta.modulate.a = 0.0
 	row.add_child(_money_delta)
+	var srow := HBoxContainer.new()
+	v.add_child(srow)
 	_stars = StarMeter.new()
-	v.add_child(_stars)
+	srow.add_child(_stars)
+	_star_delta = UITheme.label("", 17, "bold", Pal.UI_BAD)
+	_star_delta.modulate.a = 0.0
+	srow.add_child(_star_delta)
+	_streak = UITheme.label("", 16, "bold", Pal.UI_GOOD)
+	_streak.visible = false
+	v.add_child(_streak)
 
 
 ## Order rail along the top, between the clock card and the money card: one
@@ -137,7 +153,7 @@ func _build_tickets() -> void:
 	_tickets.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	_tickets.offset_left = 292
 	_tickets.offset_right = -252   # clear of the money card
-	_tickets.offset_top = 18
+	_tickets.offset_top = TOP
 	_tickets.alignment = BoxContainer.ALIGNMENT_CENTER
 	_tickets.add_theme_constant_override("separation", int(TICKET_GAP))
 	_tickets.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -215,7 +231,12 @@ func _process(delta: float) -> void:
 	_day_label.text = "DAY %d" % d.day
 	_clock_label.text = GameConst.clock_text(d.hour)
 	var phase_text := d.phase_name()
-	if d.phase == GameConst.Phase.SERVICE and d.is_rush():
+	if d.phase == GameConst.Phase.MORNING:
+		# The doors open by themselves: count down to it.
+		phase_text = "Prep · opens in %s" % GameConst.countdown(d.prep_left)
+		var hurry := d.prep_left <= 15.0 and fmod(Time.get_ticks_msec() * 0.001, 0.6) < 0.3
+		_phase_label.add_theme_color_override("font_color", Pal.UI_BAD if hurry else Pal.UI_ACCENT)
+	elif d.phase == GameConst.Phase.SERVICE and d.is_rush():
 		phase_text = "RUSH HOUR!"
 		_phase_label.add_theme_color_override("font_color", Pal.UI_BAD)
 	else:
@@ -235,7 +256,12 @@ func _process(delta: float) -> void:
 	_money_label.text = GameConst.money(_shown_money)
 	_money_label.add_theme_color_override("font_color", Pal.UI_MONEY if target >= 0 else Pal.UI_BAD)
 	_stars.value = world.economy.reputation
+	var sk := world.day.streak
+	_streak.visible = sk >= 2 and d.phase in [GameConst.Phase.SERVICE, GameConst.Phase.CLOSING]
+	if _streak.visible:
+		_streak.text = "STREAK ×%d · tips +%d%%" % [sk, roundi(world.day.tip_bonus() * 100.0)]
 	_update_chips()
+	_keep_clear()
 	_forecast.visible = d.phase == GameConst.Phase.MORNING or d.phase == GameConst.Phase.EVENING
 	if _forecast.visible and Engine.get_process_frames() % 30 == 0:
 		_refresh_forecast()
@@ -262,6 +288,27 @@ func _on_money(_amount: float, delta: float) -> void:
 	tw2.tween_property(_money_label, "scale", Vector2.ONE, 0.2)
 
 
+## Reputation moves show next to the stars: green up, red down (with a
+## shake), so it's obvious what a walkout or a great meal did.
+func _on_reputation(v: float, d: float) -> void:
+	_stars.value = v
+	if absf(d) < 0.005:
+		return
+	_star_delta.text = " %s%.2f★" % ["+" if d > 0 else "−", absf(d)]
+	_star_delta.add_theme_color_override("font_color", Pal.UI_GOOD if d > 0 else Pal.UI_BAD)
+	_star_delta.modulate.a = 1.0
+	var tw := create_tween()
+	tw.tween_interval(1.6)
+	tw.tween_property(_star_delta, "modulate:a", 0.0, 0.8)
+	if absf(d) >= 0.05:
+		_stars.pivot_offset = _stars.size * 0.5
+		_stars.modulate = Color(1.0, 0.55, 0.5) if d < 0 else Color(0.7, 1.0, 0.7)
+		var pulse := create_tween()
+		pulse.tween_property(_stars, "scale", Vector2.ONE * 1.2, 0.1)
+		pulse.tween_property(_stars, "scale", Vector2.ONE, 0.25)
+		pulse.parallel().tween_property(_stars, "modulate", Color.WHITE, 0.9)
+
+
 func _on_phase(phase: int) -> void:
 	_refresh_forecast()
 	if phase == GameConst.Phase.SERVICE:
@@ -285,17 +332,25 @@ func _refresh_forecast() -> void:
 			for h in rh:
 				hours.push_back(GameConst.clock_text(float(h)).replace(":00", ""))
 			_forecast_body.add_child(UITheme.label("Rushes: " + ", ".join(hours), 17, "body", Pal.UI_BAD))
+		var gl: Array = fc.get("goals", [])
+		if not gl.is_empty():
+			_forecast_body.add_child(UITheme.label("Goals", 18, "bold", Pal.UI_ACCENT))
+			for gtext in gl:
+				var g2 := UITheme.label("☐ " + String(gtext), 16, "bold", Pal.UI_INK)
+				g2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				g2.custom_minimum_size = Vector2(270, 0)
+				_forecast_body.add_child(g2)
 		for e in fc.get("f", []):
 			var l := UITheme.label("• " + String(e), 16, "body", Pal.UI_WARN)
 			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			l.custom_minimum_size = Vector2(270, 0)
 			_forecast_body.add_child(l)
 		var mode := world.location.supply_mode if world.location else "truck"
-		var morning_tip := "Unload the truck, stock the fridge, prep food — then hold USE on the OPEN sign."
+		var morning_tip := "Unload the truck, stock the fridge and prep food: the doors open by themselves when the countdown runs out."
 		if mode == "market":
-			morning_tip = "Shop at the depot market on the platform, stock the fridges, prep food — then hold USE on the OPEN sign to depart."
+			morning_tip = "Shop at the depot market on the platform, stock the fridges and prep food: the train leaves when the countdown runs out."
 		elif mode == "grow":
-			morning_tip = "Harvest the planters, print what you need, prep food — then hold USE on the OPEN sign."
+			morning_tip = "Harvest the planters, print what you need and prep food: the doors open when the countdown runs out."
 		var tip := UITheme.label(morning_tip, 15, "regular", Pal.UI_INK_SOFT)
 		tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		tip.custom_minimum_size = Vector2(270, 0)
@@ -306,7 +361,7 @@ func _refresh_forecast() -> void:
 		var evening_tip := "Order tomorrow's supplies at the manager's desk: the truck only brings what you order. "
 		if not truck:
 			evening_tip = "Buy equipment, staff and upgrades at the manager's desk. "
-		var tip2 := UITheme.label(evening_tip + "Hold GRAB on furniture to move it, Q to rotate. Expand at the FOR SALE signs. Hold USE on the sign to end the day.", 15, "regular", Pal.UI_INK_SOFT)
+		var tip2 := UITheme.label(evening_tip + "Hold GRAB on furniture to move it, Q to rotate. Expand at the FOR SALE signs. When you're ready, hold USE on the OPEN sign: lights out, and the next morning's prep starts.", 15, "regular", Pal.UI_INK_SOFT)
 		tip2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		tip2.custom_minimum_size = Vector2(270, 0)
 		_forecast_body.add_child(tip2)
@@ -332,8 +387,16 @@ func _refresh_tickets() -> void:
 		e["dishes"][code] = int(e["dishes"].get(code, 0)) + 1
 	var list := tables.values()
 	list.sort_custom(func(a, b): return a["patience"] < b["patience"] or (a["patience"] == b["patience"] and a["table"] < b["table"]))
-	var fit := maxi(1, int((_tickets.size.x + TICKET_GAP) / (PaperTicket.W + TICKET_GAP)))
-	var shown := list.slice(0, fit if list.size() <= fit else fit - 1)
+	# As many slips as fit the rail; the rest are counted on a "+N" card.
+	var shown := []
+	var used := 0.0
+	for i in list.size():
+		var wdt := PaperTicket.estimate_width(list[i]["dishes"]) + TICKET_GAP
+		var room := _tickets.size.x - (90.0 if i < list.size() - 1 else 0.0)
+		if used + wdt > room and not shown.is_empty():
+			break
+		used += wdt
+		shown.push_back(list[i])
 	# Rebuild only when the set of tables or dishes changes; otherwise just
 	# move the patience bars.
 	var key := ""
@@ -360,6 +423,37 @@ func _refresh_tickets() -> void:
 	for e in shown:
 		_set_ticket_patience(int(e["table"]), float(e["patience"]))
 
+
+
+## The HUD must never hide the game: the camera frames the restaurant in
+## the space between the top band (clock, tickets, money) and the player
+## chips, and anything a local player walks behind fades out.
+func _keep_clear() -> void:
+	var vh := get_viewport_rect().size.y
+	if vh <= 0.0:
+		return
+	var top := maxf(TOP + PaperTicket.BAND, _top_left.position.y + _top_left.size.y) + 6.0
+	world.camera.safe_top = top / vh
+	world.camera.safe_bottom = BOTTOM_BAND / vh
+	var spots: Array[Vector2] = []
+	var cam := world.camera
+	for p in world.players():
+		if p.is_local() and not cam.is_position_behind(p.global_position):
+			spots.push_back(cam.unproject_position(p.global_position + Vector3(0, 0.9, 0)))
+	var panels: Array = [_top_left, _top_right, _forecast, _toasts, _alerts]
+	panels.append_array(_tickets.get_children())
+	for c in panels:
+		var ctl := c as Control
+		if ctl == null or not ctl.visible:
+			continue
+		var r := ctl.get_global_rect().grow(36.0)
+		var covered := false
+		for sp in spots:
+			if r.has_point(sp):
+				covered = true
+				break
+		var want := 0.22 if covered else 1.0
+		ctl.modulate.a = move_toward(ctl.modulate.a, want, get_process_delta_time() * 5.0)
 
 
 func _set_ticket_patience(table: int, pat: float) -> void:

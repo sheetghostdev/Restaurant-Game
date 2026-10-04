@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="Resource_2u123"]
 script = ExtResource("1_2u123")
 heat = &"oven"
+rate = 0.125
 stage_names = PackedStringArray("Raw", "Golden", "Dark", "Burnt")
 stage_ends = PackedFloat32Array(0.5, 1, 1.3, 99)
 stage_quality = PackedFloat32Array(0.1, 1, 0.55, 0)

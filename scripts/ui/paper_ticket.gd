@@ -1,21 +1,36 @@
 class_name PaperTicket
 extends PanelContainer
-## One table's order, drawn as a slip of paper from an order pad: a strip of
-## tape in the table's colour, the table's name, and for every dish a picture
-## of exactly what to make plus its ingredients. Extras the guest didn't ask
-## for are shown faded and crossed out, so "no tomato" is obvious.
+## One table's order, drawn as a small slip of paper from an order pad: tape
+## in the table's colour, the table's name, and for every dish a picture of
+## exactly what to make. Optional extras sit beside the picture: shown when
+## wanted, crossed out when not, so "no tomato" is obvious.
 
-const W := 252.0
-const ICON := 58.0
-const CHIP := 36.0
-const TEETH := 9.0          ## torn bottom edge
+const ICON := 42.0         ## dish picture
+const CHIP := 19.0         ## extra ingredient, beside the picture
+const TILE_GAP := 8.0
+const TEETH := 6.0          ## torn bottom edge
 const PAPER := Color("fbf7ea")
 const RULE := Color("e7dfcb")
+## Every ticket fits in this many pixels of height: the camera keeps the
+## restaurant below the band, so tickets never cover anything.
+const BAND := 118.0
 
 var table := 0
 var _bar: ProgressBar
 var _fill: StyleBoxFlat
 var _pulse: Tween
+
+
+## Width a slip will need for these dishes ({code: count}), before layout.
+static func estimate_width(dishes: Dictionary) -> float:
+	var w := 18.0
+	var n := 0
+	for code in dishes:
+		var r := Content.recipe(RecipeManager.parse_code(String(code))["recipe"])
+		w += ICON + (CHIP + 2.0 if r and not r.optional.is_empty() else 0.0)
+		n += 1
+	w += TILE_GAP * maxi(n - 1, 0)
+	return maxf(w, 84.0)
 
 
 static func make(e: Dictionary) -> PaperTicket:
@@ -24,91 +39,77 @@ static func make(e: Dictionary) -> PaperTicket:
 	return t
 
 
+## Compact slip: tape in the table's colour, "RED", then one small tile per
+## dish (its picture, the extras it wants or must not have, its name).
 func _build(e: Dictionary) -> void:
 	table = int(e["table"])
-	custom_minimum_size = Vector2(W, 0)
 	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sb := StyleBoxEmpty.new()
-	sb.content_margin_left = 12
-	sb.content_margin_right = 12
-	sb.content_margin_top = 16
-	sb.content_margin_bottom = 12 + TEETH
+	sb.content_margin_left = 9
+	sb.content_margin_right = 9
+	sb.content_margin_top = 10
+	sb.content_margin_bottom = 7 + TEETH
 	add_theme_stylebox_override("panel", sb)
-	# A little tilt, the same for a table every time
-	rotation = deg_to_rad(float((table * 37) % 7 - 3) * 0.55)
+	rotation = deg_to_rad(float((table * 37) % 7 - 3) * 0.4)
 	resized.connect(func(): pivot_offset = Vector2(size.x * 0.5, 0))
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 6)
+	v.add_theme_constant_override("separation", 3)
 	add_child(v)
-	# Header: colour swatch + "RED TABLE"
 	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 8)
+	head.add_theme_constant_override("separation", 5)
 	head.add_child(_Swatch.new(SeatingTable.color_of(table)))
-	var title_text := SeatingTable.name_of(table).to_upper() + " TABLE" if table > 0 else "TAKEAWAY"
-	var hl := UITheme.label(title_text, 22, "display")
+	var hl := UITheme.label(SeatingTable.name_of(table).to_upper() if table > 0 else "TAKEAWAY", 16, "display")
 	hl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	head.add_child(hl)
 	v.add_child(head)
-	v.add_child(_Rule.new())
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", int(TILE_GAP))
 	var dishes: Dictionary = e["dishes"]
 	for code in dishes:
-		v.add_child(_dish_row(String(code), int(dishes[code])))
-	# Patience
+		row.add_child(_dish_tile(String(code), int(dishes[code])))
+	v.add_child(row)
 	_bar = ProgressBar.new()
-	_bar.custom_minimum_size = Vector2(0, 12)
+	_bar.custom_minimum_size = Vector2(0, 7)
 	_bar.max_value = 1.0
 	_bar.show_percentage = false
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = RULE
-	bg.set_corner_radius_all(6)
+	bg.set_corner_radius_all(4)
 	_bar.add_theme_stylebox_override("background", bg)
 	_fill = StyleBoxFlat.new()
-	_fill.set_corner_radius_all(6)
+	_fill.set_corner_radius_all(4)
 	_bar.add_theme_stylebox_override("fill", _fill)
 	v.add_child(_bar)
 
 
-func _dish_row(code: String, count: int) -> Control:
+func _dish_tile(code: String, count: int) -> Control:
 	var o := RecipeManager.parse_code(code)
 	var r := Content.recipe(o["recipe"])
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	var tile := PanelContainer.new()
-	var tsb := StyleBoxFlat.new()
-	tsb.bg_color = Color("dccbad")
-	tsb.set_corner_radius_all(10)
-	tile.add_theme_stylebox_override("panel", tsb)
-	var tr := TextureRect.new()
-	tr.texture = IconRenderer.get_icon("dish:%s" % code)
-	tr.custom_minimum_size = Vector2(ICON, ICON)
-	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	tile.add_child(tr)
-	row.add_child(tile)
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 2)
-	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var title := HBoxContainer.new()
-	var nl := UITheme.label(r.ticket_name() if r else code, 19, "bold")
-	nl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	nl.clip_text = true
-	title.add_child(nl)
-	if count > 1:
-		title.add_child(UITheme.label("×%d" % count, 20, "display", Pal.UI_BAD))
-	col.add_child(title)
-	# Ingredients: everything that goes in, extras not wanted crossed out
-	if r and (r.required.size() + r.optional.size() > 1):
-		var chips := HBoxContainer.new()
-		chips.add_theme_constant_override("separation", 3)
+	var tile := VBoxContainer.new()
+	tile.add_theme_constant_override("separation", 1)
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 2)
+	var pic := _Picture.new()
+	pic.texture = IconRenderer.get_icon("dish:%s" % code)
+	pic.count = count
+	pic.custom_minimum_size = Vector2(ICON, ICON)
+	top.add_child(pic)
+	# The optional extras: shown if wanted, crossed out if not. (Everything
+	# else is in the picture.)
+	if r and not r.optional.is_empty():
+		var chips := VBoxContainer.new()
+		chips.add_theme_constant_override("separation", 2)
 		var wanted: Array = o["extras"]
-		for id in r.required:
-			chips.add_child(_chip(id, true))
 		for id in r.optional:
 			chips.add_child(_chip(id, wanted.has(id)))
-		col.add_child(chips)
-	row.add_child(col)
-	return row
+		top.add_child(chips)
+	tile.add_child(top)
+	var nl := UITheme.label(r.ticket_name() if r else code, 12, "bold", Pal.UI_INK_SOFT)
+	nl.clip_text = true
+	nl.custom_minimum_size = Vector2(ICON, 0)
+	tile.add_child(nl)
+	return tile
 
 
 func _chip(id: StringName, included: bool) -> Control:
@@ -116,7 +117,6 @@ func _chip(id: StringName, included: bool) -> Control:
 	c.custom_minimum_size = Vector2(CHIP, CHIP)
 	c.texture = IconRenderer.get_icon("cooked:%s" % id)
 	c.crossed = not included
-	c.tooltip_text = Content.display_name(id)
 	return c
 
 
@@ -145,13 +145,13 @@ func _draw() -> void:
 	draw_colored_polygon(shadow, Color(0, 0, 0, 0.22))
 	draw_colored_polygon(pts, PAPER)
 	# Faint ruled lines, like an order pad
-	var y := 52.0
-	while y < h - TEETH - 8:
-		draw_line(Vector2(8, y), Vector2(w - 8, y), RULE, 1.0)
-		y += 26.0
+	var y := 33.0
+	while y < h - TEETH - 14:
+		draw_line(Vector2(6, y), Vector2(w - 6, y), RULE, 1.0)
+		y += 20.0
 	# Tape in the table's colour, holding the slip to the rail
 	var tc := SeatingTable.color_of(table)
-	var tape := Rect2(w * 0.5 - 30, -9, 60, 20)
+	var tape := Rect2(w * 0.5 - 22, -7, 44, 14)
 	draw_set_transform(tape.get_center(), deg_to_rad(-4), Vector2.ONE)
 	draw_rect(Rect2(-tape.size * 0.5, tape.size), Color(tc.r, tc.g, tc.b, 0.88))
 	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
@@ -163,24 +163,12 @@ class _Swatch extends Control:
 
 	func _init(c: Color) -> void:
 		col = c
-		custom_minimum_size = Vector2(24, 24)
+		custom_minimum_size = Vector2(16, 16)
 
 	func _draw() -> void:
 		var c := size * 0.5
-		draw_circle(c, 11.0, Pal.UI_INK)
-		draw_circle(c, 9.0, col)
-
-
-## Dashed rule under the header.
-class _Rule extends Control:
-	func _init() -> void:
-		custom_minimum_size = Vector2(0, 4)
-
-	func _draw() -> void:
-		var x := 0.0
-		while x < size.x:
-			draw_line(Vector2(x, 2), Vector2(minf(x + 7, size.x), 2), Color("c9bea6"), 2.0)
-			x += 12.0
+		draw_circle(c, 7.5, Pal.UI_INK)
+		draw_circle(c, 6.0, col)
 
 
 ## Ingredient picture; crossed out (and faded) when the guest doesn't want it.
@@ -193,5 +181,27 @@ class _Chip extends Control:
 		if texture:
 			draw_texture_rect(texture, Rect2(Vector2.ZERO, size), false, Color(1, 1, 1, 0.3 if crossed else 1.0))
 		if crossed:
-			draw_line(Vector2(3, 3), size - Vector2(3, 3), Pal.UI_BAD, 3.0)
-			draw_line(Vector2(3, size.y - 3), Vector2(size.x - 3, 3), Pal.UI_BAD, 3.0)
+			draw_line(Vector2(2, 2), size - Vector2(2, 2), Pal.UI_BAD, 2.5)
+			draw_line(Vector2(2, size.y - 2), Vector2(size.x - 2, 2), Pal.UI_BAD, 2.5)
+
+
+## The dish picture on a tan tile, with a red "×2" badge for repeats.
+class _Picture extends Control:
+	var texture: Texture2D
+	var count := 1
+
+	func _draw() -> void:
+		draw_style_box(_box(), Rect2(Vector2.ZERO, size))
+		if texture:
+			draw_texture_rect(texture, Rect2(Vector2(1, 1), size - Vector2(2, 2)), false)
+		if count > 1:
+			var font := UITheme.font("display")
+			var c := Vector2(size.x - 7, 7)
+			draw_circle(c, 10.0, Pal.UI_BAD)
+			draw_string(font, c + Vector2(-8, 5), "×%d" % count, HORIZONTAL_ALIGNMENT_CENTER, 16, 13, Color.WHITE)
+
+	func _box() -> StyleBoxFlat:
+		var b := StyleBoxFlat.new()
+		b.bg_color = Color("dccbad")
+		b.set_corner_radius_all(7)
+		return b

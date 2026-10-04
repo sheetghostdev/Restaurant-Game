@@ -1,7 +1,8 @@
 class_name OpenSign
 extends FixtureComponent
-## The big OPEN/CLOSED sign. Flipping it starts service (during morning prep)
-## or ends the day (after closing, once the dining room is empty).
+## The big OPEN/CLOSED sign. Opening and closing happen by themselves (the
+## restaurant keeps its hours); in the evening, holding USE here turns the
+## lights out and starts the next morning.
 
 @export var board_path: NodePath
 
@@ -23,32 +24,24 @@ func query(_actor: Node, verb: int) -> Dictionary:
 		return {}
 	match w.day.phase:
 		GameConst.Phase.MORNING:
-			return {"label": "OPEN THE RESTAURANT", "hold": true, "progress": _hold / HOLD_TIME, "anim": CharacterRig.Anim.WAVE}
+			return {"label": "Opens by itself in %s" % GameConst.countdown(w.day.prep_left), "blocked": true}
 		GameConst.Phase.CLOSING:
-			if w.day.can_finish_day():
-				return {"label": "End the day", "hold": true, "progress": _hold / HOLD_TIME}
-			return {"label": "Wait for guests to leave", "blocked": true}
+			return {"label": "Closing up once the last guests leave", "blocked": true}
 		GameConst.Phase.EVENING:
 			return {"label": "Lights out → next day", "hold": true, "progress": _hold / HOLD_TIME}
 	return {}
 
 
 func perform(_actor: Node, verb: int, delta: float) -> bool:
-	if verb != GameConst.Verb.USE:
+	if verb != GameConst.Verb.USE or world().day.phase != GameConst.Phase.EVENING:
 		return false
 	var w := world()
 	_hold += delta
 	if _hold < HOLD_TIME:
 		return true
 	_hold = 0.0
-	match w.day.phase:
-		GameConst.Phase.MORNING:
-			w.day.open_restaurant()
-		GameConst.Phase.CLOSING:
-			if w.day.can_finish_day():
-				w.day.finish_day()
-		GameConst.Phase.EVENING:
-			w.day.start_next_day()
+	if w.day.phase == GameConst.Phase.EVENING:
+		w.day.start_next_day()
 	return true
 
 

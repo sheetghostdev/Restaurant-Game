@@ -24,7 +24,7 @@ plays through a whole day.
 | ![The diner after expanding: patio, dining annex, dish room, walk-in cooler](docs/screenshots/expanded.jpg) | ![Evening build phase with FOR SALE plots behind the building](docs/screenshots/evening.jpg) |
 | *All four expansions built* | *Evening planning, with plots for sale out back* |
 | ![The Dining Car Express stopped at a station, market stalls on the platform](docs/screenshots/train.jpg) | ![The Orbital Galley space station above a planet](docs/screenshots/space.jpg) |
-| *A coffee shop on the train: stalls at the Ashdown stop, one with a deal* | *A bar in orbit: planters grow, the printer prints* |
+| *The Dining Car Express between stations: locomotive in front, passenger cars behind* | *A bar in orbit: planters grow, the printer prints* |
 | ![The new-game screen: pick a place and a kind of restaurant](docs/screenshots/newgame.jpg) | |
 | *Pick where and what when you open a new restaurant* | |
 
@@ -43,8 +43,9 @@ plays through a whole day.
   of restaurant (Diner, Coffee Shop, Pizza Parlor, Bar & Grill). The picture
   behind the menu previews your choice.
 * **Difficulty:** Settings → Difficulty (main menu or pause menu).
-  *Relaxed* has patient guests and rare disasters, *Normal* is the default,
-  and *Hectic* is the full rush. In online games the host's setting applies.
+  *Relaxed* has patient guests, longer prep and rare disasters, *Normal* is
+  the default, and *Hectic* is the full rush. In online games the host's
+  setting applies.
 
 Command-line shortcuts, for development:
 
@@ -74,6 +75,8 @@ All verbs are contextual. **GRAB** moves things and **USE** operates things.
 * **Hold GRAB** on furniture or an appliance during a calm phase (morning or
   evening) to pick it up. Q rotates it, GRAB places it.
 * **USE on a crate** takes one ingredient out. **GRAB** picks up the whole crate.
+* **Menus** (catalog, menu board) work with WASD, the arrow keys or a
+  gamepad; the list scrolls with the selection.
 * **Tab** toggles the full-restaurant view. **+/–** or the mouse wheel zooms.
   **F5** quick-saves. **F1** opens the debug panel.
 * **Local co-op:** press **Enter** to add a second keyboard player, or **A** on
@@ -84,11 +87,11 @@ All verbs are contextual. **GRAB** moves things and **USE** operates things.
 ## How a day works
 
 ```
-MORNING PREP (calm, untimed)
+MORNING PREP (against the clock: 2 minutes on Normal, a bit longer on day one)
   The delivery truck reverses to the loading dock and drops what you ordered.
-  Carry crates inside (cold stock goes in the fridge), chop, arrange, plan.
-  The forecast card shows expected guests, rush hours and special events.
-        ↓  hold USE on the OPEN sign
+  Carry crates inside (cold stock goes in the fridge), chop, arrange.
+  The forecast card shows expected guests, rush hours and today's two goals.
+        ↓  the doors open by themselves when the countdown runs out
 SERVICE (timed, in about 7 minutes: 11am–9pm for the diner, 7am–3pm for
 the coffee shop, 12pm–10pm for pizza, 4pm–midnight for the bar)
   Guests queue outside, get seated, read the menu, wave for you to take their
@@ -96,7 +99,8 @@ the coffee shop, 12pm–10pm for pizza, 4pm–midnight for the bar)
   leave dirty plates and crumbs behind. Lunch and dinner rushes are predictable.
         ↓  9pm: doors close
 CLOSING
-  Finish the last tables and clean up. Hold USE on the sign to end the day.
+  No new guests. Finish the last tables; the day ends by itself once the
+  dining room is empty.
         ↓
 RESULTS
   Revenue, expenses, profit, guests served or lost, satisfaction, reputation,
@@ -106,7 +110,7 @@ EVENING (calm, build mode)
   Order tomorrow's supplies (the truck brings nothing else), buy equipment (it
   arrives boxed at the dock), hire staff, build expansions at the FOR SALE
   signs, knock doorways through walls, and rearrange.
-        ↓  hold USE on the sign: lights out → next morning (autosave)
+        ↓  hold USE on the OPEN sign when you're ready: lights out → next morning (autosave)
 ```
 
 ### Kinds of restaurant
@@ -126,11 +130,13 @@ supplier list.
 | Place | Where ingredients come from |
 |---|---|
 | **Main Street** | A storefront with room to grow. Order tomorrow's supplies at the manager's desk; a truck delivers them every morning |
-| **Dining Car Express** | The restaurant is a train. There's no truck: in the morning the depot market is open on the platform, and the train stops three times during service. At each stop market stalls sell a few things (one is always a deal) and passengers board. When the whistle blows the doors lock and the train leaves, and anything still on the platform is left behind |
+| **Dining Car Express** | The restaurant is a train: passenger cars behind, the locomotive in front, everything up on its wheels above the track. Guests walk in from the passenger cars, and more hop on at every stop. There's no truck: in the morning the depot market is open on the platform, and the train stops three times during service. At each stop market stalls sell a few things (one is always a deal) and passengers board. When the whistle blows the doors lock and the train leaves, and anything still on the platform is left behind |
 | **Orbital Galley** | A space station. Nothing is delivered: hydroponic planters grow vegetables for free (USE picks the crop, GRAB harvests), and the food printer prints everything else for credits (USE picks what it prints). Some guests are aliens |
 
-Cooking passes through readable stages: raw → rare → **medium** → well done →
-overcooked → burnt, then fire. You can read the stage from colour, steam and
+Cooking is quick and the "perfect" window is generous; the challenge is
+juggling everything at once, because guests won't wait long. Cooking passes
+through readable stages: raw → rare → **medium** → well done → overcooked →
+burnt, then fire. You can read the stage from colour, steam and
 smoke, a chime, and a ring with a marked perfect zone. Customers refuse raw,
 burnt or spoiled food.
 
@@ -175,11 +181,19 @@ burnt or spoiled food.
   pieces, baked AO, a display plinth, a cutaway building with "section cut"
   wall caps, tilt-shift blur, and lighting that follows the time of day. There
   is layered adaptive music (prep → service → rush) and 60+ sound effects.
-* **Paper tickets.** One slip per table along the top of the screen, most
-  impatient first. Tables are named by the colour of their cloth ("Red
-  table"), and each dish shows a picture of exactly what to make plus its
-  ingredients, with unwanted extras crossed out. Pick up a finished dish and
-  every guest waiting for exactly that gets a green ring.
+* **Paper tickets.** One small slip per table in a band along the top of the
+  screen, most impatient first. Tables are named by the colour of their cloth
+  ("Red table"); each dish shows a picture of exactly what to make, with its
+  optional extras beside it (crossed out when the guest doesn't want them).
+  The camera always frames the restaurant below the band, and any panel you
+  walk behind fades out, so the HUD never hides the game. Pick up a finished
+  dish and every guest waiting for exactly that gets a green ring.
+* **Clear stakes.** A table that walks out is announced with what it cost
+  (stars and the lost sale); the stars flash; the results say how many guests
+  to expect tomorrow because of it. Happy tables in a row build a **streak**
+  that raises tips by up to 50% until someone walks out, and every day has
+  **two goals** (serve so many guests, nobody walks out, perfect dishes...)
+  that pay a bonus.
 * **Menu board.** Run out of tomatoes? Cross them off on the chalkboard menu:
   guests stop ordering dishes that need them and stop asking for them as an
   extra. Guests who wanted them are a little disappointed, which beats an

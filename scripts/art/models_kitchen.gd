@@ -479,38 +479,82 @@ static func _oven_glow(b: MeshBuilder) -> void:
 	b.block(Vector3(0, H + 0.05, -0.04), Vector3(0.4, 0.2, 0.006), Color("ff8a3d"))
 
 
+## A drinks fountain: a steel tower with three lit flavour panels (cola,
+## lime, orange), a nozzle and push-lever under each, an ice-bin lid on top,
+## a cup stack and a see-through syrup gauge on the side.
 static func _soda_fountain(b: MeshBuilder) -> void:
-	cabinet(b)
-	worktop(b, Pal.STEEL)
-	b.block(Vector3(0, H, -0.24), Vector3(0.78, 0.5, 0.4), Pal.DINER_RED, 0.04)
-	b.block(Vector3(0, H + 0.3, -0.035), Vector3(0.6, 0.12, 0.012), Pal.CREAM, 0.004)
+	steel_cabinet(b, 2)
+	worktop(b, Pal.STEEL.darkened(0.15))
+	var steel := Color("c9cfd6")
+	# Tower body and ice-bin lid
+	b.block(Vector3(0, H, -0.24), Vector3(0.84, 0.66, 0.42), steel, 0.03)
+	b.block(Vector3(0, H + 0.66, -0.24), Vector3(0.86, 0.06, 0.44), Pal.STEEL_DARK, 0.02)
+	b.box(Vector3(0, H + 0.74, -0.1), Vector3(0.3, 0.03, 0.05), Pal.CHARCOAL, 0.01)
+	# Flavour panels with a white wave and a bubble, like the drink brands
+	var flavours := [Color("c8262c"), Color("4caf3a"), Color("f28a1c")]
 	for k in 3:
-		b.cyl(Vector3(-0.18 + k * 0.18, H + 0.16, -0.02), 0.025, 0.06, Pal.STEEL, 6)
+		var x := -0.27 + k * 0.27
+		var col: Color = flavours[k]
+		b.block(Vector3(x, H + 0.3, -0.025), Vector3(0.24, 0.32, 0.03), col, 0.01)
+		b.push_at(Vector3(x, H + 0.43, -0.008), 0.0, Vector3.ONE, 0.0, 0.35)
+		b.box(Vector3.ZERO, Vector3(0.26, 0.035, 0.01), Color("fbf7ea"))
+		b.pop()
+		b.cyl(Vector3(x + 0.06, H + 0.52, -0.012), 0.025, 0.012, Color("fbf7ea"), 8, 0.0, Color(0, 0, 0, 0), -1.0, 0.0)
+		# Nozzle and the lever a cup pushes
+		b.block(Vector3(x, H + 0.26, -0.02), Vector3(0.1, 0.05, 0.08), Pal.STEEL_DARK, 0.01)
+		b.cyl(Vector3(x, H + 0.21, 0.0), 0.022, 0.05, Pal.CHARCOAL, 6)
+		b.block(Vector3(x, H + 0.11, -0.005), Vector3(0.07, 0.11, 0.02), col.darkened(0.15), 0.008)
+	# Cup stack on the lid
+	for k in 5:
+		b.cyl(Vector3(0.3, H + 0.72 + k * 0.035, -0.32), 0.05 + k * 0.001, 0.05, Color("fbf7ea") if k % 2 == 0 else Color("c8262c"), 8)
+	# Syrup gauge: a glass tube on the right side (the level is a separate part)
+	b.block(Vector3(0.44, H + 0.06, -0.24), Vector3(0.07, 0.3, 0.07), Color("cfeaf2"), 0.01)
+	b.block(Vector3(0.44, H + 0.36, -0.24), Vector3(0.08, 0.03, 0.08), Pal.STEEL_DARK, 0.008)
 	# Drip tray
-	b.block(Vector3(0, H, 0.17), Vector3(0.46, 0.04, 0.3), Pal.STEEL_DARK, 0.012)
+	b.block(Vector3(0, H, 0.17), Vector3(0.7, 0.04, 0.3), Pal.STEEL_DARK, 0.012)
 	for k in 4:
-		b.box(Vector3(0, H + 0.044, 0.07 + k * 0.065), Vector3(0.42, 0.008, 0.02), Pal.CHARCOAL)
+		b.box(Vector3(0, H + 0.044, 0.07 + k * 0.065), Vector3(0.66, 0.008, 0.02), Pal.CHARCOAL)
 
 
 static func _syrup_level(b: MeshBuilder) -> void:
-	b.block(Vector3.ZERO, Vector3(0.16, 1.0, 0.1), Color("6a2a1c"))
+	b.block(Vector3.ZERO, Vector3(0.05, 1.0, 0.05), Color("7a2a1c"))
 
 
+## A bar's beer tap: dark wood bar with a brass foot rail and an open front
+## showing the keg, a chrome T-tower with three tall tap handles.
 static func _beer_tap(b: MeshBuilder) -> void:
-	cabinet(b, Color("6b4a35"), Color("7a5640"), 2)
-	worktop(b, Color("4a3426"))
-	# Chrome tower with two tap handles
-	b.cyl(Vector3(0, H, -0.18), 0.05, 0.42, Pal.STEEL, 8)
-	b.push_at(Vector3(0, H + 0.42, -0.18), 0.0, Vector3.ONE, 0.0, PI / 2.0)
-	b.cyl(Vector3(0, -0.2, 0), 0.045, 0.4, Pal.STEEL, 8)
+	var wood := Color("5e3d2a")
+	b.block(Vector3(0, 0, -0.03), Vector3(0.86, 0.09, 0.78), Pal.RUBBER, 0.01)
+	b.block(Vector3(0, 0.08, -0.4), Vector3(0.94, H - TOP_T - 0.08, 0.08), wood, 0.02)
+	for x in [-0.43, 0.43]:
+		b.block(Vector3(x, 0.08, 0.0), Vector3(0.08, H - TOP_T - 0.08, 0.88), wood, 0.02)
+	b.block(Vector3(0, 0.08, 0.0), Vector3(0.94, 0.06, 0.88), wood.darkened(0.2), 0.01)
+	# The keg inside
+	b.cyl(Vector3(0, 0.14, -0.05), 0.27, 0.5, Pal.STEEL, 12, 0.03)
+	for y in [0.2, 0.56]:
+		b.cyl(Vector3(0, 0.14 + y * 0.9, -0.05), 0.285, 0.04, Pal.STEEL_DARK, 12)
+	b.cyl(Vector3(0, 0.64, -0.05), 0.06, 0.04, Pal.CHARCOAL, 8)
+	# Brass foot rail
+	b.push_at(Vector3(-0.45, 0.16, 0.5), 0.0, Vector3.ONE, 0.0, -PI / 2.0)
+	b.cyl(Vector3.ZERO, 0.025, 0.9, Color("c9a24a"), 8)
 	b.pop()
-	for x in [-0.12, 0.12]:
-		b.cyl(Vector3(x, H + 0.35, -0.12), 0.018, 0.08, Pal.STEEL_DARK, 6)
-		b.box(Vector3(x, H + 0.5, -0.17), Vector3(0.045, 0.14, 0.045), Pal.OAK, 0.012)
+	worktop(b, Color("3e2a1e"))
+	# Chrome T-tower
+	b.cyl(Vector3(0, H, -0.2), 0.055, 0.36, Pal.STEEL, 10)
+	b.push_at(Vector3(-0.27, H + 0.4, -0.2), 0.0, Vector3.ONE, 0.0, -PI / 2.0)
+	b.cyl(Vector3.ZERO, 0.05, 0.54, Pal.STEEL, 10, 0.01)
+	b.pop()
+	b.cyl(Vector3(0, H + 0.33, -0.142), 0.06, 0.012, Color("c9a24a"), 12)
+	var handles := [Color("c9a24a"), Color("b3263a"), Color("2a2a2c")]
+	for k in 3:
+		var x := -0.2 + k * 0.2
+		b.cyl(Vector3(x, H + 0.3, -0.16), 0.016, 0.08, Pal.STEEL_DARK, 6)
+		b.box(Vector3(x, H + 0.51, -0.18), Vector3(0.05, 0.2, 0.05), handles[k], 0.014)
+		b.box(Vector3(x, H + 0.62, -0.18), Vector3(0.06, 0.03, 0.06), handles[k].lightened(0.25), 0.01)
 	# Drip tray
-	b.block(Vector3(0, H, 0.17), Vector3(0.46, 0.04, 0.3), Pal.STEEL_DARK, 0.012)
+	b.block(Vector3(0, H, 0.17), Vector3(0.6, 0.04, 0.3), Pal.STEEL_DARK, 0.012)
 	for k in 4:
-		b.box(Vector3(0, H + 0.044, 0.07 + k * 0.065), Vector3(0.42, 0.008, 0.02), Pal.CHARCOAL)
+		b.box(Vector3(0, H + 0.044, 0.07 + k * 0.065), Vector3(0.56, 0.008, 0.02), Pal.CHARCOAL)
 
 
 static func _keg_level(b: MeshBuilder) -> void:

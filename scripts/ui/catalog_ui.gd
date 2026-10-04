@@ -54,11 +54,14 @@ func _ready() -> void:
 	_scroll = ScrollContainer.new()
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.follow_focus = true   # keyboard / gamepad selection scrolls the list
 	v.add_child(_scroll)
 	_content = VBoxContainer.new()
 	_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_content.add_theme_constant_override("separation", 8)
 	_scroll.add_child(_content)
+	# Keep the whole row of the selected button in view, not just the button.
+	get_viewport().gui_focus_changed.connect(_on_focus_changed)
 
 
 func open_for(p: Node, tab := "") -> void:
@@ -115,6 +118,15 @@ func _select(id: String) -> void:
 		first.grab_focus.call_deferred()
 	else:
 		(_tabs.get_child(0) as Button).grab_focus.call_deferred()
+
+
+func _on_focus_changed(c: Control) -> void:
+	if not visible or c == null or not _content.is_ancestor_of(c):
+		return
+	var row: Control = c
+	while row.get_parent() != _content and row.get_parent() != null:
+		row = row.get_parent() as Control
+	_scroll.ensure_control_visible.call_deferred(row)
 
 
 func _first_button(n: Node) -> Button:

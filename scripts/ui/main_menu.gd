@@ -67,6 +67,13 @@ func _build_backdrop(loc_id: StringName, fmt_id: StringName) -> void:
 		for i in mini(slots.size(), fmt.stations.size()):
 			var sc: Array = slots[i]
 			fixtures.push_back({"def": String(fmt.stations[i]), "cell": [sc[0], sc[1]], "rot": sc[2] if sc.size() > 2 else 0})
+	if loc.theme == "train":
+		# The rolling stock and a platform, standing at a station.
+		TrainLine.dress(_backdrop, grid, builder.ground_y, grid.lot.position.x, grid.lot.end.x)
+		for x in range(grid.lot.position.x, grid.lot.end.x):
+			var slab := Models.instance(&"platform_slab")
+			slab.position = Vector3(x + 0.5, 0, 7.5)
+			_backdrop.add_child(slab)
 	if loc.theme == "space":
 		var lc := Vector2(grid.lot.get_center())
 		SpaceOrbit.add_starfield(_backdrop, lc)

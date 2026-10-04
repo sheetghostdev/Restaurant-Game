@@ -53,6 +53,12 @@ static func money(v: float) -> String:
 	return ("-$%d" % absi(roundi(v))) if v < 0 else ("$%d" % roundi(v))
 
 
+## "1:05" from seconds.
+static func countdown(seconds: float) -> String:
+	var t := int(ceil(maxf(seconds, 0.0)))
+	return "%d:%02d" % [t / 60, t % 60]
+
+
 static func clock_text(hour: float) -> String:
 	var h := int(floor(hour))
 	var m := int(floor((hour - h) * 60.0)) / 5 * 5

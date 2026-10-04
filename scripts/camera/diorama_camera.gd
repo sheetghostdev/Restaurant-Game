@@ -15,6 +15,10 @@ var building_rect := Rect2(0, 0, 20, 10)
 var targets: Array[Node3D] = []
 var zoom_bias := 0.0           ## Player controlled (-0.35 .. 0.35)
 var overview := false          ## Force the full-building framing.
+## Fractions of the screen covered by the HUD at the top and bottom. The
+## restaurant is framed in the space between, so nothing hides under it.
+var safe_top := 0.0
+var safe_bottom := 0.0
 var tilt_shift := true
 
 var _focus := Vector3.ZERO
@@ -54,7 +58,7 @@ func _required_distance(r: Rect2) -> float:
 		if sz.y > 0:
 			aspect = sz.x / sz.y
 	var pitch := deg_to_rad(pitch_deg)
-	var half_v := tan(vfov * 0.5)
+	var half_v := tan(vfov * 0.5) * clampf(1.0 - safe_top - safe_bottom, 0.4, 1.0)
 	var d_depth := (r.size.y * sin(pitch) * 0.5) / half_v + r.size.y * cos(pitch) * 0.25
 	# The front edge of the rect is closer to the camera than the focus point,
 	# so it appears narrower; pad the width requirement to compensate.
@@ -103,12 +107,16 @@ func _process(delta: float) -> void:
 		_dist = lerpf(_dist, target_dist, clampf(delta * 1.8, 0, 1))
 	var pitch := deg_to_rad(pitch_deg)
 	var offset := Vector3(0, sin(pitch), cos(pitch)) * _dist
+	# Aim a little north of the focus so it sits in the middle of the free
+	# area rather than the middle of the screen.
+	var shift := (safe_top - safe_bottom) * 0.5
+	var aim := _focus - Vector3(0, 0, shift * 2.0 * _dist * tan(deg_to_rad(fov) * 0.5) / sin(pitch))
 	var shake_off := Vector3.ZERO
 	if _shake > 0.0:
 		_shake = maxf(_shake - delta * 2.5, 0.0)
 		shake_off = Vector3(randf_range(-1, 1), randf_range(-1, 1), 0) * _shake * 0.12
-	global_position = _focus + offset + shake_off
-	look_at(_focus + shake_off, Vector3.UP)
+	global_position = aim + offset + shake_off
+	look_at(aim + shake_off, Vector3.UP)
 	_update_dof()
 
 

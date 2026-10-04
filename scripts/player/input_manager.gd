@@ -60,6 +60,11 @@ func _setup_ui_actions() -> void:
 				k.physical_keycode = code
 				ev = k
 			InputMap.action_add_event(action, ev)
+	# Menus: WASD moves the selection too (arrows and gamepads already do).
+	for pair in [["ui_up", KEY_W], ["ui_down", KEY_S], ["ui_left", KEY_A], ["ui_right", KEY_D]]:
+		var wk := InputEventKey.new()
+		wk.physical_keycode = pair[1]
+		InputMap.action_add_event(pair[0], wk)
 	# Wheel zoom
 	for pair in [["zoom_in", MOUSE_BUTTON_WHEEL_UP], ["zoom_out", MOUSE_BUTTON_WHEEL_DOWN]]:
 		var mb := InputEventMouseButton.new()

@@ -61,41 +61,43 @@ func _item(id: String, name: String, cls: String, model: String, color: Color, t
 
 
 func _items() -> void:
-	var grill := _cook(&"grill", 1.0 / 14.0,
+	# Cooking is quick with a generous "perfect" window: the challenge is
+	# juggling, not waiting on one patty.
+	var grill := _cook(&"grill", 1.0 / 9.0,
 		["Raw", "Rare", "Medium", "Well Done", "Overcooked", "Burnt"],
-		[0.35, 0.6, 0.9, 1.15, 1.45, 99.0],
+		[0.3, 0.55, 0.95, 1.2, 1.5, 99.0],
 		[0.0, 0.7, 1.0, 0.85, 0.4, 0.0],
 		[Color("e37b7e"), Color("c46a5a"), Color("8a5236"), Color("6e4128"), Color("4a2d1e"), Color("2b211d")],
-		2, 1.15, 1.9)
-	var fryer := _cook(&"fryer", 1.0 / 11.0,
+		2, 1.2, 2.0)
+	var fryer := _cook(&"fryer", 1.0 / 8.0,
 		["Raw", "Soggy", "Crispy", "Overdone", "Burnt"],
-		[0.4, 0.65, 1.0, 1.3, 99.0],
+		[0.35, 0.6, 1.05, 1.35, 99.0],
 		[0.0, 0.55, 1.0, 0.45, 0.0],
 		[Color("f6efd8"), Color("f0d9a0"), Color("f2c14e"), Color("c98a35"), Color("5a3a20")],
-		2, 1.0, 1.8)
-	var brew := _cook(&"brew", 1.0 / 5.0,
+		2, 1.05, 1.9)
+	var brew := _cook(&"brew", 1.0 / 4.0,
 		["Weak", "Just Right", "Strong", "Overflowing"],
-		[0.55, 1.0, 1.35, 99.0],
-		[0.5, 1.0, 0.8, 0.0],
+		[0.5, 1.1, 1.5, 99.0],
+		[0.5, 1.0, 0.85, 0.0],
 		[Color("b07a4a"), Color("5a3622"), Color("3a2016"), Color("1c120c")],
-		1, 99.0, 1.6)
+		1, 99.0, 1.9)
 	_item("patty", "Beef Patty", "food", "patty", Pal.PATTY_RAW, ["grillable", "plateable", "meat"],
 		{"cook_profile": grill, "unit_cost": 1.5, "perishable": true, "spoil_seconds": 260.0, "plate_layer": 1,
 		"description": "Grill until medium. Keep the crate in the fridge."})
 	_item("bun", "Burger Bun", "food", "bun", Pal.BUN, ["plateable", "bread"],
 		{"unit_cost": 0.5, "description": "The foundation of every burger."})
 	_item("lettuce", "Lettuce", "food", "lettuce_head", Pal.LETTUCE, ["choppable", "veg"],
-		{"chop_into": &"lettuce_chopped", "chop_work": 2.2, "unit_cost": 0.75, "perishable": true, "spoil_seconds": 420.0, "grow_seconds": 26.0,
+		{"chop_into": &"lettuce_chopped", "chop_work": 1.3, "unit_cost": 0.75, "perishable": true, "spoil_seconds": 420.0, "grow_seconds": 26.0,
 		"description": "Chop it on a cutting board. Wilts if left out of the fridge."})
 	_item("lettuce_chopped", "Chopped Lettuce", "food", "lettuce_chopped", Pal.LETTUCE, ["plateable", "prepared", "veg"],
 		{"unit_cost": 0.75, "perishable": true, "spoil_seconds": 360.0, "plate_layer": 2})
 	_item("tomato", "Tomato", "food", "tomato", Pal.TOMATO, ["choppable", "veg"],
-		{"chop_into": &"tomato_sliced", "chop_work": 1.8, "unit_cost": 0.75, "perishable": true, "spoil_seconds": 900.0, "grow_seconds": 24.0,
+		{"chop_into": &"tomato_sliced", "chop_work": 1.1, "unit_cost": 0.75, "perishable": true, "spoil_seconds": 900.0, "grow_seconds": 24.0,
 		"description": "Slice it for burgers and salads."})
 	_item("tomato_sliced", "Tomato Slices", "food", "tomato_sliced", Pal.TOMATO, ["plateable", "prepared", "veg"],
 		{"unit_cost": 0.75, "perishable": true, "spoil_seconds": 600.0, "plate_layer": 3})
 	_item("potato", "Potato", "food", "potato", Pal.POTATO, ["choppable", "veg"],
-		{"chop_into": &"fries", "chop_work": 2.2, "unit_cost": 0.5, "grow_seconds": 22.0, "description": "Cut into fries, then fry until crispy."})
+		{"chop_into": &"fries", "chop_work": 1.3, "unit_cost": 0.5, "grow_seconds": 22.0, "description": "Cut into fries, then fry until crispy."})
 	_item("fries", "Fries", "food", "potato_cut", Pal.FRIES, ["fryable", "plateable", "prepared"],
 		{"cook_profile": fryer, "unit_cost": 0.5})
 	_item("coffee_beans", "Coffee Beans", "food", "coffee_beans", Pal.BEANS, ["beans"],
@@ -103,7 +105,7 @@ func _items() -> void:
 	_item("coffee", "Coffee", "food", "coffee_fill", Pal.COFFEE, ["drink"],
 		{"cook_profile": brew, "unit_cost": 0.8, "made_from": &"coffee_beans"})
 	# Coffee shop
-	var pastry := _cook(&"oven", 1.0 / 10.0,
+	var pastry := _cook(&"oven", 1.0 / 8.0,
 		["Raw", "Golden", "Dark", "Burnt"],
 		[0.5, 1.0, 1.3, 99.0],
 		[0.1, 1.0, 0.55, 0.0],
@@ -119,9 +121,9 @@ func _items() -> void:
 	_item("jam", "Jam", "food", "jam", Color("b3263a"), ["plateable"],
 		{"unit_cost": 0.2, "plate_layer": 2, "description": "A little pot of jam for croissants."})
 	# Pizza parlor
-	var bake := _cook(&"oven", 1.0 / 16.0,
+	var bake := _cook(&"oven", 1.0 / 11.0,
 		["Raw", "Golden", "Well Done", "Burnt"],
-		[0.55, 1.0, 1.3, 99.0],
+		[0.5, 1.0, 1.3, 99.0],
 		[0.1, 1.0, 0.6, 0.0],
 		[Color("ffffff"), Color("f2c47a"), Color("c08048"), Color("4a3020")],
 		1, 1.25, 1.9)
@@ -136,13 +138,13 @@ func _items() -> void:
 	_item("pepperoni", "Pepperoni", "food", "pepperoni", Color("c0453a"), ["plateable", "meat"],
 		{"unit_cost": 0.5, "plate_layer": 3, "description": "A pizza topping."})
 	_item("mushroom", "Mushroom", "food", "mushroom", Color("d8c8a8"), ["choppable", "veg"],
-		{"chop_into": &"mushroom_sliced", "chop_work": 1.6, "unit_cost": 0.4, "grow_seconds": 20.0, "description": "Slice it for pizza."})
+		{"chop_into": &"mushroom_sliced", "chop_work": 1.0, "unit_cost": 0.4, "grow_seconds": 20.0, "description": "Slice it for pizza."})
 	_item("mushroom_sliced", "Sliced Mushrooms", "food", "mushroom_sliced", Color("d8c8a8"), ["plateable", "prepared", "veg"],
 		{"unit_cost": 0.4, "plate_layer": 3})
 	# Drinks poured by machines
-	var pour := _cook(&"pour", 1.0 / 4.0,
+	var pour := _cook(&"pour", 1.0 / 3.0,
 		["Pouring", "Full", "Foamy", "Overflowing"],
-		[0.5, 1.2, 1.55, 99.0],
+		[0.45, 1.2, 1.55, 99.0],
 		[0.5, 1.0, 0.8, 0.0],
 		[Color("ffffff"), Color("ffffff"), Color("ffffff"), Color("ffffff")],
 		1, 99.0, 1.6)
@@ -155,9 +157,9 @@ func _items() -> void:
 	_item("keg", "Beer Keg", "food", "keg", Color("b8bcc4"), ["refill"],
 		{"unit_cost": 13.0, "description": "Load into the beer tap (16 pints per keg)."})
 	# Bar food
-	var wing := _cook(&"fryer", 1.0 / 12.0,
+	var wing := _cook(&"fryer", 1.0 / 9.0,
 		["Raw", "Cooking", "Crispy", "Overdone", "Burnt"],
-		[0.4, 0.65, 1.0, 1.3, 99.0],
+		[0.35, 0.6, 1.05, 1.35, 99.0],
 		[0.0, 0.5, 1.0, 0.45, 0.0],
 		[Color("f2c8b8"), Color("e0a070"), Color("d06a32"), Color("8a4020"), Color("3a2418")],
 		2, 1.0, 1.8)
@@ -397,7 +399,8 @@ func _rooms() -> void:
 	_room("dining_car", "Dining Car", "planks", Color("b07a4c"), Color("8e5e38"), Color("f1e4c8"), {"customer_area": true, "light_color": Color("ffd59a")})
 	_room("galley", "Galley", "tile_checker", Color("e6e2d6"), Color("b9c2c4"), Color("eef0e8"), {"light_color": Color("fff1dc")})
 	_room("baggage", "Baggage Car", "planks", Color("a88a62"), Color("8f7350"), Color("d8c4a0"), {"light_color": Color("ffe9c9"), "has_windows": false})
-	_room("platform", "Station Platform", "none", Color("bdb7ab"), Color("a9a397"), Pal.FACADE, {"outdoor": true})
+	_room("platform", "Station Platform", "none", Color("bdb7ab"), Color("a9a397"), Pal.FACADE, {"outdoor": true, "fenced": true})
+	_room("gangway", "Gangway", "planks", Color("6b5a4a"), Color("5a4a3c"), Color("3a3a3c"), {"light_color": Color("ffd9a8"), "has_windows": false})
 	# The space station
 	_room("airlock", "Docking Airlock", "grate", Color("5d6675"), Color("3c434f"), Color("c9d0da"), {"light_color": Color("d9ecff"), "has_windows": false})
 	_room("lounge", "Star Lounge", "carpet", Color("2e3a5c"), Color("3b4a72"), Color("dfe4ee"), {"customer_area": true, "light_color": Color("e8e4ff")})
@@ -439,10 +442,6 @@ func _expansions() -> void:
 		[Vector4i(17, -1, 17, 0)],
 		[{"def": "cold_shelf", "cell": Vector2i(16, -4), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(17, -4), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(18, -4), "rot": 0}],
 		"Everything stored inside stays fresh. No more fridge Tetris.")
-	_expansion("cooler_car", "Cold Storage Car", "cooler", Rect2i(21, 0, 4, 6), 600.0,
-		[Vector4i(20, 2, 21, 2)],
-		[{"def": "cold_shelf", "cell": Vector2i(21, 0), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(22, 0), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(23, 0), "rot": 0}],
-		"Couple a refrigerated car behind the baggage car. Everything stored inside stays fresh.")
 	_expansion("hydro_bay", "Hydroponics Bay II", "hydroponics", Rect2i(16, -4, 5, 4), 500.0,
 		[Vector4i(18, -1, 18, 0)],
 		[{"def": "hydro_planter", "cell": Vector2i(16, -4), "rot": 0}, {"def": "hydro_planter", "cell": Vector2i(17, -4), "rot": 0}, {"def": "hydro_planter", "cell": Vector2i(19, -4), "rot": 0}, {"def": "hydro_planter", "cell": Vector2i(20, -4), "rot": 0}],
@@ -605,7 +604,7 @@ func _locations() -> void:
 		"accent": Color("4f8f8a"), "tagline": "A small-town storefront with room to grow.",
 		"description": "The classic. Order tomorrow's ingredients from the manager's desk; a truck delivers them every morning."})
 	_location("express", "Dining Car Express", {"layout_path": "res://data/layouts/train.json",
-		"expansions": ["cooler_car"], "theme": "train", "supply_mode": "market",
+		"expansions": [], "theme": "train", "supply_mode": "market",
 		"stops": ["Central Depot", "Millbrook", "Cedar Falls", "Port Quinn", "Ashdown", "Harlow Junction", "Briar Hill", "Stonebridge", "Lark Valley"],
 		"accent": Color("2f5d50"), "tagline": "A restaurant on rails. Shop at every stop.",
 		"description": "No delivery truck: buy ingredients from market stalls on the platform at each stop, and get back aboard before the whistle. Every stop has different deals."})

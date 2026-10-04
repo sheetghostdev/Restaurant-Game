@@ -29,6 +29,9 @@ var _ground_rects: Array = []
 var _facade := Pal.FACADE
 var _window_step := 3
 var _space := false
+## Height of the grass and street. The train sits up on its wheels: its
+## track bed is lower than the floor (the platform is raised to the doors).
+var ground_y := GROUND_Y
 var sign_text := "DINER"           ## Big word on the pole sign (the restaurant type).
 var sliding_doors: Array[SlidingDoor] = []
 
@@ -40,6 +43,7 @@ func setup(g: RestaurantGrid, layout: Dictionary) -> void:
 	_facade = Color(layout["facade"]) if layout.has("facade") else Pal.FACADE
 	_window_step = int(layout.get("window_step", 3))
 	_space = layout.get("ground_style", "") == "space"
+	ground_y = float(layout.get("ground_y", GROUND_Y))
 
 
 func rebuild() -> void:
@@ -103,11 +107,12 @@ func _build_plinth_and_ground() -> void:
 	var cx := (x0 + x1) * 0.5
 	var cz := (z0 + z1) * 0.5
 	# Display plinth: dark wood with a lighter trim line, like a model base.
-	b.box(Vector3(cx, -0.45, cz), Vector3(x1 - x0, 0.8, z1 - z0), Pal.PLINTH, 0.06)
-	b.box(Vector3(cx, -0.12, cz), Vector3(x1 - x0 + 0.04, 0.05, z1 - z0 + 0.04), Pal.PLINTH.lightened(0.25), 0.015)
+	var dy := ground_y - GROUND_Y
+	b.box(Vector3(cx, -0.45 + dy, cz), Vector3(x1 - x0, 0.8, z1 - z0), Pal.PLINTH, 0.06)
+	b.box(Vector3(cx, -0.12 + dy, cz), Vector3(x1 - x0 + 0.04, 0.05, z1 - z0 + 0.04), Pal.PLINTH.lightened(0.25), 0.015)
 	# Ground (grass) top
 	var lc := Rect2(lot).get_center()
-	b.box(Vector3(lc.x, GROUND_Y - 0.05, lc.y), Vector3(lot.size.x, 0.1, lot.size.y), Pal.GRASS, 0.02)
+	b.box(Vector3(lc.x, ground_y - 0.05, lc.y), Vector3(lot.size.x, 0.1, lot.size.y), Pal.GRASS, 0.02)
 	# Ground details from the layout (sidewalks, roads, lots). Each layer sits
 	# ON the grass at its own height (_layer) so no two surfaces of different
 	# colour ever share a plane: coplanar faces flicker (z-fighting).
@@ -121,7 +126,7 @@ func _build_plinth_and_ground() -> void:
 				for x in range(int(rect.position.x), int(rect.end.x)):
 					for z in range(int(rect.position.y), int(rect.end.y)):
 						var c := Pal.SIDEWALK.darkened(rng.randf() * 0.04)
-						b.box(Vector3(x + 0.5, GROUND_Y + 0.01, z + 0.5), Vector3(0.96, 0.06, 0.96), c, 0.015)
+						b.box(Vector3(x + 0.5, ground_y + 0.01, z + 0.5), Vector3(0.96, 0.06, 0.96), c, 0.015)
 			"road":
 				_layer(b, rect, 0.008, Pal.ASPHALT)
 				if rect.size.x > rect.size.y:
@@ -130,7 +135,7 @@ func _build_plinth_and_ground() -> void:
 					while x < rect.end.x - 0.5:
 						_layer(b, Rect2(x, mid - 0.06, 0.8, 0.12), 0.014, Pal.ROAD_LINE)
 						x += 1.8
-					b.box(Vector3(rect.get_center().x, GROUND_Y + 0.0, rect.position.y + 0.06), Vector3(rect.size.x - 0.02, 0.08, 0.12), Pal.CURB)
+					b.box(Vector3(rect.get_center().x, ground_y + 0.0, rect.position.y + 0.06), Vector3(rect.size.x - 0.02, 0.08, 0.12), Pal.CURB)
 				else:
 					var midx := rect.get_center().x
 					var z := rect.position.y + 0.5
@@ -147,7 +152,7 @@ func _build_plinth_and_ground() -> void:
 				for x in range(int(rect.position.x), int(rect.end.x)):
 					for z in range(int(rect.position.y), int(rect.end.y)):
 						for k in 3:
-							var sp := Vector3(x + rng.randf(), GROUND_Y + 0.012, z + rng.randf())
+							var sp := Vector3(x + rng.randf(), ground_y + 0.012, z + rng.randf())
 							b.block(sp, Vector3(0.12, 0.012, 0.1), Color("a29b8e").darkened(rng.randf() * 0.2))
 			"hull":
 				_layer(b, rect, 0.01, Color("4a5260"))
@@ -184,7 +189,7 @@ func _layer(b: MeshBuilder, rect: Rect2, top: float, col: Color) -> void:
 	var r := rect.intersection(lot)
 	if r.size.x <= 0.0 or r.size.y <= 0.0:
 		return
-	b.block(Vector3(r.get_center().x, GROUND_Y, r.get_center().y), Vector3(r.size.x, top, r.size.y), col)
+	b.block(Vector3(r.get_center().x, ground_y, r.get_center().y), Vector3(r.size.x, top, r.size.y), col)
 
 
 # -----------------------------------------------------------------------------
@@ -496,7 +501,7 @@ func _door(b: MeshBuilder, a: Vector2i, n: Vector2i, type: String) -> void:
 	if type == "front":
 		# Welcome mat on the outside
 		var out_cell := n if grid.room_index(n) < 0 else a
-		var mat_pos := Vector3(out_cell.x + 0.5, GROUND_Y + 0.045, out_cell.y + 0.5)
+		var mat_pos := Vector3(out_cell.x + 0.5, ground_y + 0.045, out_cell.y + 0.5)
 		b.block(mat_pos, Vector3(0.8, 0.015, 0.55), Pal.DINER_RED.darkened(0.2), 0.005)
 		b.block(mat_pos + Vector3(0, 0.015, 0), Vector3(0.6, 0.004, 0.35), Pal.MUSTARD)
 	if type == "swing" or type == "front":
@@ -533,6 +538,13 @@ func _fence_segment(b: MeshBuilder, a: Vector2i, n: Vector2i) -> void:
 	var inner := a if ra >= 0 else n
 	var rt := grid.room_type_at(inner)
 	if rt == null or not rt.outdoor or rt.id == &"loading":
+		return
+	if rt.floor_style == "none":
+		# The train's platform draws (and moves) its own railing; keep only
+		# the invisible barrier so nobody steps off the edge.
+		var along := a.x == n.x
+		var cc := Vector3(a.x + 0.5, 0, maxi(a.y, n.y)) if along else Vector3(maxi(a.x, n.x), 0, a.y + 0.5)
+		_add_wall_collider(cc, Vector3(1.0 if along else 0.1, 0.6, 0.1 if along else 1.0), true)
 		return
 	var along_x := a.x == n.x
 	var center: Vector3
@@ -608,7 +620,7 @@ func _build_props() -> void:
 		var key := StringName(p["m"])
 		var pos: Array = p["p"]
 		var n := Models.instance(key)
-		n.position = Vector3(pos[0], GROUND_Y + 0.02, pos[1])
+		n.position = Vector3(pos[0], ground_y + 0.02, pos[1])
 		n.rotation.y = deg_to_rad(float(p.get("y", 0.0)))
 		var s := float(p.get("s", 1.0))
 		n.scale = Vector3(s, s, s)
@@ -637,7 +649,7 @@ func _build_pole_sign() -> void:
 	if not (at is Array):
 		return
 	var b := MeshBuilder.new()
-	var base := Vector3(at[0], GROUND_Y, at[1])
+	var base := Vector3(at[0], ground_y, at[1])
 	b.block(base, Vector3(0.5, 0.15, 0.5), Pal.CHARCOAL, 0.03)
 	b.block(base + Vector3(0, 0.15, 0), Vector3(0.14, 3.3, 0.14), Pal.CHARCOAL, 0.02)
 	# Big diner sign board

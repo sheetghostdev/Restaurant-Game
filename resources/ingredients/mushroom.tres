@@ -11,6 +11,6 @@ color = Color(0.84705883, 0.78431374, 0.65882355, 1)
 tags = PackedStringArray("choppable", "veg")
 unit_cost = 0.4
 chop_into = &"mushroom_sliced"
-chop_work = 1.6
+chop_work = 1.0
 grow_seconds = 20.0
 description = "Slice it for pizza."

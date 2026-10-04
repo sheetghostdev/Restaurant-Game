@@ -25,6 +25,7 @@ func _ready() -> void:
 	w = GameWorld.current
 	p = w.players()[0]
 	check(w != null and p != null, "world and player exist")
+	w.day.auto_open = false   # the morning tests take their time; t_service checks the auto-open
 	await t_layout()
 	await t_difficulty()
 	await t_input_targeting()
@@ -40,6 +41,7 @@ func _ready() -> void:
 	await t_regressions()
 	await t_menu_board()
 	await t_spoilage()
+	await t_consequences()
 	await t_close_day()
 	await t_save_load()
 	print("")
@@ -369,7 +371,14 @@ func t_build_mode() -> void:
 
 func t_service() -> void:
 	print("[service]")
-	w.day.open_restaurant()
+	# Nobody opens the doors: they open when prep time runs out.
+	var sign0 := fixture(&"open_sign")
+	approach(sign0)
+	check(w.interaction._query(sign0, p, GameConst.Verb.USE).get("blocked", false), "the sign can't open early")
+	w.day.auto_open = true
+	w.day.prep_left = 1.0
+	await wait(1.5)
+	check(w.day.phase == GameConst.Phase.SERVICE, "the doors opened by themselves")
 	check(w.day.phase == GameConst.Phase.SERVICE, "restaurant opened")
 	var g := w.customers.spawn_group(Content.archetype(&"traveler"), true)
 	check(g != null and g.members.size() == 1, "spawned a tired traveler")
@@ -465,7 +474,11 @@ func t_disasters() -> void:
 	check(inspectors.size() == 1, "a health inspector walked in")
 	await wait(27.0)
 	check(not is_equal_approx(w.economy.reputation, rep_before), "inspection graded the restaurant (rep %.2f → %.2f)" % [rep_before, w.economy.reputation])
-	await wait(12.0)
+	# Walking out takes a little while (other guests may be in the doorway).
+	var tw := 0.0
+	while tw < 30.0 and not w.all_of_kind(&"customer").filter(func(c): return c.def_id == &"inspector").is_empty():
+		await wait(1.0)
+		tw += 1.0
 	check(w.all_of_kind(&"customer").filter(func(c): return c.def_id == &"inspector").is_empty(), "the inspector left")
 	w.disasters.trigger(&"power_outage")
 	check(not fixture(&"grill", 0).is_working() and not fixture(&"fridge", 0).is_cooling(), "power cut stops powered machines")
@@ -666,6 +679,23 @@ func t_spoilage() -> void:
 	w.despawn(crate)
 
 
+func t_consequences() -> void:
+	print("[consequences]")
+	var rep := w.economy.reputation
+	var lost_before := int(w.day.stats.get("groups_lost", 0))
+	w.day.streak = 4
+	var g := w.customers.spawn_group(Content.archetype(&"regular_folks"), true)
+	check(g != null, "spawned a group to upset")
+	if g:
+		g._get_upset()
+	check(w.economy.reputation < rep - 0.05, "a walkout costs reputation (%.2f -> %.2f)" % [rep, w.economy.reputation])
+	check(int(w.day.stats.get("groups_lost", 0)) == lost_before + 1, "and counts as lost")
+	check(w.day.streak == 0, "and ends the streak")
+	w.day.streak = 3
+	check(absf(w.day.tip_bonus() - 0.3) < 0.001, "a streak of 3 raises tips by 30%")
+	w.day.streak = 0
+
+
 func t_close_day() -> void:
 	print("[closing]")
 	w.debug_command("end_service", [])
@@ -674,11 +704,14 @@ func t_close_day() -> void:
 	w.customers.clear_all()
 	await wait(0.5)
 	check(w.day.can_finish_day(), "can finish the day once empty")
+	check(w.day.phase == GameConst.Phase.CLOSING, "a moment to breathe before the day ends")
+	await wait(3.5)
 	var sign_f := fixture(&"open_sign")
-	use(sign_f, 1.0)
-	check(w.day.phase == GameConst.Phase.RESULTS, "results screen")
+	check(w.day.phase == GameConst.Phase.RESULTS, "the day ended by itself once the guests had gone")
 	var r: Dictionary = w.day.last_results
 	check(r.get("people_served", 0) >= 1, "results count served customers")
+	check((r.get("goals", []) as Array).size() == 2, "two daily goals on the results")
+	check(r.has("groups_tomorrow") and int(r["groups_tomorrow"]) >= 3, "results say how many guests come tomorrow")
 	print("     results: ", JSON.stringify(r).substr(0, 300))
 	w.day.continue_from_results()
 	check(w.day.phase == GameConst.Phase.EVENING, "evening planning")

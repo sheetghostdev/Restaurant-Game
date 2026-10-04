@@ -29,7 +29,7 @@ func _physics_process(delta: float) -> void:
 		elif since > 0.4:
 			_tip(&"prep", "Prep ahead: USE a crate to take one ingredient, chop on a cutting board (hold USE). Prepped food doesn't keep overnight.")
 		if since > 1.0:
-			_tip(&"open", "Ready? Hold USE on the OPEN sign by the front door to start service.")
+			_tip(&"open", "The doors open by themselves when the prep clock runs out (top left), ready or not!")
 	elif phase == GameConst.Phase.SERVICE:
 		for g in world.customers.groups:
 			if g.state == CustomerGroup.State.READY:
@@ -47,7 +47,7 @@ func _physics_process(delta: float) -> void:
 				_tip(&"burn", "Watch the ring over the %s: green is perfect. Leave it too long and it burns — or catches fire." % f.def.display_name.to_lower())
 				break
 	elif phase == GameConst.Phase.CLOSING:
-		_tip(&"closing", "Closing time. Finish the last tables, then hold USE on the sign to end the day.")
+		_tip(&"closing", "Closing time: no new guests. Finish the last tables; the day ends when they've gone.")
 	elif phase == GameConst.Phase.EVENING:
 		if world.location.supply_mode == "truck":
 			_tip(&"evening", "Evening is for planning. The truck only brings what you order: use the manager's desk in storage to order tomorrow's supplies (tick Auto for things you want every day), buy equipment and hire help.")

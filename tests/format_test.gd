@@ -108,6 +108,7 @@ func _start(fid: StringName) -> void:
 	await wait(0.6)
 	w = GameWorld.current
 	p = w.players()[0]
+	w.day.auto_open = false
 
 
 # -----------------------------------------------------------------------------

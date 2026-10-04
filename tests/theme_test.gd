@@ -72,6 +72,7 @@ func _start(loc: String, fmt: String) -> void:
 	await wait(0.6)
 	w = GameWorld.current
 	p = w.players()[0]
+	w.day.auto_open = false
 
 
 func stalls() -> Array:
@@ -85,6 +86,9 @@ func t_train() -> void:
 	await _start("express", "diner")
 	var tl := w.theme_node as TrainLine
 	check(tl != null, "the train has a timetable")
+	check(tl.get_node_or_null("Cars") != null and tl.get_node("Cars").get_child_count() > 20, "a locomotive, passenger cars and bogies")
+	check(w.builder.ground_y < -0.5, "the cars stand up on their wheels above the track")
+	check(w.grid.wall_between(Vector2i(10, 8), Vector2i(10, 9)), "a railing keeps everyone on the platform")
 	await wait(1.0)
 	check(tl.state == TrainLine.State.STOPPED and tl.market_open, "waiting at the depot with the market open")
 	var n_supplies := Content.supplies_for(w.format).size()
@@ -135,8 +139,22 @@ func t_train() -> void:
 	check(stalls().size() >= 3 and stalls().size() <= 4, "a few stalls at the stop (%d)" % stalls().size())
 	check(deals == 1, "one deal per stop")
 	check(w.customers.groups.size() > groups_before, "passengers boarded (%d -> %d)" % [groups_before, w.customers.groups.size()])
+	# Boarders come in through the coach's platform doors (everyone else
+	# arrives along the gangway from the cars behind).
+	var at_doors := 0
+	for c in w.all_of_kind(&"customer"):
+		var cp := (c as Node3D).global_position
+		if cp.z > 5.0 and cp.x < -1.0:
+			at_doors += 1
+	check(at_doors > 0, "new passengers step on from the platform (%d at the doors)" % at_doors)
+	await wait(14.0)
+	var outside := 0
+	for c in w.all_of_kind(&"customer"):
+		if not w.grid.is_inside(GameConst.world_to_cell((c as Node3D).global_position)):
+			outside += 1
+	check(outside == 0, "and walk aboard through the doors (%d still outside)" % outside)
 	# Whistle, then off again.
-	await wait(TrainLine.STOP_TIME - TrainLine.WHISTLE_AT + 1.0)
+	await wait(TrainLine.STOP_TIME - TrainLine.WHISTLE_AT - 14.0 + 1.0)
 	check(tl.state == TrainLine.State.STOPPED, "still there after the whistle")
 	await wait(TrainLine.WHISTLE_AT)
 	check(tl.state == TrainLine.State.DEPARTING or tl.state == TrainLine.State.MOVING, "left the station")

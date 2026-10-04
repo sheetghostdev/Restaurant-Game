@@ -283,6 +283,8 @@ func serve(actor: Node, dish: DishItem, near_table: Fixture) -> bool:
 		return true
 	order["served"] = true
 	order["quality"] = q
+	if q >= 0.95:
+		world().stats_add(&"perfect", 1)
 	var sat := q * 0.65 + wait_frac * 0.35 - strict * (1.0 - q)
 	# Wrong extras: they wanted tomato and got none, or got lettuce they didn't ask for.
 	var diff := RecipeManager.extras_diff(order, dish)
@@ -296,7 +298,7 @@ func serve(actor: Node, dish: DishItem, near_table: Fixture) -> bool:
 	satisfaction_sum += sat
 	satisfaction_n += 1
 	var price := RecipeManager.order_price(order) * archetype.spend
-	var tip := price * 0.25 * archetype.tip * sat * sat
+	var tip := price * 0.25 * archetype.tip * sat * sat * (1.0 + world().day.tip_bonus())
 	revenue += price + tip
 	order["price"] = price
 	order["tip"] = tip
@@ -387,6 +389,39 @@ func _pay() -> void:
 	if randf() < mess_chance * 0.35:
 		var mm := members[randi() % members.size()]
 		world().disasters.spawn_mess(&"crumbs" if randf() < 0.6 else &"spill", mm.global_position + Vector3(randf_range(-0.3, 0.3), 0, randf_range(-0.3, 0.3)))
+
+
+## What the guests would still have paid for (orders not yet served).
+func unserved_value() -> float:
+	var v := 0.0
+	for m in members:
+		for o in m.orders:
+			if not o.get("served", false):
+				v += RecipeManager.order_price(o) * archetype.spend
+	return v
+
+
+## "Red table", or "A family in line" before they were seated.
+func label() -> String:
+	for t in tables:
+		var st := (t as Fixture).get_component("SeatingTable") as SeatingTable if is_instance_valid(t) else null
+		if st and st.number > 0:
+			return "%s table" % SeatingTable.name_of(st.number)
+	return "A %s group in line" % archetype.display_name.to_lower()
+
+
+## Last orders: guests who were served finish up and pay; anyone still
+## waiting for food leaves unhappy.
+func go_home() -> void:
+	if is_leaving():
+		return
+	world().orders.cancel_group(self)
+	if satisfaction_n > 0:
+		for m in members:
+			_finish_eating(m)
+		_pay()
+	else:
+		_get_upset()
 
 
 func _get_upset() -> void:
