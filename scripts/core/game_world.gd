@@ -144,6 +144,12 @@ func _spawn_format_kitchen(layout: Dictionary) -> void:
 		var cb := f.get_component("CoffeeBrewer") as CoffeeBrewer if f else null
 		if cb:
 			cb.beans = cb.servings_per_bag   # one refill already loaded
+	if format.extra_mugs > 0:
+		for f in grid.fixtures_of(&"mug_rack"):
+			var r := f.get_component("DishRack") as DishRack
+			r.count = mini(r.count + format.extra_mugs, r.capacity)
+			f.mark_dirty()
+			break
 	var shelves: Array = layout.get("pantry", [])
 	var k := 0
 	for p in format.pantry:

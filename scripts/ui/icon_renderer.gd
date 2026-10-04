@@ -20,6 +20,11 @@ func _enter_tree() -> void:
 	instance = self
 
 
+func _exit_tree() -> void:
+	if instance == self:
+		instance = null
+
+
 func _ready() -> void:
 	_viewport = SubViewport.new()
 	_viewport.size = Vector2i(SIZE, SIZE)

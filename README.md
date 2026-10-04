@@ -4,7 +4,8 @@
 
 > Build it. Stock it. Somehow keep it running.
 
-You and your friends run a small diner on Main Street. You aren't just cooking.
+You and your friends run a restaurant: a diner, a coffee shop, a pizza
+parlor or a bar, on Main Street, aboard a train or in orbit. You aren't just cooking.
 You also unload the morning delivery truck, keep the beef in the fridge before
 it spoils, prep lettuce before the lunch rush, wash the plates you'll run out
 of, put out grease fires, knock walls through and haul new equipment in from
@@ -22,6 +23,10 @@ plays through a whole day.
 | *Lunch service: tickets show each table's order* | *Local co-op during morning prep* |
 | ![The diner after expanding: patio, dining annex, dish room, walk-in cooler](docs/screenshots/expanded.jpg) | ![Evening build phase with FOR SALE plots behind the building](docs/screenshots/evening.jpg) |
 | *All four expansions built* | *Evening planning, with plots for sale out back* |
+| ![The Dining Car Express stopped at a station, market stalls on the platform](docs/screenshots/train.jpg) | ![The Orbital Galley space station above a planet](docs/screenshots/space.jpg) |
+| *A coffee shop on the train: stalls at the Ashdown stop, one with a deal* | *A bar in orbit: planters grow, the printer prints* |
+| ![The new-game screen: pick a place and a kind of restaurant](docs/screenshots/newgame.jpg) | |
+| *Pick where and what when you open a new restaurant* | |
 
 ---
 
@@ -33,6 +38,10 @@ plays through a whole day.
   `godot --path .` from the repo root.
 * Renderer: Forward+ (soft shadows, SSAO, tilt-shift depth of field). The
   Compatibility renderer also works, with fewer effects.
+* **New Restaurant** asks where and what: pick a place (Main Street, the
+  Dining Car Express train, or the Orbital Galley space station) and a kind
+  of restaurant (Diner, Coffee Shop, Pizza Parlor, Bar & Grill). The picture
+  behind the menu previews your choice.
 * **Difficulty:** Settings → Difficulty (main menu or pause menu).
   *Relaxed* has patient guests and rare disasters, *Normal* is the default,
   and *Hectic* is the full rush. In online games the host's setting applies.
@@ -42,6 +51,7 @@ Command-line shortcuts, for development:
 | Argument | Effect |
 |---|---|
 | `-- --autostart` | Skip the menu and start a new offline game |
+| `-- --format=bar --location=express` | With `--autostart` or `--host`: pick the restaurant type and place |
 | `-- --host` | Host an online game immediately |
 | `-- --join 1.2.3.4` | Join a host |
 | `-- --coop-test` | Start with two local keyboard players |
@@ -79,7 +89,8 @@ MORNING PREP (calm, untimed)
   Carry crates inside (cold stock goes in the fridge), chop, arrange, plan.
   The forecast card shows expected guests, rush hours and special events.
         ↓  hold USE on the OPEN sign
-SERVICE (timed, 11am–9pm in about 7 minutes)
+SERVICE (timed, in about 7 minutes: 11am–9pm for the diner, 7am–3pm for
+the coffee shop, 12pm–10pm for pizza, 4pm–midnight for the bar)
   Guests queue outside, get seated, read the menu, wave for you to take their
   order, wait (patience shown on faces, bubbles and tickets), eat, pay and
   leave dirty plates and crumbs behind. Lunch and dinner rushes are predictable.
@@ -98,14 +109,25 @@ EVENING (calm, build mode)
         ↓  hold USE on the sign: lights out → next morning (autosave)
 ```
 
-### Recipes in the diner
+### Kinds of restaurant
 
-| Dish | How |
+Each kind has its own menu, opening hours, regulars, kitchen equipment and
+supplier list.
+
+| Restaurant | Menu | How |
+|---|---|---|
+| **Diner** | Burger, fries, salad, coffee | Grill a patty to *Medium* and plate it with a bun; guests pick their own extras (lettuce, tomato) and the ticket shows exactly which. Chop and fry potatoes; chop a salad; mugs under the coffee machine |
+| **Coffee Shop** (7am–3pm) | Coffee, latte, croissant, muffin | Lots of small quick orders and a big morning rush. Milk in a mug, then coffee on top, is a latte. Bake croissants in the oven until golden (jam optional); muffins just go on a plate |
+| **Pizza Parlor** (12pm–10pm) | Pizza, salad, soda | Build the pizza on a plate (dough, sauce, cheese, plus pepperoni or sliced mushrooms if the guest wants them) and bake the whole plate in the oven. Sodas come from the fountain |
+| **Bar & Grill** (4pm–midnight) | Beer, soda, wings, fries | Pour pints under the tap and take them before they foam over; swap in a fresh keg when it runs dry. Fry wings (dip optional) and fries. Sports fans arrive for the evening game |
+
+### Places to run it
+
+| Place | Where ingredients come from |
 |---|---|
-| **Burger** | Grill a patty to *Medium*; plate it with a bun. Each guest picks their own extras (lettuce, tomato): the ticket shows exactly which |
-| **Crispy Fries** | Chop a potato, fry until *Crispy*, plate |
-| **Garden Salad** | Chopped lettuce + tomato slices on a plate |
-| **Coffee** | Put a clean mug under the machine (keep the bean hopper filled) |
+| **Main Street** | A storefront with room to grow. Order tomorrow's supplies at the manager's desk; a truck delivers them every morning |
+| **Dining Car Express** | The restaurant is a train. There's no truck: in the morning the depot market is open on the platform, and the train stops three times during service. At each stop market stalls sell a few things (one is always a deal) and passengers board. When the whistle blows the doors lock and the train leaves, and anything still on the platform is left behind |
+| **Orbital Galley** | A space station. Nothing is delivered: hydroponic planters grow vegetables for free (USE picks the crop, GRAB harvests), and the food printer prints everything else for credits (USE picks what it prints). Some guests are aliens |
 
 Cooking passes through readable stages: raw → rare → **medium** → well done →
 overcooked → burnt, then fire. You can read the stage from colour, steam and
@@ -126,8 +148,9 @@ burnt or spoiled food.
   driver takes empty crates left on the dock.
 * **Finite dishware.** Plates and mugs get dirty and must go through the sink
   or the hood dishwasher. If nobody washes up, you can't serve anything.
-* **Customers.** Nine archetypes (townsfolk, families, work crews, business
-  lunches, dates, tourists, tired travelers, the Regular, food critics), each with different
+* **Customers.** Thirteen archetypes (townsfolk, families, work crews, business
+  lunches, dates, tourists, tired travelers, the Regular, food critics,
+  commuters, students, sports fans, night owls), each with different
   group size, appetite, patience, timing, spending and mess. Groups seat
   themselves at table clusters (push tables together for bigger groups),
   order, eat, pay and tip based on quality and speed.
@@ -183,6 +206,7 @@ res://
     ai/              Customer, CustomerGroup, Worker, StaffBrain, GridNav
     player/          PlayerCharacter, input devices (local co-op)
     restaurant/      RestaurantGrid (rooms/walls/doors as data), RestaurantBuilder
+    themes/          TrainLine (timetable, platform, market), SpaceOrbit (starfield)
     art/             MeshBuilder, Models library, CharacterRig, palette
     ui/              HUD, catalog, results, menus, theme, icon renderer
     resources/       Resource classes (ItemDef, RecipeDef, FixtureDef, ...)
@@ -192,7 +216,7 @@ res://
   shaders/           Diorama material, highlight, ghost, sky, water
   audio/             sfx/*.wav, music/*.ogg (procedurally generated placeholders)
   art/               fonts (OFL), models/ (drop-in overrides for procedural meshes)
-  tests/             Headless gameplay test, two-process network test
+  tests/             Headless gameplay tests, two-process network tests
   tools/             Content seed, screenshot runner, script checker, z-fight scan,
                      audio generator
   docs/              Architecture, design and content guides
@@ -218,9 +242,22 @@ More detail:
 # (about 114 checks; the exact number depends on what the guests order).
 godot --headless --path . res://tests/test_runner.tscn
 
-# Network test: one host process and one client process on localhost.
+# Every kind of restaurant: its kitchen, pantry, supplier, hours and
+# signature dishes (latte, croissant, pizza in the oven, pints, wings).
+godot --headless --path . res://tests/format_test.tscn
+
+# The new-game screen, the train (stops, stalls, doors, left-behind crates)
+# and the space station (planters, food printer, alien guests).
+godot --headless --path . res://tests/theme_test.tscn
+
+# Two simulated days with a serving bot; any place and restaurant type.
+godot --headless --path . res://tests/soak_test.tscn -- --location=express --format=bar
+
+# Network tests: one host process and one client process on localhost.
 godot --headless --path . res://tests/net_test.tscn -- --net-host &
 godot --headless --path . res://tests/net_test.tscn -- --net-client
+godot --headless --path . res://tests/net_theme_test.tscn -- --net-host &
+godot --headless --path . res://tests/net_theme_test.tscn -- --net-client
 
 # Compile every script.
 godot --headless --path . res://tools/dev/check_all.tscn

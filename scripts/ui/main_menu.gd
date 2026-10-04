@@ -13,21 +13,38 @@ var _addr: LineEdit
 var _name: LineEdit
 var _settings: SettingsPanel
 var _center := Vector3(11, 0, 4)
+var _radius := 27.0
 var _confirm_new := false
+var _left: Control
+var _new_panel: NewGamePanel
+var _preview_key := ""
 
 
 func _ready() -> void:
-	_build_backdrop()
+	add_child(IconRenderer.new())
+	var m := Saves.meta() if Saves.has_save() else {}
+	_build_backdrop(StringName(m.get("location", "main_street")), StringName(m.get("format", "diner")))
 	_build_ui()
 
 
-func _build_backdrop() -> void:
+## The slowly turning miniature behind the menu: the saved restaurant, or the
+## place being picked on the new-game screen.
+func _build_backdrop(loc_id: StringName, fmt_id: StringName) -> void:
+	var key := "%s|%s" % [loc_id, fmt_id]
+	if key == _preview_key:
+		return
+	_preview_key = key
+	if _backdrop:
+		_backdrop.queue_free()
+		_backdrop = null
 	_backdrop = Node3D.new()
 	add_child(_backdrop)
+	var loc: LocationDef = Content.locations.get(loc_id, Content.locations.get(&"main_street"))
+	var fmt: RestaurantFormatDef = Content.formats.get(fmt_id, Content.formats.get(&"diner"))
 	var light := LightingRig.new()
+	light.space = loc != null and loc.theme == "space"
 	_backdrop.add_child(light)
 	light.set_hour(15.5, true)
-	var loc: LocationDef = Content.locations.get(&"main_street")
 	if loc == null:
 		return
 	var f := FileAccess.open(loc.layout_path, FileAccess.READ)
@@ -40,9 +57,21 @@ func _build_backdrop() -> void:
 	var builder := RestaurantBuilder.new()
 	_backdrop.add_child(builder)
 	builder.setup(grid, layout)
+	if fmt:
+		builder.sign_text = fmt.sign_text
 	builder.rebuild()
 	light.builder = builder
-	for fx in layout.get("fixtures", []):
+	var fixtures: Array = layout.get("fixtures", []).duplicate()
+	var slots: Array = layout.get("stations", [])
+	if fmt:
+		for i in mini(slots.size(), fmt.stations.size()):
+			var sc: Array = slots[i]
+			fixtures.push_back({"def": String(fmt.stations[i]), "cell": [sc[0], sc[1]], "rot": sc[2] if sc.size() > 2 else 0})
+	if loc.theme == "space":
+		var lc := Vector2(grid.lot.get_center())
+		SpaceOrbit.add_starfield(_backdrop, lc)
+		SpaceOrbit.add_planet(_backdrop, lc)
+	for fx in fixtures:
 		var fd := Content.fixture(StringName(fx["def"]))
 		if fd == null:
 			continue
@@ -53,6 +82,7 @@ func _build_backdrop() -> void:
 		_backdrop.add_child(m)
 	var b := grid.building_bounds()
 	_center = Vector3(b.get_center().x, 0, b.get_center().y)
+	_radius = clampf(maxf(b.size.x, b.size.y) * 1.1, 24.0, 34.0)
 	# A few diners to bring it to life
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 5
@@ -95,6 +125,7 @@ func _build_ui() -> void:
 	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(shade)
 	var v := VBoxContainer.new()
+	_left = v
 	v.position = Vector2(70, 70)
 	v.custom_minimum_size = Vector2(480, 0)
 	v.add_theme_constant_override("separation", 10)
@@ -148,6 +179,25 @@ func _build_ui() -> void:
 	foot.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	foot.position = Vector2(20, -34)
 	root.add_child(foot)
+	_new_panel = NewGamePanel.make()
+	_new_panel.visible = false
+	_new_panel.set_anchors_preset(Control.PRESET_CENTER)
+	root.add_child(_new_panel)
+	_new_panel.preview_changed.connect(func(l, f): _build_backdrop(l, f))
+	_new_panel.closed.connect(func():
+		_new_panel.visible = false
+		_left.visible = true
+		shade.visible = true
+		var m := Saves.meta() if Saves.has_save() else {}
+		_build_backdrop(StringName(m.get("location", "main_street")), StringName(m.get("format", "diner")))
+		refresh())
+	_new_panel.started.connect(func(setup: Dictionary, host: bool):
+		Saves.delete()
+		if host:
+			main.start_host(setup)
+		else:
+			main.start_offline(false, setup))
+	_new_panel.set_meta(&"shade", shade)
 
 
 func refresh() -> void:
@@ -157,10 +207,18 @@ func refresh() -> void:
 	var has_save: bool = Saves.has_save()
 	if has_save:
 		var m := Saves.meta()
-		_buttons.add_child(UITheme.button("Continue — Day %d (%s)" % [int(m.get("day", 1)), GameConst.money(m.get("money", 0.0))], func(): main.start_offline(true), 24))
+		var where: LocationDef = Content.locations.get(StringName(m.get("location", "main_street")))
+		var label := "Continue — %s, Day %d (%s)" % [String(m.get("name", "Restaurant")), int(m.get("day", 1)), GameConst.money(m.get("money", 0.0))]
+		var cont := UITheme.button(label, func(): main.start_offline(true), 24)
+		if where:
+			cont.tooltip_text = where.display_name
+		_buttons.add_child(cont)
 	var new_btn := UITheme.button("New Restaurant", func(): _new_game(), 24)
 	_buttons.add_child(new_btn)
-	_buttons.add_child(UITheme.button("Host Online Game", func(): main.start_host(), 22))
+	if has_save:
+		_buttons.add_child(UITheme.button("Host Online (this restaurant)", func(): main.start_host(), 22))
+	else:
+		_buttons.add_child(UITheme.button("Host Online Game", func(): _new_game(), 22))
 	_buttons.add_child(UITheme.button("Join Online Game", func():
 		_join_box.visible = not _join_box.visible
 		if _join_box.visible:
@@ -173,12 +231,13 @@ func refresh() -> void:
 
 
 func _new_game() -> void:
-	if Saves.has_save() and not _confirm_new:
-		_confirm_new = true
-		set_status("This replaces your current restaurant. Press again to confirm.")
-		return
-	Saves.delete()
-	main.start_offline(false)
+	_left.visible = false
+	(_new_panel.get_meta(&"shade") as Control).visible = false
+	_new_panel.visible = true
+	_new_panel.reset_size()
+	_new_panel.position = (_new_panel.get_parent_area_size() - _new_panel.size) * 0.5
+	_new_panel.focus_first.call_deferred()
+	_build_backdrop(_new_panel.location_id, _new_panel.format_id)
 
 
 func set_status(text: String) -> void:
@@ -190,6 +249,6 @@ func _process(delta: float) -> void:
 	if _cam == null:
 		return
 	_angle += delta * 0.05
-	var r := 27.0
-	_cam.position = _center + Vector3(sin(_angle) * r, 17.0, cos(_angle) * r)
+	var r := _radius
+	_cam.position = _center + Vector3(sin(_angle) * r, r * 0.63, cos(_angle) * r)
 	_cam.look_at(_center + Vector3(-3.5, 0, 0).rotated(Vector3.UP, _angle), Vector3.UP)

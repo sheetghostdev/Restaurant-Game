@@ -24,6 +24,13 @@ func _ready() -> void:
 		await get_tree().process_frame
 		main.start_offline(false, main.setup_from_args())
 	await get_tree().create_timer(0.5).timeout
+	if "--newgame" in OS.get_cmdline_user_args() and main.menu:
+		main.menu._new_game()
+		var setup: Dictionary = main.setup_from_args()
+		if setup.has("location"):
+			main.menu._new_panel._pick_location(StringName(setup["location"]))
+		if setup.has("format"):
+			main.menu._new_panel._pick_format(StringName(setup["format"]))
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--players=") and _world():
 			var n := int(a.substr(10))
@@ -72,6 +79,14 @@ func _run_scenario() -> void:
 			await get_tree().create_timer(9.0).timeout
 		"kitchen":
 			_stage_kitchen(w)
+		"train_stop":
+			# Service, fast-forwarded to the first station with the market open.
+			Engine.time_scale = 4.0
+			w.debug_command("start_service", [])
+			await get_tree().create_timer(7.0).timeout
+			w.day.elapsed = w.format.service_seconds * TrainLine.STOP_AT[0]
+			await get_tree().create_timer(8.0).timeout
+			Engine.time_scale = 1.0
 		"target":
 			_stage_kitchen(w)
 			var pl: PlayerCharacter = w.players()[0]

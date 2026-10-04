@@ -37,6 +37,7 @@ opening = {
 "supply_wings": 1
 }
 food_chance = 0.6
+extra_mugs = 4
 drink_bonus = 0.5
 accent = Color(0.24705882, 0.42745098, 0.30588236, 1)
 tagline = "Pints, wings and the big game."

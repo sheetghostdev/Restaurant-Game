@@ -12,11 +12,13 @@ var _clouds: Node3D
 func _ready() -> void:
 	world.lighting.space = true
 	world.lighting.set_hour(world.day.hour if world.day else 8.0, true)
-	_build_stars()
-	_build_planet()
+	var c := Vector2(world.grid.lot.get_center())
+	add_starfield(self, c)
+	_planet = add_planet(self, c)
 
 
-func _build_stars() -> void:
+## Also used by the title screen's preview.
+static func add_starfield(parent: Node3D, c: Vector2) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 2024
 	var mm := MultiMesh.new()
@@ -25,7 +27,6 @@ func _build_stars() -> void:
 	quad.size = Vector3(0.1, 0.1, 0.1)
 	mm.mesh = quad
 	mm.instance_count = 700
-	var c := Vector2(world.grid.lot.get_center())
 	for i in mm.instance_count:
 		var p := Vector3(c.x + rng.randf_range(-110, 110), rng.randf_range(-70, -14), c.y + rng.randf_range(-90, 110))
 		var s := rng.randf_range(0.6, 1.4) if rng.randf() < 0.92 else rng.randf_range(2.0, 2.8)
@@ -34,16 +35,17 @@ func _build_stars() -> void:
 	mi.multimesh = mm
 	mi.material_override = Models.mat_unshaded(Color("e8ecff"))
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(mi)
+	parent.add_child(mi)
 
 
-func _build_planet() -> void:
-	var c := Vector2(world.grid.lot.get_center())
-	_planet = Node3D.new()
-	_planet.position = Vector3(c.x + 18.0, -62.0, c.y + 38.0)
-	add_child(_planet)
+static func add_planet(parent: Node3D, c: Vector2) -> Node3D:
+	var planet := Node3D.new()
+	# Far below and behind the station, so its curve fills the top corner.
+	planet.position = Vector3(c.x + 30.0, -78.0, c.y - 48.0)
+	planet.scale = Vector3.ONE * 0.7
+	parent.add_child(planet)
 	var b := MeshBuilder.new()
-	b.sphere(Vector3.ZERO, Vector3(48, 48, 48), Color("2d6fb3"), 3, Color(0, 0, 0, 0), 0.0, 1)
+	b.sphere(Vector3.ZERO, Vector3(48, 48, 48), Color("2d6fb3"), 4, Color(0, 0, 0, 0), 0.0, 1)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 9
 	for k in 9:
@@ -52,7 +54,7 @@ func _build_planet() -> void:
 	var mi := MeshInstance3D.new()
 	mi.mesh = b.commit(Models.mat_main())
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_planet.add_child(mi)
+	planet.add_child(mi)
 	# Atmosphere glow.
 	var atm := MeshInstance3D.new()
 	var sm := SphereMesh.new()
@@ -66,7 +68,8 @@ func _build_planet() -> void:
 	am.cull_mode = BaseMaterial3D.CULL_FRONT
 	atm.material_override = am
 	atm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_planet.add_child(atm)
+	planet.add_child(atm)
+	return planet
 
 
 func _process(delta: float) -> void:

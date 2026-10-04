@@ -53,6 +53,31 @@ Autoloads: `Events` (signal bus), `Content` (ContentDB), `Settings`, `Inputs`
 | Replicator | `Replicator` | spawn, despawn, state, motion and shared channels |
 | FX | `FeedbackFX` | particles, popups, coins, pings (mirrored to clients) |
 
+### Places and restaurant types
+
+`GameWorld.start_new(location, format)` loads the location's layout JSON and
+then fills its kitchen from the format: `format.stations[i]` goes into the
+layout's station slot `i`, and `format.pantry` crates go onto the layout's
+pantry shelves. Menus, hours, archetypes and the supplier list all come from
+the format, so a coffee shop on the train and a coffee shop on Main Street
+share everything but the building.
+
+A location's `theme` can add a **theme node** (`GameWorld.theme_node`):
+
+* `TrainLine` (`scripts/themes/train_line.gd`) runs the timetable on the
+  host: depart at opening, stop at fixed points of service progress, open the
+  market (spawning `market_stall` fixtures), lock `train_door` openings with
+  `RestaurantGrid.set_locked()`, and on departure despawn items outside the
+  cars and pull players back in. It publishes a `train` shared channel; every
+  peer animates the sliding platform, scrolling scenery and wheels from it.
+  The HUD shows `theme_node.status_line()` under the clock.
+* `SpaceOrbit` sets the lighting rig's space mode and adds the starfield and
+  planet. Planters (`Grower`) and the `FoodPrinter` are ordinary fixture
+  components.
+
+`LocationDef.supply_mode` (`truck`, `market`, `grow`) decides whether the
+morning truck runs after day one and what the catalog's Supplies tab shows.
+
 Managers hold state that has no physical home: the schedule, money, the
 ledger. Anything with a place in the world is an entity, and its behaviour
 lives on the entity or its components. "Is the grill cooking?" is answered
@@ -185,7 +210,9 @@ drives the procedural character animation.
 
 Tested by `tests/net_test.tscn`: one host and one client process. The client
 checks entity parity, players, phase, money, items held by the host, customer
-movement, and a grab performed by the client itself.
+movement, and a grab performed by the client itself. `tests/net_theme_test.tscn` hosts a train
+and checks the client sees the market stalls, the timetable and the doors
+locking when it leaves.
 
 ---
 

@@ -265,6 +265,8 @@ func apply_shared(d: Dictionary) -> void:
 	next_station = String(d.get("nx", next_station))
 	stops_done = int(d.get("n", stops_done))
 	market_open = bool(d.get("m", market_open))
+	# Doors are shut whenever the train isn't standing at a platform.
+	world.grid.set_locked("train_door", state != State.STOPPED)
 
 
 ## One line for the HUD under the clock.

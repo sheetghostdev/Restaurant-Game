@@ -19,7 +19,7 @@ func _ready() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
 	add_child(main)
 	await get_tree().process_frame
-	main.start_offline(false)
+	main.start_offline(false, main.setup_from_args())
 	await get_tree().create_timer(0.5).timeout
 	w = GameWorld.current
 	w.economy.earn(2000.0, "soak")

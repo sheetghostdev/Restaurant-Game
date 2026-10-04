@@ -277,6 +277,8 @@ func can_place(c: Vector2i, def: FixtureDef, ignore: Fixture = null) -> bool:
 	var rt := room_type_at(c)
 	if rt and rt.outdoor and not (def and def.allowed_outdoors):
 		return false
+	if rt and rt.floor_style == "none":
+		return false   # the train's platform: it doesn't come along
 	var f := fixture_at(c)
 	if f and f != ignore:
 		return false

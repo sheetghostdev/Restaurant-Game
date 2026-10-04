@@ -21,6 +21,7 @@ extends Resource
 @export var supplies: Array[StringName] = []      ## What the supplier sells (empty = everything).
 @export var opening := {}                         ## supply id -> crates in the free day-one delivery.
 @export var food_chance := 1.0                    ## Chance each adult orders food at all.
+@export var extra_mugs := 0                       ## Added to the mug rack at the start (drink-heavy places).
 @export var drink_bonus := 0.0                    ## Added to every guest's chance of ordering a drink.
 @export var accent := Color.WHITE                 ## Card colour on the new-game screen.
 @export var tagline := ""

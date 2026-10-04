@@ -555,7 +555,7 @@ func _formats() -> void:
 		"pantry": [{"supply": "supply_croissants", "units": 6}, {"supply": "supply_muffins", "units": 6}, {"supply": "supply_jam", "units": 6}],
 		"supplies": ["supply_coffee", "supply_milk", "supply_croissants", "supply_muffins", "supply_jam"],
 		"opening": {"supply_coffee": 2, "supply_milk": 1, "supply_croissants": 1, "supply_muffins": 1},
-		"food_chance": 0.5, "drink_bonus": 0.45,
+		"extra_mugs": 4, "food_chance": 0.5, "drink_bonus": 0.45,
 		"accent": Color("8a5a3c"), "sign_text": "CAFE", "default_name": "Bean There", "tagline": "Early mornings, lattes and warm croissants.",
 		"description": "Lots of small, quick orders. Keep the coffee machines loaded, bake croissants golden, and watch the morning rush."})
 	_format("pizza_parlor", "Pizza Parlor", {
@@ -577,7 +577,7 @@ func _formats() -> void:
 		"pantry": [{"supply": "supply_potatoes", "units": 6}, {"supply": "supply_dip", "units": 6}],
 		"supplies": ["supply_kegs", "supply_syrup", "supply_wings", "supply_dip", "supply_potatoes"],
 		"opening": {"supply_kegs": 1, "supply_syrup": 1, "supply_wings": 1, "supply_dip": 1, "supply_potatoes": 1},
-		"food_chance": 0.6, "drink_bonus": 0.5,
+		"extra_mugs": 4, "food_chance": 0.6, "drink_bonus": 0.5,
 		"accent": Color("3f6d4e"), "sign_text": "BAR", "default_name": "The Tipsy Tap", "tagline": "Pints, wings and the big game.",
 		"description": "Open late. Pour pints before they foam over, fry wings and fries, and keep the kegs coming."})
 

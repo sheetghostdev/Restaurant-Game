@@ -40,6 +40,7 @@ opening = {
 "supply_muffins": 1
 }
 food_chance = 0.5
+extra_mugs = 4
 drink_bonus = 0.45
 accent = Color(0.5411765, 0.3529412, 0.23529412, 1)
 tagline = "Early mornings, lattes and warm croissants."

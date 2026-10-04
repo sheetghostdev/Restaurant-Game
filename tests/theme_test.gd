@@ -19,6 +19,7 @@ func _ready() -> void:
 	main = load("res://scenes/main.tscn").instantiate()
 	add_child(main)
 	await get_tree().process_frame
+	await t_new_game_screen()
 	await t_train()
 	if ResourceLoader.exists("res://data/layouts/space.json") or FileAccess.file_exists("res://data/layouts/space.json"):
 		await t_space()
@@ -159,6 +160,27 @@ func t_train() -> void:
 		if it is CrateItem and GameConst.world_to_cell((it as CrateItem).global_position) in w.grid.delivery_zone:
 			delivered += 1
 	check(w.deliveries.order.is_empty(), "nothing ordered from a truck on the train")
+
+
+func t_new_game_screen() -> void:
+	print("[new game screen]")
+	main.show_menu()
+	await wait(0.3)
+	var menu: MainMenu = main.menu
+	menu._new_game()
+	await wait(0.2)
+	var panel := menu._new_panel
+	check(panel.visible, "New Restaurant opens the picker")
+	panel._pick_location(&"express")
+	panel._pick_format(&"bar")
+	check(panel._name.text == "The Tipsy Tap", "the name follows the restaurant type")
+	panel._name.text = "Rolling Tap"
+	panel._go(false)
+	await wait(0.8)
+	w = GameWorld.current
+	check(w != null and w.location.id == &"express" and w.format.id == &"bar", "opened a bar on the train")
+	check(w != null and w.restaurant_name == "Rolling Tap", "with the chosen name")
+	check(w != null and Content.menu_ingredients(w.format).has(&"keg"), "serving beer")
 
 
 func t_space() -> void:

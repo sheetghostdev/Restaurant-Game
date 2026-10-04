@@ -90,6 +90,34 @@ building are available.
   pads are full. They block movement until somebody hauls them in.
 * The driver takes empty crates left in the loading area, for a deposit.
 
+### Places and their supply chains
+
+Where the restaurant is changes how ingredients reach the kitchen, which
+changes the whole rhythm of a day:
+
+* **Main Street: plan ahead.** Order tomorrow's crates in the evening. The
+  skill is forecasting.
+* **Dining Car Express: shop on the clock.** There is no truck. The depot
+  market is open all morning, and during service the train stops three times
+  for about 40 seconds. Each stop sells a few things, one of them at a
+  discount, so you buy what's cheap and what you're about to run out of,
+  then sprint back before the whistle. What's left on the platform stays
+  there. Between stops the doors are locked: you're on your own. Passengers
+  board at every stop, so stops are also mini-rushes.
+* **Orbital Galley: grow and print.** Nothing is delivered. Planters grow
+  vegetables for free but slowly and only a few at a time; the food printer
+  makes anything, one portion every few seconds, for credits. The tension is
+  free-but-slow versus fast-but-costly, and choosing crops for the day's menu.
+
+### Kinds of restaurant
+
+The diner, coffee shop, pizza parlor and bar share every system but play
+differently: the coffee shop is many tiny, quick drink orders and a sharp
+early rush; the pizza parlor is assembly (build on the plate, bake the whole
+plate) with big evening tables; the bar is pours that must be taken at the
+right moment, kegs to swap and late-night crowds. Each has its own regulars,
+hours and starting kitchen.
+
 ### Cooking, quality and recipes
 * `CookProfile` defines stages, quality per stage, colour per stage, a perfect
   stage, a smoke threshold and a fire threshold. Feedback is colour, steam, a
@@ -216,12 +244,15 @@ the number of guests.
 
 ## Roadmap (beyond the vertical slice)
 
-* **More formats:** Cafe (pastry prep-heavy days, drinks), Pizza Shop
-  (pickup and delivery), Food Truck (one cramped room), Stadium Stand (huge
-  short rushes). The `RestaurantFormatDef` fields (`service_style`, menu,
-  demand curve) are already in place.
-* **More locations:** beach shack, ski lodge, airport. Each is a layout JSON
-  plus a `LocationDef`.
+* **More formats:** Food Truck (one cramped room), Stadium Stand (huge
+  short rushes), takeout and delivery for the pizza parlor.
+* **More locations:** beach shack, ski lodge, a riverboat. Each is a layout
+  JSON plus a `LocationDef`; the train and space station show how a theme
+  node can add its own rules.
+* **Train extras:** a second dining car, a lounge car, stations with
+  special events (a market festival, a delayed departure).
+* **Space extras:** micrometeor hull breaches, low-gravity mess, a cargo
+  shuttle you can call in for a price.
 * **Regulars** with persistent identities and favourite orders.
 * **Counter service and takeout:** order at a register, pickup shelf.
 * **Bigger automation:** dish-return belts, dumbwaiters for upstairs seating,
