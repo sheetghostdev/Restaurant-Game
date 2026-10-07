@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_ybyrc")
 id = &"supply_croissants"
-display_name = "Croissants"
+display_name = "Raw Croissants"
 item_id = &"croissant"
 price = 7.0
 container = "carton"
 default_order = 0
-description = "10 croissants, ready to bake."
+description = "10 raw croissants: bake them in the oven until golden."

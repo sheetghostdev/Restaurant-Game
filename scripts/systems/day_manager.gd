@@ -350,6 +350,9 @@ func _physics_process(delta: float) -> void:
 					_warned[w] = true
 					Events.notify("Doors open in %d seconds!" % w, &"big" if w == 10 else &"warning", Pal.UI_WARN)
 					Audio.play_ui(&"timer_ring")
+			if prep_left <= 14.0 and not _warned.has("guests"):
+				_warned["guests"] = true
+				world.customers.early_arrival()
 			if prep_left <= 0.0:
 				open_restaurant()
 		GameConst.Phase.SERVICE:

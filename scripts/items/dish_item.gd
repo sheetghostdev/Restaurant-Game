@@ -75,18 +75,18 @@ func quality() -> float:
 
 func display_name() -> String:
 	if dirty:
-		return "Dirty dishes ×%d" % count() if count() > 1 else ("Dirty mug" if is_mug() else "Dirty plate")
+		return "Dirty dishes ×%d" % count() if count() > 1 else ("Dirty " + DishPlating.cup_word().to_lower() if is_mug() else "Dirty plate")
 	if count() > 1:
 		if mugs == 0:
 			return "Plates ×%d" % plates
 		if plates == 0:
-			return "Mugs ×%d" % mugs
+			return "%s ×%d" % [DishPlating.cup_word(true), mugs]
 		return "Dishes ×%d" % count()
 	var r := recipe()
 	if r:
 		return r.display_name
 	if contents.is_empty():
-		return "Mug" if is_mug() else "Plate"
+		return DishPlating.cup_word() if is_mug() else "Plate"
 	var names := []
 	for c in contents:
 		names.push_back(Content.display_name(c["id"]))
@@ -226,8 +226,10 @@ func _build_model() -> void:
 		_build_stack()
 		return
 	if is_mug():
-		visual.add_child(Models.instance(&"mug_dirty" if dirty else &"mug"))
-		DishPlating.fill_mug(contents, visual, _parts)
+		var key := DishPlating.vessel_key(contents, dirty)
+		visual.add_child(Models.instance(key))
+		if key == &"mug":
+			DishPlating.fill_mug(contents, visual, _parts)
 		return
 	visual.add_child(Models.instance(&"plate_dirty" if dirty else &"plate"))
 	if not contents.is_empty():
@@ -243,7 +245,7 @@ func _build_stack() -> void:
 		visual.add_child(p)
 		y += 0.034
 	for k in mugs:
-		var m := Models.instance(&"mug_dirty" if dirty else &"mug")
+		var m := Models.instance(DishPlating.vessel_key([], dirty))
 		if plates > 0:
 			m.position = Vector3(0.27, (k / 3) * 0.125, -0.12 + (k % 3) * 0.12)
 		else:

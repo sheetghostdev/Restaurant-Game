@@ -19,6 +19,7 @@ var _hints := {}          ## player -> Dictionary
 var _highlighted := {}    ## Node -> Color
 var _use_target := {}     ## player -> Node (current hold-USE target)
 var _lift_started := {}   ## player -> bool
+var _press_took := {}     ## player -> {item, slot}: what this GRAB press picked up off a fixture
 var _last_pos := {}       ## player -> position last physics frame (stack wobble)
 
 ## Chance per second of a tall dirty pile toppling while walking, times the
@@ -184,6 +185,7 @@ func _process_actions(p: PlayerCharacter, t: Node, delta: float) -> void:
 	if p.grab_pressed:
 		p.grab_hold_time = 0.0
 		_lift_started[p] = false
+		_press_took.erase(p)
 		var gq := _query(t, p, GameConst.Verb.GRAB) if t else {}
 		if held is PackageItem and calm and world.build.try_unpack(p):
 			pass
@@ -191,7 +193,10 @@ func _process_actions(p: PlayerCharacter, t: Node, delta: float) -> void:
 			# The hint already explains why ("Dishwasher is full"): refuse.
 			_refuse(p, t)
 		elif not gq.is_empty():
+			var from := _slot_map(t)
 			_perform(t, p, GameConst.Verb.GRAB, 0.0)
+			if held == null and p.held() and from.has(p.held()):
+				_press_took[p] = {"item": p.held(), "slot": from[p.held()], "fixture": t}
 		elif held:
 			# Facing a station that refuses the item: give feedback instead of
 			# dumping it on the floor by accident.
@@ -199,10 +204,22 @@ func _process_actions(p: PlayerCharacter, t: Node, delta: float) -> void:
 				_refuse(p, t)
 			else:
 				_drop(p)
-	if p.in_grab and held == null and calm and not _lift_started.get(p, false):
-		if p.grab_hold_time >= LIFT_TIME and t is Fixture:
+		elif calm and t is Fixture and (t as Fixture).can_lift():
+			# Prep or evening, empty hands, nothing to take: pick it straight up.
 			_lift_started[p] = true
 			world.build.try_lift(p, t)
+	if p.in_grab and calm and not _lift_started.get(p, false) and p.grab_hold_time >= LIFT_TIME and t is Fixture:
+		# Holding GRAB moves the furniture, along with whatever is on it: if
+		# the press picked something up off it, that goes back first.
+		var took: Dictionary = _press_took.get(p, {})
+		if held == null or (not took.is_empty() and took["item"] == held and took["fixture"] == t):
+			_lift_started[p] = true
+			if held:
+				var slot: ItemSlot = took["slot"]
+				if slot.can_hold(held):
+					slot.put(p.take_held())
+			if p.held() == null:
+				world.build.try_lift(p, t)
 	if not p.in_grab:
 		p.grab_hold_time = 0.0
 	# --- USE ---
@@ -234,6 +251,16 @@ func _process_actions(p: PlayerCharacter, t: Node, delta: float) -> void:
 	if p.alt_pressed:
 		var at: Vector3 = _target_point(t) if t else p.global_position + p.facing_dir() * 1.0
 		world.fx.ping(at, p.actor_color())
+
+
+## item -> slot for everything sitting on a fixture.
+func _slot_map(t: Node) -> Dictionary:
+	var out := {}
+	if t is Fixture:
+		for sl in (t as Fixture).slots:
+			if sl.item:
+				out[sl.item] = sl
+	return out
 
 
 func _perform(t: Node, p: Node, verb: int, delta: float) -> bool:
@@ -336,9 +363,14 @@ func _build_hint(p: Node, t: Node) -> Dictionary:
 		if t.has_method("status_text"):
 			h["status"] = t.status_text()
 		if t is Fixture and world.is_calm() and held == null and (t as Fixture).can_lift():
-			h["lift"] = true
-			if p.in_grab and p.grab_hold_time > 0.05:
-				h["lift_progress"] = clampf(p.grab_hold_time / LIFT_TIME, 0.0, 1.0)
+			if g.is_empty():
+				h["grab"] = "Move"   # nothing to take: one press picks it up
+			else:
+				h["lift"] = true
+				if p.in_grab and p.grab_hold_time > 0.05:
+					h["lift_progress"] = clampf(p.grab_hold_time / LIFT_TIME, 0.0, 1.0)
+		elif t is Fixture and world.is_calm() and not _press_took.get(p, {}).is_empty() and p.in_grab and _press_took[p]["fixture"] == t:
+			h["lift_progress"] = clampf(p.grab_hold_time / LIFT_TIME, 0.0, 1.0)
 	if held and not h.has("grab"):
 		h["grab"] = "Drop"
 	if held is PackageItem and world.is_calm():

@@ -2,11 +2,14 @@ class_name ModelsProps
 ## Containers, dishware, tools, vehicles, street props and mess decals.
 
 ## Interior floor height and usable size of each container type. Used to lay out
-## the miniature ingredient units shown inside a crate.
+## the miniature ingredient units shown inside a crate. Optional: "label" (tag
+## position), "grid" (units per row/column), "scale" (unit size) and "mound"
+## (lifts the middle units into a heap).
 const CONTAINER_INFO := {
 	&"crate": {"floor": 0.05, "size": Vector2(0.52, 0.36), "height": 0.3},
-	&"crate_cold": {"floor": 0.05, "size": Vector2(0.5, 0.34), "height": 0.26},
-	&"sack": {"floor": 0.18, "size": Vector2(0.34, 0.3), "height": 0.34},
+	&"crate_cold": {"floor": 0.06, "size": Vector2(0.46, 0.3), "height": 0.28, "label": Vector3(0, 0.15, 0.254)},
+	&"sack": {"floor": 0.35, "size": Vector2(0.36, 0.27), "height": 0.35, "label": Vector3(0.1, 0.12, 0.182),
+		"grid": Vector2i(3, 3), "scale": 0.72, "mound": 0.03},
 	&"carton": {"floor": 0.04, "size": Vector2(0.5, 0.36), "height": 0.26},
 }
 
@@ -22,6 +25,10 @@ static func build(key: StringName, b: MeshBuilder) -> bool:
 		&"plate_dirty": _plate(b, true)
 		&"mug": _mug(b, false)
 		&"mug_dirty": _mug(b, true)
+		&"glass": _glass(b, false)
+		&"glass_dirty": _glass(b, true)
+		&"soda_glass": _soda_glass(b)
+		&"beer_pint": _beer_pint(b)
 		&"mess_shards": _shards(b)
 		&"extinguisher": _extinguisher(b)
 		&"mop": _mop(b)
@@ -77,33 +84,70 @@ static func _crate(b: MeshBuilder) -> void:
 		b.box(Vector3(x, 0.22, 0), Vector3(0.012, 0.035, 0.14), Pal.WALL_CAP)
 
 
+## Chilled goods come in a silver, insulated cooler box with a blue band and
+## snowflakes, so it's obvious at a glance what belongs in the fridge.
 static func _crate_cold(b: MeshBuilder) -> void:
-	var c := Color("8fb3c9")
+	var c := Color("a9b6bf")
+	var shine := Color("dfe7ec")
+	var blue := Color("3e8fe8")
 	var w := 0.6
-	var d := 0.44
-	var h := 0.26
-	b.block(Vector3(0, 0, 0), Vector3(w - 0.06, 0.04, d - 0.06), c.darkened(0.15), 0.01)
-	b.block(Vector3(0, 0.02, d * 0.5 - 0.025), Vector3(w, h - 0.02, 0.05), c, 0.02)
-	b.block(Vector3(0, 0.02, -d * 0.5 + 0.025), Vector3(w, h - 0.02, 0.05), c, 0.02)
-	b.block(Vector3(w * 0.5 - 0.025, 0.02, 0), Vector3(0.05, h - 0.02, d - 0.02), c.darkened(0.05), 0.02)
-	b.block(Vector3(-w * 0.5 + 0.025, 0.02, 0), Vector3(0.05, h - 0.02, d - 0.02), c.darkened(0.05), 0.02)
-	# Rolled rim
-	b.box(Vector3(0, h, d * 0.5 - 0.02), Vector3(w + 0.02, 0.03, 0.07), c.lightened(0.1), 0.012)
-	b.box(Vector3(0, h, -d * 0.5 + 0.02), Vector3(w + 0.02, 0.03, 0.07), c.lightened(0.1), 0.012)
-	# Snowflake-ish badge = keep cold
-	b.box(Vector3(0, 0.14, d * 0.5 + 0.003), Vector3(0.12, 0.08, 0.01), Pal.CREAM, 0.004)
-	b.box(Vector3(0, 0.14, d * 0.5 + 0.009), Vector3(0.07, 0.016, 0.004), Color("3e8fe8"))
-	b.box(Vector3(0, 0.14, d * 0.5 + 0.009), Vector3(0.016, 0.06, 0.004), Color("3e8fe8"))
+	var d := 0.48
+	var h := 0.28
+	b.block(Vector3(0, 0, 0), Vector3(w - 0.04, 0.06, d - 0.04), c.darkened(0.3), 0.01)
+	b.block(Vector3(0, 0.0, d * 0.5 - 0.03), Vector3(w, h, 0.06), c, 0.025)
+	b.block(Vector3(0, 0.0, -d * 0.5 + 0.03), Vector3(w, h, 0.06), c, 0.025)
+	b.block(Vector3(w * 0.5 - 0.03, 0.0, 0), Vector3(0.06, h, d - 0.04), c.darkened(0.06), 0.025)
+	b.block(Vector3(-w * 0.5 + 0.03, 0.0, 0), Vector3(0.06, h, d - 0.04), c.darkened(0.06), 0.025)
+	# Pressed ribs and a blue stripe round the base, a polished rim on top
+	for y in [0.085, 0.215]:
+		b.box(Vector3(0, y, d * 0.5 + 0.003), Vector3(w - 0.08, 0.012, 0.006), shine)
+	b.box(Vector3(0, 0.035, d * 0.5 + 0.004), Vector3(w - 0.03, 0.04, 0.008), blue)
+	b.box(Vector3(0, 0.035, -d * 0.5 - 0.004), Vector3(w - 0.03, 0.04, 0.008), blue)
+	for sx in [-1.0, 1.0]:
+		b.box(Vector3(sx * (w * 0.5 + 0.004), 0.035, 0), Vector3(0.008, 0.04, d - 0.03), blue)
+	b.block(Vector3(0, h, d * 0.5 - 0.03), Vector3(w + 0.01, 0.025, 0.07), shine, 0.01)
+	b.block(Vector3(0, h, -d * 0.5 + 0.03), Vector3(w + 0.01, 0.025, 0.07), shine, 0.01)
+	b.block(Vector3(w * 0.5 - 0.03, h, 0), Vector3(0.07, 0.025, d - 0.06), shine, 0.01)
+	b.block(Vector3(-w * 0.5 + 0.03, h, 0), Vector3(0.07, 0.025, d - 0.06), shine, 0.01)
+	# Snowflakes on the front corners and both ends
+	for x in [-0.21, 0.21]:
+		_snowflake(b, Vector3(x, 0.15, d * 0.5 + 0.004), 0.0, blue)
+	for sx in [-1.0, 1.0]:
+		_snowflake(b, Vector3(sx * (w * 0.5 + 0.004), 0.15, 0), sx * PI * 0.5, blue)
 
 
+## A six-armed snowflake badge on a vertical face (facing +z before `yaw`).
+static func _snowflake(b: MeshBuilder, at: Vector3, yaw: float, col: Color) -> void:
+	b.push_at(at, yaw, Vector3.ONE, PI * 0.5)
+	b.cyl(Vector3(0, -0.004, 0), 0.05, 0.008, Color("f4f9fc"), 10)
+	b.pop()
+	for k in 3:
+		b.push_at(at, yaw, Vector3.ONE, 0.0, PI * k / 3.0)
+		b.box(Vector3(0, 0, 0.007), Vector3(0.012, 0.075, 0.005), col)
+		b.pop()
+
+
+## A burlap potato sack: a plump bag with the classic green printed stripes,
+## a rolled-down cuff and a stencilled potato on the front. The potatoes are
+## heaped at the top of the open bag.
 static func _sack(b: MeshBuilder) -> void:
-	b.jitter = 0.01
-	b.cyl(Vector3.ZERO, 0.24, 0.12, Pal.SACK, 9, 0.04, Color(0, 0, 0, 0), 0.26)
-	b.cyl(Vector3(0, 0.12, 0), 0.26, 0.12, Pal.SACK, 9, 0.0, Color(0, 0, 0, 0), 0.22)
+	var c := Pal.SACK
+	var stripe := Color("4f7a3a")
+	var inside := Color("8a6a42")
+	b.jitter = 0.008
+	b.sphere(Vector3(0, 0.07, 0), Vector3(0.25, 0.075, 0.2), c.darkened(0.04), 1, Color(0, 0, 0, 0), 0.0, 3)
+	b.block(Vector3(0, 0.0, 0), Vector3(0.44, 0.31, 0.34), c, 0.09, inside)
 	b.jitter = 0.0
-	# Rolled-down rim
-	b.cyl(Vector3(0, 0.22, 0), 0.235, 0.07, Pal.SACK.darkened(0.12), 9, 0.025)
-	b.box(Vector3(0, 0.12, 0.25), Vector3(0.18, 0.1, 0.01), Pal.CREAM.darkened(0.05), 0.003)
+	for y in [0.205, 0.24]:
+		b.block(Vector3(0, y, 0), Vector3(0.446, 0.016, 0.346), stripe, 0.004)
+	# Rolled-down cuff round the opening
+	b.block(Vector3(0, 0.28, 0), Vector3(0.47, 0.07, 0.37), c.lightened(0.08), 0.03, inside)
+	# Stencilled potato on the front
+	b.push_at(Vector3(-0.07, 0.12, 0.174), 0.0, Vector3(1.35, 1.0, 1.0), PI * 0.5)
+	b.cyl(Vector3.ZERO, 0.045, 0.008, Color("8a5f36"), 10)
+	b.pop()
+	b.sphere(Vector3(-0.1, 0.13, 0.183), Vector3(0.008, 0.008, 0.004), Color("5c3d22"))
+	b.sphere(Vector3(-0.045, 0.11, 0.183), Vector3(0.008, 0.008, 0.004), Color("5c3d22"))
 
 
 static func _carton(b: MeshBuilder) -> void:
@@ -158,6 +202,62 @@ static func _mug(b: MeshBuilder, dirty: bool) -> void:
 	if dirty:
 		b.cyl(Vector3(0, 0.12, 0), 0.06, 0.004, Pal.COFFEE.lightened(0.15), 8)
 		b.box(Vector3(0.02, 0.1, 0.072), Vector3(0.03, 0.03, 0.006), Pal.COFFEE)
+
+
+## A clear tumbler for cold drinks (pale blue so it reads as glass).
+static func _glass(b: MeshBuilder, dirty: bool) -> void:
+	var g := Color("cfe7ef")
+	b.cyl(Vector3.ZERO, 0.062, 0.018, g.lightened(0.3), 10, 0.006)
+	b.cyl(Vector3(0, 0.018, 0), 0.062, 0.135, g, 10, 0.0, g.darkened(0.12), 0.072)
+	# Highlight streak
+	b.box(Vector3(-0.02, 0.09, 0.064), Vector3(0.012, 0.09, 0.004), Color("ffffff"))
+	if dirty:
+		b.cyl(Vector3(0, 0.153, 0), 0.06, 0.004, Color("7a4a32"), 8)
+		b.box(Vector3(0.025, 0.07, 0.066), Vector3(0.03, 0.035, 0.005), Color("8a6a52"))
+
+
+## Cola in a tall glass: dark body, clear glass at the top, ice cubes, a
+## lemon slice on the rim and a red and white straw. Taller and slimmer than
+## a mug and it has no handle, so it never reads as hot chocolate.
+static func _soda_glass(b: MeshBuilder) -> void:
+	var cola := Color("4e1d10")
+	var g := Color("d8edf3")
+	b.cyl(Vector3.ZERO, 0.056, 0.02, g, 10, 0.006)
+	b.cyl(Vector3(0, 0.02, 0), 0.056, 0.13, cola, 10, 0.0, Color(0, 0, 0, 0), 0.064)
+	b.cyl(Vector3(0, 0.15, 0), 0.064, 0.035, g, 10, 0.0, cola.darkened(0.2), 0.068)
+	b.box(Vector3(-0.022, 0.09, 0.061), Vector3(0.01, 0.1, 0.004), Color("8a4a32"))
+	# Ice cubes floating at the top
+	for k in 3:
+		var a := TAU * k / 3.0 + 0.3
+		b.push_at(Vector3(cos(a) * 0.03, 0.178, sin(a) * 0.03), a, Vector3.ONE, 0.25, 0.15)
+		b.box(Vector3.ZERO, Vector3(0.032, 0.028, 0.032), Color("bfe8ff"), 0.004)
+		b.pop()
+	# Lemon slice on the rim
+	b.push_at(Vector3(0.05, 0.19, 0.035), 0.6, Vector3.ONE, PI * 0.5)
+	b.cyl(Vector3(0, -0.006, 0), 0.03, 0.012, Color("f5d63a"), 8, 0.0, Color("fff3a0"))
+	b.pop()
+	# Red and white straw
+	b.push_at(Vector3(-0.015, 0.08, -0.01), 0.0, Vector3.ONE, 0.0, 0.2)
+	for k in 4:
+		b.cyl(Vector3(0, k * 0.045, 0), 0.009, 0.045, Color("e8412f") if k % 2 == 0 else Color("fafafa"), 6)
+	b.pop()
+
+
+## A pint of golden beer: a tall flared glass, amber body and a thick foam
+## head spilling over the rim.
+static func _beer_pint(b: MeshBuilder) -> void:
+	var amber := Color("eaa12a")
+	var foam := Color("fbf6e6")
+	b.cyl(Vector3.ZERO, 0.054, 0.018, Color("e4f1f5"), 10, 0.005)
+	b.cyl(Vector3(0, 0.018, 0), 0.054, 0.15, amber, 10, 0.0, Color(0, 0, 0, 0), 0.072)
+	# Light coming through the glass
+	b.box(Vector3(-0.022, 0.09, 0.062), Vector3(0.014, 0.11, 0.004), Color("f8cc66"))
+	for k in 4:
+		b.sphere(Vector3(0.014 + (k % 2) * 0.016, 0.04 + k * 0.026, 0.063), Vector3(0.006, 0.006, 0.004), Color("fde39a"))
+	# Foam head, spilling down one side
+	b.cyl(Vector3(0, 0.168, 0), 0.075, 0.036, foam, 10, 0.012, Color("fffaf0"))
+	b.sphere(Vector3(0.05, 0.168, 0.048), Vector3(0.02, 0.032, 0.02), foam)
+	b.sphere(Vector3(-0.02, 0.204, 0.01), Vector3(0.035, 0.014, 0.035), Color("fffaf0"))
 
 
 ## Broken dishes on the floor: angular white wedges and a few teal mug bits.

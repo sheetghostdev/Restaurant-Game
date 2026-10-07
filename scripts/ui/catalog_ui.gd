@@ -198,6 +198,13 @@ func _build_equipment() -> void:
 	defs.sort_custom(func(a, b): return a.category < b.category or (a.category == b.category and a.price < b.price))
 	var last_cat := ""
 	var theme := w.location.theme if w.location else "street"
+	# What the dining room's decor does right now (like PlateUp's furniture).
+	var summary := w.customers.decor_summary() if w.customers else ""
+	var info := UITheme.label("Your decor: " + summary if summary != "" else
+		"Decor in the dining room helps: plants (patience), jukebox (eat faster), wall art (tips), rugs (less mess). Benches let waiting guests sit.",
+		17, "body", Pal.UI_ACCENT if summary != "" else Pal.UI_INK_SOFT)
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_content.add_child(info)
 	for fd in defs:
 		if not fd.purchasable or (fd.only_theme != "" and fd.only_theme != theme):
 			continue

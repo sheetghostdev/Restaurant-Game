@@ -43,6 +43,8 @@ func _ready() -> void:
 		if a.begins_with("--at=") and _world():
 			var xz := a.substr(5).split(",")
 			_world().players()[0].global_position = Vector3(float(xz[0]), 0, float(xz[1]))
+	if "--recipes" in OS.get_cmdline_user_args() and _world():
+		_world().hud.recipe_book.open()
 	if "--closeup" in OS.get_cmdline_user_args() and _world():
 		_world().camera.zoom_bias = -0.55
 		_world().camera.player_focus = 0.9
@@ -77,6 +79,28 @@ func _run_scenario() -> void:
 			for a in ["family", "work_crew", "regular_folks", "regular_folks"]:
 				w.customers.spawn_group(Content.archetype(StringName(a)), true)
 			await get_tree().create_timer(9.0).timeout
+		"decor":
+			# Decor and a waiting bench in the dining room, with guests on it.
+			var spots := []
+			for y in range(0, 20):
+				for x in range(0, 20):
+					var c := Vector2i(x, y)
+					if w.grid.is_customer_area(c) and w.grid.fixture_at(c) == null:
+						spots.push_back(c)
+			var k := 0
+			for id in [&"waiting_bench", &"rug", &"painting", &"jukebox", &"plant_pot", &"sprinkler"]:
+				while k < spots.size() and not w.grid.can_place(spots[k], Content.fixture(id)):
+					k += 1
+				if k < spots.size():
+					w.spawn_fixture(id, spots[k], 0)
+					k += 2
+			w.debug_command("start_service", [])
+			for c in w.customers.clusters():
+				for t in c["tables"]:
+					w.customers._reserved[t] = null
+			for a in ["family", "regular_folks"]:
+				w.customers.spawn_group(Content.archetype(StringName(a)), true)
+			await get_tree().create_timer(14.0).timeout
 		"kitchen":
 			_stage_kitchen(w)
 		"train_stop":

@@ -31,6 +31,7 @@ var _chip_rows := {}
 var results: ResultsScreen
 var catalog: CatalogUI
 var pause_menu: PauseMenu
+var recipe_book: RecipeBook
 var debug_panel: DebugPanel
 var _shown_money := 0.0
 var _ticket_key := ""
@@ -70,6 +71,9 @@ func _ready() -> void:
 	pause_menu = PauseMenu.new()
 	pause_menu.hud = self
 	add_child(pause_menu)
+	recipe_book = RecipeBook.new()
+	recipe_book.hud = self
+	add_child(recipe_book)
 	debug_panel = DebugPanel.new()
 	debug_panel.hud = self
 	add_child(debug_panel)
@@ -201,8 +205,8 @@ func _build_chips() -> void:
 	add_child(_chips)
 	_join_hint = UITheme.label("", 15, "bold", Color(1, 1, 1, 0.85))
 	_join_hint.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_join_hint.position = Vector2(-380, -30)
-	_join_hint.custom_minimum_size = Vector2(360, 0)
+	_join_hint.position = Vector2(-520, -30)
+	_join_hint.custom_minimum_size = Vector2(500, 0)
 	_join_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_join_hint.add_theme_constant_override("outline_size", 6)
 	_join_hint.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
@@ -361,7 +365,7 @@ func _refresh_forecast() -> void:
 		var evening_tip := "Order tomorrow's supplies at the manager's desk: the truck only brings what you order. "
 		if not truck:
 			evening_tip = "Buy equipment, staff and upgrades at the manager's desk. "
-		var tip2 := UITheme.label(evening_tip + "Hold GRAB on furniture to move it, Q to rotate. Expand at the FOR SALE signs. When you're ready, hold USE on the OPEN sign: lights out, and the next morning's prep starts.", 15, "regular", Pal.UI_INK_SOFT)
+		var tip2 := UITheme.label(evening_tip + "GRAB furniture to pick it up (hold GRAB if something is on it), Q to rotate. Expand at the FOR SALE signs. When you're ready, hold USE on the OPEN sign: lights out, and the next morning's prep starts.", 15, "regular", Pal.UI_INK_SOFT)
 		tip2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		tip2.custom_minimum_size = Vector2(270, 0)
 		_forecast_body.add_child(tip2)
@@ -546,14 +550,12 @@ func _update_chips() -> void:
 				_chip_rows[p].queue_free()
 			_chip_rows.erase(p)
 	var n := world.players().size()
+	var hints := ["R: recipe book"]
 	if n < GameConst.MAX_PLAYERS and Net.is_authority():
-		var hints := []
 		if not Inputs.is_claimed(Inputs.KB_B) and Inputs.is_claimed(Inputs.KB_A):
 			hints.push_back("Enter: 2nd keyboard player")
 		hints.push_back("Gamepad (A): join")
-		_join_hint.text = "  ·  ".join(hints)
-	else:
-		_join_hint.text = ""
+	_join_hint.text = "  ·  ".join(hints)
 
 
 func is_modal_open() -> bool:

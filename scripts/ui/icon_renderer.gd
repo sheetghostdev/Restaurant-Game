@@ -54,7 +54,7 @@ func _ready() -> void:
 
 
 ## Returns the icon texture for a key ("recipe:burger", "item:tomato",
-## "fixture:grill"), or a placeholder until it has been rendered.
+## "fixture:grill", "station:grill"), or a placeholder until it has been rendered.
 func icon(key: String) -> Texture2D:
 	if _cache.has(key):
 		return _cache[key]
@@ -111,9 +111,15 @@ func _build(key: String) -> Dictionary:
 			if f:
 				n = Models.instance(f.model if f.model != &"" else f.id)
 				frame_size = 1.5 if f.id != &"fridge" else 2.2
+		"station":
+			# Close-up of a station's working top (recipe book): "station:grill".
+			var sf := Content.fixture(id)
+			if sf:
+				n = Models.instance(sf.model if sf.model != &"" else sf.id)
+				return {"node": n, "size": 1.0, "target": Vector3(0, 0.95 if id in [&"coffee_machine", &"soda_fountain", &"beer_tap"] else 0.8, 0)}
 		"model":
 			n = Models.instance(id)
-			frame_size = 1.0
+			frame_size = 0.44 if id == &"plate" else (0.28 if id in [&"mug", &"glass"] else 1.0)
 		"staff":
 			var sd: StaffDef = Content.staff.get(id)
 			var rig := CharacterRig.new()
@@ -146,7 +152,7 @@ func _render_next() -> void:
 	DishPlating.apply_colors(n)
 	var s: float = spec["size"]
 	_cam.size = s * 1.25
-	var target := Vector3(0, s * 0.22, 0)
+	var target: Vector3 = spec.get("target", Vector3(0, s * 0.22, 0))
 	_cam.position = target + Vector3(0, 1.0, 0.85).normalized() * 10.0
 	_cam.look_at(target)
 	# Give the viewport a frame to settle (the very first render especially).

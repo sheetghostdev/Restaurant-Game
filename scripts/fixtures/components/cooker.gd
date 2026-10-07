@@ -12,6 +12,9 @@ extends FixtureComponent
 @export var slot_index := 0
 @export var loop_sound: StringName = &"sizzle_loop"
 @export var glow_path: NodePath
+## Safety appliances hold food at "perfect" instead of burning it (and never
+## catch fire).
+@export var safe := false
 
 var _last_stage := -1
 var _sync_t := 0.0
@@ -62,10 +65,15 @@ func server_tick(delta: float) -> void:
 	var p: CookProfile = k["profile"]
 	var r := p.rate * speed
 	var ck := cook_of(k)
+	var before := ck
 	if p.stage_index(ck) >= p.perfect_stage:
 		# Past perfect: the difficulty decides how long until it overcooks.
 		r *= Difficulty.factor("overcook")
 	ck += r * delta
+	if safe:
+		# Stops at the end of "perfect" (food that arrived overcooked stays as
+		# it is: a safety grill never un-burns anything).
+		ck = maxf(before, minf(ck, p.stage_ends[p.perfect_stage] - 0.01))
 	if k.has("c"):
 		k["c"]["ck"] = ck
 	else:
@@ -87,7 +95,7 @@ func server_tick(delta: float) -> void:
 		_sync_t = 0.0
 		it.refresh_visual()
 		it.mark_dirty()
-	if p.fire_at > 0.0 and ck >= p.fire_at:
+	if p.fire_at > 0.0 and ck >= p.fire_at and not safe:
 		var fl := fixture.get_component("Flammable") as Flammable
 		if fl and not fl.burning:
 			fl.ignite()

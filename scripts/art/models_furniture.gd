@@ -18,6 +18,10 @@ static func build(key: StringName, b: MeshBuilder) -> bool:
 		&"table_number": _table_number(b)
 		&"table_cloth": _table_cloth(b)
 		&"menu_board": _menu_board(b)
+		&"waiting_bench": _waiting_bench(b)
+		&"painting": _painting(b)
+		&"rug": _rug(b)
+		&"sprinkler": _sprinkler(b)
 		_: return false
 	return true
 
@@ -167,3 +171,48 @@ static func _menu_board(b: MeshBuilder) -> void:
 static func _table_number(b: MeshBuilder) -> void:
 	b.block(Vector3.ZERO, Vector3(0.12, 0.02, 0.06), Pal.WALNUT, 0.005)
 	b.block(Vector3(0, 0.02, 0), Vector3(0.11, 0.1, 0.012), Pal.CREAM, 0.003)
+
+
+
+## A padded bench for the waiting area (two seats, faces +Z).
+static func _waiting_bench(b: MeshBuilder) -> void:
+	var wood := Pal.WALNUT
+	var pad := Color("b3263a")
+	for x in [-0.42, 0.42]:
+		b.block(Vector3(x, 0, 0.02), Vector3(0.07, 0.42, 0.42), wood, 0.012)
+	b.block(Vector3(0, 0.38, 0.02), Vector3(0.92, 0.06, 0.44), wood, 0.012)
+	b.block(Vector3(0, 0.44, 0.04), Vector3(0.86, 0.07, 0.38), pad, 0.03)
+	b.block(Vector3(0, 0.44, -0.2), Vector3(0.92, 0.5, 0.06), wood, 0.012)
+	b.block(Vector3(0, 0.52, -0.16), Vector3(0.84, 0.36, 0.05), pad, 0.03)
+
+
+## Framed art on the wall behind the cell: a sunny landscape.
+static func _painting(b: MeshBuilder) -> void:
+	var frame := Color("c9a24a")
+	b.block(Vector3(0, 1.2, -0.44), Vector3(0.78, 0.6, 0.05), frame, 0.015)
+	b.block(Vector3(0, 1.26, -0.415), Vector3(0.66, 0.48, 0.02), Color("9cc8e8"))
+	b.block(Vector3(0, 1.26, -0.405), Vector3(0.66, 0.18, 0.02), Color("6fa84f"))
+	b.sphere(Vector3(0.18, 1.6, -0.4), Vector3(0.06, 0.06, 0.02), Color("f2c230"), 1)
+	b.block(Vector3(-0.12, 1.42, -0.4), Vector3(0.22, 0.08, 0.015), Color("fbf7ea"))
+
+
+## A woven rug with a border, lying flat (walk over it).
+static func _rug(b: MeshBuilder) -> void:
+	b.block(Vector3(0, 0.004, 0), Vector3(0.94, 0.008, 0.94), Color("8e3c42"))
+	b.block(Vector3(0, 0.012, 0), Vector3(0.76, 0.004, 0.76), Color("c9a24a"))
+	b.block(Vector3(0, 0.016, 0), Vector3(0.6, 0.004, 0.6), Color("2f5d6a"))
+	b.block(Vector3(0, 0.02, 0), Vector3(0.2, 0.004, 0.2), Color("c9a24a"))
+
+
+## Ceiling fire sprinkler on a red riser pipe at the back of the cell.
+static func _sprinkler(b: MeshBuilder) -> void:
+	var red := Pal.FIRE_RED
+	b.cyl(Vector3(0, 0, -0.4), 0.05, 2.35, red, 8)
+	b.push_at(Vector3(0, 2.3, -0.4), 0.0, Vector3.ONE, PI * 0.5)
+	b.cyl(Vector3.ZERO, 0.04, 0.5, red, 8)
+	b.pop()
+	b.cyl(Vector3(0, 2.18, 0.08), 0.06, 0.12, Pal.STEEL, 8)
+	b.cyl(Vector3(0, 2.14, 0.08), 0.1, 0.03, Color("c9a24a"), 10)
+	b.cyl(Vector3(0, 1.1, -0.34), 0.09, 0.1, Pal.STEEL, 10)
+	b.block(Vector3(0, 0.9, -0.44), Vector3(0.24, 0.16, 0.03), Color("f7f1e3"), 0.01)
+	b.block(Vector3(0, 0.95, -0.425), Vector3(0.16, 0.04, 0.01), red)

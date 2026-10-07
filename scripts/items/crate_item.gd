@@ -187,27 +187,30 @@ func _build_model() -> void:
 	var info: Dictionary = ModelsProps.CONTAINER_INFO.get(key, ModelsProps.CONTAINER_INFO[&"crate"])
 	var floor_y: float = info["floor"]
 	var size: Vector2 = info["size"]
-	var cols := 4
-	var rows := 3
+	var grid: Vector2i = info.get("grid", Vector2i(4, 3))
+	var cols := grid.x
+	var rows := grid.y
 	var per_layer := cols * rows
 	var unit := minf(size.x / cols, size.y / rows)
-	var s := clampf(unit / 0.24, 0.45, 0.75)
+	var s: float = info.get("scale", clampf(unit / 0.24, 0.45, 0.75))
+	var mound: float = info.get("mound", 0.0)
 	for k in count:
 		var layer := k / per_layer
 		var idx := k % per_layer
 		var cx := idx % cols
 		var cz := idx / cols
 		var m := Models.instance(cd.model)
+		var middle := 1.0 if cx > 0 and cx < cols - 1 and cz > 0 and cz < rows - 1 else 0.0
 		m.position = Vector3(
 			-size.x * 0.5 + (cx + 0.5) * size.x / cols,
-			floor_y + layer * 0.07,
+			floor_y + layer * 0.07 + middle * mound,
 			-size.y * 0.5 + (cz + 0.5) * size.y / rows)
 		m.rotation.y = float((k * 37) % 7) * 0.6
 		m.scale = Vector3.ONE * s
 		_minis.add_child(m)
 	# Ingredient tag on the front face
 	_label = Models.instance(&"crate_label")
-	_label.position = Vector3(0, 0.2, 0.235)
+	_label.position = info.get("label", Vector3(0, 0.2, 0.235))
 	visual.add_child(_label)
 
 

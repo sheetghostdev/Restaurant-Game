@@ -60,7 +60,8 @@ func _build() -> void:
 		"Keyboard A: WASD move · Space grab/drop · E use/chop/wash · Q rotate/ping · Shift sprint\n" +
 		"Keyboard B: Arrows · Enter grab · R-Shift use · / rotate · R-Ctrl sprint\n" +
 		"Gamepad: Stick · A grab · X use · Y rotate/ping · B/LT sprint · Start pause\n" +
-		"Hold GRAB on furniture in calm phases to move it. Tab: overview. +/-: zoom. F1: debug.", 15, "regular", Pal.UI_INK_SOFT)
+		"Before opening and in the evening: GRAB empty furniture to pick it up (hold GRAB to move it with things on it).\n" +
+		"R / right stick: recipe book. Tab: overview. +/-: zoom. F1: debug.", 15, "regular", Pal.UI_INK_SOFT)
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	help.custom_minimum_size = Vector2(460, 0)
 	add_child(help)

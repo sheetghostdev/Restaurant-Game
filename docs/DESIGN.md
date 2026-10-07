@@ -197,12 +197,35 @@ preps slowly without hands. They all use the same insertion rules as players
 *shelf → grabber → auto-chopper → conveyor → pass counter.*
 
 ### Build mode
-In calm phases, hold GRAB to lift any fixture. Carry it with a green or red
+In calm phases, GRAB picks up an empty fixture (hold GRAB if something is on
+it: whatever sits in its slots rides along). Carry it with a green or red
 ghost preview showing where it will land, rotate with ALT, and place on the
 grid. Placement never blocks a doorway or the dock pads. Wall handles let you
 knock doorways through or wall them up. Expansions are rooms bought at plots
 next to the building. They add walls automatically, open doorways, and move
 any fixture that blocks a new door.
+
+### Decor, benches and equipment upgrades
+Decor in a customer area has an effect, like PlateUp's furniture:
+`FixtureDef.decor` names the kind ("patience", "eat_speed", "tips", "tidy")
+and `decor_amount` how much each piece adds. `CustomerManager.decor_bonus`
+sums the pieces in the dining areas and caps each kind (`DECOR_CAP`).
+Waiting benches seat the first people in line (two per bench); a group's
+queue patience drains at `lerp(1, BENCH_PATIENCE, sitting share)`. Safety
+appliances are the normal scenes with `Cooker.safe = true` (progress stops
+just before the end of the perfect stage, never ignites) and no `Flammable`.
+The fire sprinkler (`Sprinkler`) puts out any fire within 3.6 m after a
+couple of seconds and leaves a spill.
+
+### Readability
+Chilled supplies ship in a silver cooler (`crate_cold`), everything else in
+wooden crates, burlap sacks or cardboard cartons. Drinks pick their vessel
+from their contents (`DishPlating.vessel_key`): beer in a pint, soda in an
+iced glass, coffee and milk in a mug; empty cups are mugs where coffee is on
+the menu and glasses elsewhere. Raw pastry is pale cream and bakes golden.
+The recipe book (`RecipeBook`, R) builds each dish's card from the data:
+chopped-from, cook profile (station and perfect stage), refills and
+"bake the whole plate" recipes.
 
 ### Pressure and stakes
 

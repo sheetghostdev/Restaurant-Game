@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/rug.tscn" id="1_31h3q"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_kv85u"]
+
+[resource]
+script = ExtResource("2_kv85u")
+id = &"rug"
+display_name = "Rug"
+scene = ExtResource("1_31h3q")
+category = "decor"
+price = 45.0
+model = &"rug"
+blocks_movement = false
+collision_height = 0.05
+decor = "tidy"
+decor_amount = 0.25
+description = "Tidy: guests leave 25% fewer crumbs and spills for each rug (up to 75%)."

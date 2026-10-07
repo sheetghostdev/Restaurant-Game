@@ -39,6 +39,7 @@ func _ready() -> void:
 	await t_staff()
 	await t_automation()
 	await t_regressions()
+	await t_round5()
 	await t_menu_board()
 	await t_spoilage()
 	await t_consequences()
@@ -111,6 +112,51 @@ func use(t: Node3D, hold := 0.0) -> bool:
 	return ok
 
 
+## The starting kitchens have no dishwasher any more (you buy one): swap the
+## counter where it used to stand for one.
+func dishwasher() -> Fixture:
+	var dw := fixture(&"dishwasher")
+	if dw:
+		return dw
+	var cell := Vector2i(12, 8)
+	var old := w.grid.fixture_at(cell)
+	var rot := old.rot if old else 2
+	if old:
+		w.despawn(old)
+	return w.spawn_fixture(&"dishwasher", cell, rot)
+
+
+## A free dining-room cell away from tables and chairs (so nothing gets boxed in).
+func free_dining_cell(def_id: StringName, skip: Array = []) -> Vector2i:
+	var def := Content.fixture(def_id)
+	for y in range(-2, 30):
+		for x in range(-2, 40):
+			var c := Vector2i(x, y)
+			if c in skip or not w.grid.is_customer_area(c) or not w.grid.can_place(c, def):
+				continue
+			var near := false
+			for dx in [-1, 0, 1]:
+				for dy in [-1, 0, 1]:
+					var n := w.grid.fixture_at(c + Vector2i(dx, dy))
+					if n and n.def and n.def.id in [&"table", &"chair"]:
+						near = true
+			if not near:
+				return c
+	return Vector2i(-999, -999)
+
+
+## Presses GRAB through the real input path and holds it for `sec`.
+func press_grab(sec: float) -> void:
+	p.input_override = true
+	p.set_input(Vector2.ZERO, false, false, false, false)
+	await frames(3)   # let targeting catch up with a teleported player
+	p.set_input(Vector2.ZERO, true, false, false, false)
+	await wait(sec)
+	p.set_input(Vector2.ZERO, false, false, false, false)
+	await frames(2)
+	p.input_override = false
+
+
 func held_id() -> String:
 	return String(p.held().def_id) if p.held() else ""
 
@@ -126,6 +172,7 @@ func t_layout() -> void:
 	check(w.customers.total_seats() == 16, "16 seats across the dining room (%d)" % w.customers.total_seats())
 	check(w.grid.nav.reachable(Vector2i(4, 10), Vector2i(2, 1)), "customers can path from the street to a chair")
 	check(w.day.phase == GameConst.Phase.MORNING, "game starts in morning prep")
+	check(w.grid.fixtures_of(&"dishwasher").is_empty(), "no dishwasher at the start (you buy one)")
 	check(w.all_of_kind(&"plot").size() == 4, "four expansion plots for sale")
 	var from := GameConst.world_to_cell(p.global_position)
 	var signs_ok := true
@@ -185,12 +232,20 @@ func t_input_targeting() -> void:
 	check(p.facing.z < -0.9, "player turned to face up the screen")
 	var t := w.interaction.target_of(p)
 	check(t == board, "targeting picks the cutting board in front (%s)" % (t.display_name() if t else "none"))
-	# Press GRAB on the empty board with empty hands: nothing to pick up, no crash.
+	# During prep, GRAB on the empty board with empty hands picks the board
+	# up (like PlateUp); a second press puts it back where it was.
+	var board_cell := board.cell
+	check(w.interaction.hint_for(p).get("grab", "") == "Move", "the hint offers to move the empty board")
 	p.set_input(Vector2.ZERO, true, false, false, false)
 	await frames(2)
 	p.set_input(Vector2.ZERO, false, false, false, false)
 	await frames(2)
-	check(p.held() == null, "nothing picked up from an empty board")
+	check(p.held() == null and p.carried_fixture == board, "one press picks up the empty board")
+	p.set_input(Vector2.ZERO, true, false, false, false)
+	await frames(2)
+	p.set_input(Vector2.ZERO, false, false, false, false)
+	await frames(2)
+	check(p.carried_fixture == null and board.cell == board_cell, "and a second press puts it back")
 	var h := w.interaction.hint_for(p)
 	check(h.get("target") == board, "hint describes the board")
 	p.input_override = false
@@ -367,6 +422,29 @@ func t_build_mode() -> void:
 	check(placed and f.cell == Vector2i(17, 4), "placed it on a new cell (%s)" % str(f.cell))
 	check(w.grid.fixture_at(old_cell) == null, "old cell freed")
 	w.build.drop_all_carried()
+	# Real button presses: one tap picks up an empty counter...
+	var c2 := f   # the counter just moved into the storage room: nothing next to it
+	for sl in c2.slots:
+		if sl.item:
+			w.despawn(sl.item)
+	await frames(1)
+	approach(c2)
+	await frames(3)
+	check(w.interaction.target_of(p) == c2 and w.interaction.hint_for(p).get("grab", "") == "Move", "facing an empty counter, the hint says GRAB: Move")
+	await press_grab(0.05)
+	check(p.carried_fixture == c2, "one GRAB press picks up an empty counter")
+	await press_grab(0.05)
+	check(p.carried_fixture == null and not c2.lifted, "another press puts it down")
+	# ...and holding GRAB moves one with something on it, the item riding along.
+	approach(c2)
+	var tom: Item = w.spawn_item(&"tomato", {}, {"slot": [c2.net_id, 0]})
+	await frames(1)
+	await press_grab(0.7)
+	check(p.carried_fixture == c2 and p.held() == null, "holding GRAB lifts a counter that has a tomato on it")
+	check(tom.slot != null and tom.slot.owner_entity == c2, "the tomato rides along on the counter")
+	await press_grab(0.05)
+	check(p.carried_fixture == null and tom.slot and tom.slot.owner_entity == c2, "put down with the tomato still on it")
+	w.despawn(tom)
 
 
 func t_service() -> void:
@@ -380,6 +458,7 @@ func t_service() -> void:
 	await wait(1.5)
 	check(w.day.phase == GameConst.Phase.SERVICE, "the doors opened by themselves")
 	check(w.day.phase == GameConst.Phase.SERVICE, "restaurant opened")
+	check(w.customers.groups.size() >= 1, "the first guests were already waiting at the door")
 	var g := w.customers.spawn_group(Content.archetype(&"traveler"), true)
 	check(g != null and g.members.size() == 1, "spawned a tired traveler")
 	var t := 0.0
@@ -461,7 +540,7 @@ func t_disasters() -> void:
 		t += 1.0 / 30.0
 	check(not fl.burning, "fire extinguished in %.1fs" % t)
 	grab(station)
-	var dw := fixture(&"dishwasher")
+	var dw := dishwasher()
 	var br := dw.get_component("Breakable") as Breakable
 	br.break_down()
 	check(not dw.is_working(), "dishwasher broke down")
@@ -551,7 +630,7 @@ func t_regressions() -> void:
 	if p.held():
 		w.despawn(p.held())
 	# A blocked station refuses (real GRAB press) instead of swallowing the pile.
-	var dwf := fixture(&"dishwasher")
+	var dwf := dishwasher()
 	var dw := dwf.get_component("Dishwasher") as Dishwasher
 	dw.state = Dishwasher.State.LOADING
 	dw.plates = dw.capacity - 2
@@ -624,6 +703,143 @@ func t_regressions() -> void:
 	w.despawn(clean)
 	dr.count = before
 	rack.mark_dirty()
+
+
+func t_round5() -> void:
+	print("[round 5]")
+	var cm := w.customers
+	# Joined tables share one colour; separate tables get their own.
+	var joined := 0
+	var same := true
+	var nums := {}
+	for c in cm.clusters():
+		var first := -1
+		for tf in c["tables"]:
+			var n := (tf.get_component("SeatingTable") as SeatingTable).number
+			if first < 0:
+				first = n
+			elif n != first:
+				same = false
+		if c["tables"].size() > 1:
+			joined += 1
+		nums[first] = true
+	check(same and nums.size() == cm.clusters().size(), "each set of joined tables has one colour (%d joined sets)" % joined)
+	# Decor in the dining room does something (like PlateUp's furniture).
+	var used := []
+	for pair in [[&"painting", "tips"], [&"rug", "tidy"], [&"plant_pot", "patience"], [&"jukebox", "eat_speed"]]:
+		var before := cm.decor_bonus(pair[1])
+		var c := free_dining_cell(pair[0], used)
+		used.push_back(c)
+		var f := w.spawn_fixture(pair[0], c, 0)
+		var after := cm.decor_bonus(pair[1])
+		check(f != null and after > before, "%s: %s %.2f → %.2f" % [pair[0], pair[1], before, after])
+		if f:
+			w.despawn(f)
+	await frames(2)
+	check(cm.decor_bonus("tidy") <= CustomerManager.DECOR_CAP["tidy"], "decor bonuses are capped")
+	# A waiting bench: the first in line sit on it and keep their patience.
+	var seats_before := cm.total_seats()
+	var bench := w.spawn_fixture(&"waiting_bench", free_dining_cell(&"waiting_bench"), 0)
+	cm.mark_tables_dirty()
+	check(bench != null and cm.bench_seats().size() == 2, "a waiting bench has two seats")
+	check(cm.total_seats() == seats_before, "the bench doesn't block any chairs")
+	var held_tables := []
+	for c in cm.clusters():
+		for t in c["tables"]:
+			if not cm._reserved.has(t):
+				cm._reserved[t] = null
+				held_tables.push_back(t)
+	var g := cm.spawn_group(Content.archetype(&"traveler"), true)
+	var tw := 0.0
+	while g and not (g.members[0].has_meta(&"bench") and g.members[0].seated) and tw < 40.0:
+		await wait(0.5)
+		tw += 0.5
+	check(g != null and g.members[0].has_meta(&"bench") and g.members[0].seated, "a guest in line sat on the bench (%.0fs)" % tw)
+	if g:
+		check(is_equal_approx(cm.queue_patience_factor(g), CustomerManager.BENCH_PATIENCE), "sitting guests lose patience more slowly")
+	for t in held_tables:
+		cm._reserved.erase(t)
+	tw = 0.0
+	while g and g.state == CustomerGroup.State.QUEUED and tw < 20.0:
+		await wait(0.5)
+		tw += 0.5
+	check(g != null and g.state != CustomerGroup.State.QUEUED and not g.members[0].has_meta(&"bench"), "and leaves the bench for a table")
+	if g:
+		cm.drop_group(g)
+	w.despawn(bench)
+	cm.mark_tables_dirty()
+	await frames(2)
+	# Safety grill: holds a patty at medium, never burns, never catches fire.
+	var g0 := fixture(&"grill", 0)
+	var gcell := g0.cell
+	var grot := g0.rot
+	w.despawn(g0)
+	await frames(1)
+	var sg := w.spawn_fixture(&"safety_grill", gcell, grot)
+	var patty: FoodItem = w.spawn_item(&"patty", {"ck": 0.9}, {"slot": [sg.net_id, 0]})
+	await wait(14.0)
+	var prof := Content.item(&"patty").cook_profile
+	check(prof.stage_index(patty.cook) == prof.perfect_stage, "the safety grill holds a patty at %s (%s)" % [prof.stage_names[prof.perfect_stage], prof.stage_name(patty.cook)])
+	check(sg.get_component("Flammable") == null and not sg.def.flammable, "a safety grill can't catch fire")
+	patty.cook = 1.4
+	await wait(2.0)
+	check(is_equal_approx(patty.cook, 1.4), "but it doesn't un-burn an overcooked patty (%.2f)" % patty.cook)
+	w.despawn(patty)
+	w.despawn(sg)
+	await frames(1)
+	w.spawn_fixture(&"grill", gcell, grot)
+	# Fire sprinkler: puts out a nearby fire by itself (and leaves a puddle).
+	var g1 := fixture(&"grill", 1)
+	var spr_def := Content.fixture(&"sprinkler")
+	var spr: Fixture = null
+	for dx in range(-3, 4):
+		for dy in range(-3, 4):
+			var c := g1.cell + Vector2i(dx, dy)
+			if spr == null and Vector2(dx, dy).length() < 3.0 and w.grid.can_place(c, spr_def):
+				spr = w.spawn_fixture(&"sprinkler", c, 0)
+	check(spr != null, "placed a fire sprinkler near the grills")
+	var messes_before := get_tree().get_nodes_in_group(&"messes").size()
+	var fl := g1.get_component("Flammable") as Flammable
+	fl.ignite()
+	tw = 0.0
+	while fl.burning and tw < 10.0:
+		await wait(0.5)
+		tw += 0.5
+	check(not fl.burning, "the sprinkler put the fire out (%.1fs)" % tw)
+	await frames(2)
+	var new_messes := get_tree().get_nodes_in_group(&"messes").slice(messes_before)
+	check(not new_messes.is_empty(), "and left a puddle to mop")
+	for m in new_messes:
+		w.despawn(m)
+	if spr:
+		w.despawn(spr)
+	# Readability: cold goods in silver coolers, drinks in their own glasses.
+	var cold_ok := true
+	for sd in Content.supplies.values():
+		if sd.needs_cold != (sd.container == "crate_cold"):
+			cold_ok = false
+	check(cold_ok, "every chilled supply (and only those) comes in a silver cooler")
+	check(DishPlating.vessel_key([{"id": &"beer"}]) == &"beer_pint" and DishPlating.vessel_key([{"id": &"soda"}]) == &"soda_glass", "beer and soda come in their own glasses")
+	check(DishPlating.vessel_key([{"id": &"coffee"}]) == &"mug" and DishPlating.cup == &"mug", "coffee (and the diner's empty cups) are mugs")
+	# The recipe book: a card per dish, each ingredient's journey as pictures.
+	var rb := w.hud.recipe_book
+	rb.open()
+	check(rb.visible and rb._grid.get_child_count() == rb._menu().size() and rb._grid.get_child_count() > 0, "the recipe book has a card for each dish on the menu (%d)" % rb._grid.get_child_count())
+	rb.close()
+	var icons := func(id: StringName) -> Array:
+		var out := []
+		for row in RecipeBook.recipe_rows(Content.recipe(id)):
+			for st in row["steps"]:
+				out.push_back(st.get("icon", ""))
+		return out
+	check(icons.call(&"burger").has("station:grill") and icons.call(&"burger").has("cooked:patty"), "burger card: raw patty › grill › cooked patty")
+	check(icons.call(&"fries").has("item:potato") and icons.call(&"fries").has("station:cutting_board") and icons.call(&"fries").has("station:fryer"), "fries card: potato › chop › fry")
+	check(icons.call(&"croissant").has("station:oven"), "croissant card says bake it")
+	check(icons.call(&"muffin").filter(func(k): return String(k).begins_with("station:")).is_empty(), "muffin card: no cooking")
+	check(icons.call(&"pizza").has("model:plate") and icons.call(&"pizza").has("station:oven"), "pizza card: build on a plate, then bake")
+	check(icons.call(&"beer").has("station:beer_tap") and icons.call(&"beer").has("model:glass"), "beer card: clean glass › beer tap")
+	var croissant := Content.item(&"croissant").cook_profile
+	check(croissant.color_at(0.0).get_luminance() > croissant.color_at(0.75).get_luminance() + 0.15, "raw croissants look clearly paler than baked ones")
 
 
 func t_menu_board() -> void:

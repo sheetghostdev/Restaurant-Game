@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/large_bin.tscn" id="1_y3awd"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_lbouq"]
+
+[resource]
+script = ExtResource("2_lbouq")
+id = &"large_bin"
+display_name = "Large Bin"
+scene = ExtResource("1_y3awd")
+category = "service"
+price = 70.0
+model = &"large_bin"
+collision_height = 0.75
+description = "Holds twice as much before somebody has to take the bag out."

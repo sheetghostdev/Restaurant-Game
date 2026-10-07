@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/sprinkler.tscn" id="1_e43au"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_borls"]
+
+[resource]
+script = ExtResource("2_borls")
+id = &"sprinkler"
+display_name = "Fire Sprinkler"
+scene = ExtResource("1_e43au")
+category = "service"
+price = 150.0
+unlock_day = 2
+model = &"sprinkler"
+blocks_movement = false
+collision_height = 0.1
+description = "Puts out any fire within 3 m by itself (it leaves a puddle)."

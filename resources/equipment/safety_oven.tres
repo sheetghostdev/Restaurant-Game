@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/safety_oven.tscn" id="1_qpasn"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_h68au"]
+
+[resource]
+script = ExtResource("2_h68au")
+id = &"safety_oven"
+display_name = "Safety Oven"
+scene = ExtResource("1_qpasn")
+price = 260.0
+unlock_day = 2
+model = &"safety_oven"
+can_break = true
+powered = true
+collision_height = 1.3
+description = "Holds bakes at Golden instead of burning them, and never catches fire."

@@ -124,7 +124,9 @@ func t_train() -> void:
 	await wait(6.0)
 	check(tl.state == TrainLine.State.MOVING, "moving between stations")
 	check(tl.status_line().begins_with("Next stop"), "HUD: %s" % tl.status_line())
-	# Fast-forward to the first stop.
+	# Fast-forward to the first stop. (Skip the gangway arrivals the jump
+	# would dump all at once: a line that long makes the boarders walk away.)
+	w.customers._sched_i = w.customers.schedule.size()
 	w.day.elapsed = w.format.service_seconds * TrainLine.STOP_AT[0]
 	var groups_before := w.customers.groups.size()
 	await wait(1.0)

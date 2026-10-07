@@ -25,7 +25,7 @@ plays through a whole day.
 | *All four expansions built* | *Evening planning, with plots for sale out back* |
 | ![The Dining Car Express stopped at a station, market stalls on the platform](docs/screenshots/train.jpg) | ![The Orbital Galley space station above a planet](docs/screenshots/space.jpg) |
 | *The Dining Car Express between stations: locomotive in front, passenger cars behind* | *A bar in orbit: planters grow, the printer prints* |
-| ![The new-game screen: pick a place and a kind of restaurant](docs/screenshots/newgame.jpg) | |
+| ![The new-game screen: pick a place and a kind of restaurant](docs/screenshots/newgame.jpg) | ![The recipe book: every dish as pictures, from raw to ready](docs/screenshots/recipes.jpg) |
 | *Pick where and what when you open a new restaurant* | |
 
 ---
@@ -70,10 +70,15 @@ All verbs are contextual. **GRAB** moves things and **USE** operates things.
 | Use (chop, wash, take one, repair, spray) | E or F | Right Shift | X / RT |
 | Rotate (build) / ping | Q | / | Y |
 | Sprint | Shift | Right Ctrl | B / LT / LB |
+| Recipe book | R | R | Right stick click |
 | Pause | Esc | | Start |
 
-* **Hold GRAB** on furniture or an appliance during a calm phase (morning or
-  evening) to pick it up. Q rotates it, GRAB places it.
+* **Moving furniture:** before opening and in the evening, **GRAB** an empty
+  counter or appliance to pick it up. If something is on it, **hold GRAB** and
+  it comes along. Q rotates it, GRAB places it.
+* **Recipe book (R):** an optional card for each dish on today's menu,
+  showing every ingredient as pictures from raw to ready (potato › chop ›
+  fryer › fries). It doesn't pause the game. It's also in the pause menu.
 * **USE on a crate** takes one ingredient out. **GRAB** picks up the whole crate.
 * **Menus** (catalog, menu board) work with WASD, the arrow keys or a
   gamepad; the list scrolls with the selection.
@@ -91,6 +96,7 @@ MORNING PREP (against the clock: 2 minutes on Normal, a bit longer on day one)
   The delivery truck reverses to the loading dock and drops what you ordered.
   Carry crates inside (cold stock goes in the fridge), chop, arrange.
   The forecast card shows expected guests, rush hours and today's two goals.
+  A few seconds before opening, the first guests turn up and wait at the door.
         ↓  the doors open by themselves when the countdown runs out
 SERVICE (timed, in about 7 minutes: 11am–9pm for the diner, 7am–3pm for
 the coffee shop, 12pm–10pm for pizza, 4pm–midnight for the bar)
@@ -144,16 +150,20 @@ burnt or spoiled food.
 
 ## Features in this build
 
-* **Physical inventory.** Ingredients arrive in crates, sacks and cartons, and
-  you can see every unit inside them. Beef and lettuce spoil outside cold
-  storage. Low-stock alerts work from the actual crates.
+* **Physical inventory.** Ingredients arrive in wooden crates, burlap sacks
+  and cardboard cartons, and you can see every unit inside them. Anything that
+  must be kept cold (beef, lettuce, milk, cheese, wings) comes in a **silver
+  cooler with blue snowflakes** and spoils outside the fridge. Low-stock
+  alerts work from the actual crates.
 * **Deliveries and logistics.** The truck brings only what you order at the
   manager's desk (tick *Auto* on a supply to get it every morning). It reverses
   to the dock and the crates land as obstacles. Day one comes with free opening
   stock. Rush orders and equipment come by van, sometimes mid-service. The
   driver takes empty crates left on the dock.
-* **Finite dishware.** Plates and mugs get dirty and must go through the sink
-  or the hood dishwasher. If nobody washes up, you can't serve anything.
+* **Finite dishware.** Plates, mugs and glasses get dirty and must go through
+  the sink (a dishwasher is something you buy). If nobody washes up, you
+  can't serve anything. Sodas come in a tall iced glass with a straw and
+  beer in a foamy pint, so they never look like coffee.
 * **Customers.** Thirteen archetypes (townsfolk, families, work crews, business
   lunches, dates, tourists, tired travelers, the Regular, food critics,
   commuters, students, sports fans, night owls), each with different
@@ -166,7 +176,18 @@ burnt or spoiled food.
   how many guests come: the lunch and dinner rushes are reliable.
 * **Build mode.** Move and rotate any fixture on a grid, knock doorways through
   walls or wall them up, and buy expansions: Dining Annex, Dish Room, Walk-in
-  Cooler (everything inside stays fresh) and Sidewalk Patio.
+  Cooler (everything inside stays fresh) and Sidewalk Patio. Tables pushed
+  together share one cloth colour.
+* **Decor that does something** (like PlateUp's furniture). In the dining room,
+  plants make guests wait longer, the jukebox makes them eat faster, wall art
+  raises tips and rugs mean less mess. Each kind is capped, and the catalog
+  shows what your decor adds up to.
+* **Waiting benches.** Guests at the front of the line sit down and lose
+  patience much more slowly.
+* **Equipment upgrades.** Safety grill, fryer and oven (food holds at perfect
+  and never burns or catches fire, but cooks a bit slower), a turbo grill
+  (fast, but watch it), a rapid sink, a large bin and a fire sprinkler that
+  puts out nearby fires by itself and leaves a puddle to mop.
 * **Staff.** A Dish Hand, Busser, Stocker and Waiter. They follow simple,
   predictable routines through the same interaction rules as players.
 * **Automation.** Conveyor belts, grabber arms (which pull single units out of
@@ -253,7 +274,7 @@ More detail:
 # Full-day gameplay test: delivery, prep, cooking, plating, customers, washing,
 # build mode, disasters, staff, automation, spoilage, closing, results,
 # expansions, patio fences, power cut, save/load, difficulty, regressions
-# (about 114 checks; the exact number depends on what the guests order).
+# (about 180 checks; the exact number depends on what the guests order).
 godot --headless --path . res://tests/test_runner.tscn
 
 # Every kind of restaurant: its kitchen, pantry, supplier, hours and

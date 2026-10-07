@@ -264,10 +264,10 @@ static func _soda_fill(b: MeshBuilder) -> void:
 
 static func _croissant(b: MeshBuilder) -> void:
 	# A fat crescent of rolled layers, thick in the middle and pointed at the
-	# tips, with darker ridges between the rolls. Light so the oven's golden
-	# colour shows on top.
-	var col := Color("f0d29a")
-	var ridge := Color("d9b47a")
+	# tips, with darker ridges between the rolls. Raw dough is pale cream; the
+	# oven's cook colour turns it golden, so raw and baked are easy to tell.
+	var col := Color("f8efdc")
+	var ridge := Color("ecdcb8")
 	for k in 7:
 		var t := (k - 3) / 3.0
 		var a := t * 1.25

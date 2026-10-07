@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/waiting_bench.tscn" id="1_a1c3f"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_nrc4g"]
+
+[resource]
+script = ExtResource("2_nrc4g")
+id = &"waiting_bench"
+display_name = "Waiting Bench"
+scene = ExtResource("1_a1c3f")
+category = "service"
+price = 60.0
+model = &"waiting_bench"
+collision_height = 0.9
+allowed_outdoors = true
+description = "A waiting area: two people in line sit here and lose patience at less than half the speed."

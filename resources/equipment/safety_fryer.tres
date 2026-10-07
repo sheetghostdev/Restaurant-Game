@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/safety_fryer.tscn" id="1_bfygo"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_ejetb"]
+
+[resource]
+script = ExtResource("2_ejetb")
+id = &"safety_fryer"
+display_name = "Safety Fryer"
+scene = ExtResource("1_bfygo")
+price = 240.0
+unlock_day = 2
+model = &"safety_fryer"
+can_break = true
+powered = true
+description = "Holds food at Crispy instead of burning it, and never catches fire."

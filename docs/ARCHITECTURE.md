@@ -178,7 +178,8 @@ Verbs:
 |---|---|
 | GRAB | pick up, put down, combine (food onto a plate, plate onto food, stack dishes, return to crate) |
 | USE  | operate: chop, wash, repair, take one from a crate, take an order, wipe, start a machine, flip the sign |
-| hold GRAB | lift a fixture (calm phases only) |
+| GRAB on an empty fixture | lift it (calm phases only) |
+| hold GRAB | lift a fixture with whatever is on it (calm phases only) |
 | ALT  | rotate a carried fixture, or ping |
 
 `Interact` holds the shared rules: `grab_slot_query/perform` and

@@ -72,6 +72,12 @@ Then add its id to a format's `menu` (`resources/formats/*.tres`).
 It now shows in the catalog and arrives boxed at the dock. Players place it,
 and staff and automation can use it.
 
+**Decor** is a fixture with `category = "decor"`, a `decor` kind
+(`"patience"`, `"eat_speed"`, `"tips"` or `"tidy"`) and a `decor_amount`
+per piece; it only counts in customer areas. A **safety** version of a
+cooking station is the same scene with `Cooker.safe = true` and no
+`Flammable` node.
+
 If no existing component fits, write a new `FixtureComponent`: implement
 `query`, `perform`, `server_tick`, `get_state` and `set_state`, and call
 `fixture.mark_dirty()` when its state changes.

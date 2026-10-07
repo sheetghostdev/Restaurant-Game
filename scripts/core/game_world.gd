@@ -78,6 +78,7 @@ func start_new(location_id: StringName, format_id: StringName, name_text := "") 
 	elif format.default_name != "":
 		restaurant_name = format.default_name
 	RecipeManager.menu = format.menu.duplicate()
+	DishPlating.set_format(format)
 	var layout := _read_json(location.layout_path)
 	_layout = layout
 	grid.load_layout(layout)
@@ -104,6 +105,7 @@ func load_save(data: Dictionary) -> void:
 	format = Content.formats.get(StringName(meta.get("format", "diner")))
 	restaurant_name = meta.get("name", restaurant_name)
 	RecipeManager.menu = format.menu.duplicate()
+	DishPlating.set_format(format)
 	_layout = _read_json(location.layout_path)
 	grid.load_layout(data.get("layout", _layout))
 	builder.setup(grid, _layout)
@@ -219,6 +221,7 @@ func start_client(meta: Dictionary, layout: Dictionary) -> void:
 	format = Content.formats.get(StringName(meta.get("format", "diner")))
 	restaurant_name = meta.get("name", restaurant_name)
 	RecipeManager.menu = format.menu.duplicate()
+	DishPlating.set_format(format)
 	_layout = _read_json(location.layout_path)
 	grid.load_layout(layout)
 	builder.setup(grid, _layout)

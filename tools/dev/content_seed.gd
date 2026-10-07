@@ -109,7 +109,7 @@ func _items() -> void:
 		["Raw", "Golden", "Dark", "Burnt"],
 		[0.5, 1.0, 1.3, 99.0],
 		[0.1, 1.0, 0.55, 0.0],
-		[Color("ffffff"), Color("f0b860"), Color("c07a3a"), Color("4a3428")],
+		[Color("ffffff"), Color("e4a048"), Color("b06a30"), Color("4a3428")],
 		1, 1.2, 2.0)
 	_item("milk", "Milk", "food", "milk", Color("f7f5ef"), ["plateable", "dairy"],
 		{"unit_cost": 0.4, "perishable": true, "spoil_seconds": 420.0,
@@ -199,12 +199,12 @@ func _supplies() -> void:
 	_supply("supply_beef", "Beef Patties", "patty", 12, 18.0, "crate_cold", true, 1, "A chilled tub of 12 patties.")
 	_supply("supply_buns", "Burger Buns", "bun", 12, 6.0, "carton", false, 1, "A carton of 12 soft buns.")
 	_supply("supply_potatoes", "Potatoes", "potato", 10, 5.0, "sack", false, 1, "A sack of 10 potatoes.")
-	_supply("supply_lettuce", "Lettuce", "lettuce", 8, 6.0, "crate", true, 1, "8 heads of crisp lettuce.")
+	_supply("supply_lettuce", "Lettuce", "lettuce", 8, 6.0, "crate_cold", true, 1, "8 heads of crisp lettuce. Keep cold.")
 	_supply("supply_tomatoes", "Tomatoes", "tomato", 8, 6.0, "crate", false, 1, "8 ripe tomatoes.")
 	_supply("supply_coffee", "Coffee Beans", "coffee_beans", 4, 8.0, "carton", false, 1, "4 bags of beans (10 cups each).")
 	_supply("supply_milk", "Milk", "milk", 6, 6.0, "crate_cold", true, 0, "6 cartons of milk. Keep cold.")
-	_supply("supply_croissants", "Croissants", "croissant", 10, 7.0, "carton", false, 0, "10 croissants, ready to bake.")
-	_supply("supply_muffins", "Muffins", "muffin", 10, 8.0, "carton", false, 0, "10 blueberry muffins.")
+	_supply("supply_croissants", "Raw Croissants", "croissant", 10, 7.0, "carton", false, 0, "10 raw croissants: bake them in the oven until golden.")
+	_supply("supply_muffins", "Muffins", "muffin", 10, 8.0, "carton", false, 0, "10 blueberry muffins, baked and ready: just plate them.")
 	_supply("supply_jam", "Jam", "jam", 12, 4.0, "carton", false, 0, "12 little pots of jam.")
 	_supply("supply_dough", "Pizza Dough", "dough", 10, 6.0, "crate", false, 0, "10 balls of pizza dough.")
 	_supply("supply_sauce", "Tomato Sauce", "sauce", 10, 5.0, "carton", false, 0, "10 jars of tomato sauce.")
@@ -259,9 +259,9 @@ func _recipes() -> void:
 	_recipe("pizza", "Pizza", "plate", ["dough", "sauce", "cheese"], ["pepperoni", "mushroom_sliced"], 13.0, 1.4, 13.0, "generic", Color("e2604a"),
 		["Put dough on a plate", "Add sauce and cheese", "(Optional) pepperoni or sliced mushrooms", "Bake the plate in the oven until golden"])
 	_recipe("soda", "Soda", "mug", ["soda"], [], 3.0, 1.0, 5.0, "drink", Color("7a3a2a"),
-		["Put a clean mug under the soda fountain", "Take it when it's full"])
+		["Put a clean glass under the soda fountain", "Take it when it's full"])
 	_recipe("beer", "Beer", "mug", ["beer"], [], 6.0, 1.2, 8.0, "drink", Color("e8b04a"),
-		["Put a clean mug under the beer tap", "Take it when it's full (not foaming over)"])
+		["Put a clean glass under the beer tap", "Take it when it's full (not foaming over)"])
 	_recipe("wings", "Chicken Wings", "plate", ["wings"], ["dip"], 10.0, 1.3, 11.0, "generic", Color("d06a32"),
 		["Fry wings until crispy", "Plate them", "(Optional) add dip"], 1, "Wings")
 
@@ -291,15 +291,21 @@ func _fixtures() -> void:
 	_fixture("fryer", "Deep Fryer", A + "fryer.tscn", "appliance", 160.0, "Turns cut potatoes into crispy fries. Grease fires happen.", {"flammable": true, "can_break": true, "powered": true})
 	_fixture("coffee_machine", "Coffee Machine", A + "coffee_machine.tscn", "appliance", 120.0, "Brews into clean mugs automatically. Refill the bean hopper.", {"can_break": true, "powered": true})
 	_fixture("oven", "Pizza Oven", A + "oven.tscn", "appliance", 180.0, "Bakes croissants, or a whole pizza on its plate. Watch the crust colour.", {"flammable": true, "can_break": true, "powered": true, "collision_height": 1.3})
-	_fixture("soda_fountain", "Soda Fountain", A + "soda_fountain.tscn", "appliance", 110.0, "Pours soda into clean mugs. Load syrup boxes into it.", {"can_break": true, "powered": true})
-	_fixture("beer_tap", "Beer Tap", A + "beer_tap.tscn", "appliance", 140.0, "Pours pints into clean mugs. Swap in a fresh keg when it runs dry.", {"can_break": true})
+	_fixture("soda_fountain", "Soda Fountain", A + "soda_fountain.tscn", "appliance", 110.0, "Pours iced cola into clean glasses. Load syrup boxes into it.", {"can_break": true, "powered": true})
+	_fixture("beer_tap", "Beer Tap", A + "beer_tap.tscn", "appliance", 140.0, "Pours golden pints into clean glasses. Swap in a fresh keg when it runs dry.", {"can_break": true})
+	_fixture("safety_grill", "Safety Grill", A + "safety_grill.tscn", "appliance", 220.0, "Holds patties at Medium instead of burning them, and never catches fire. A little slower.", {"can_break": true, "powered": true, "unlock_day": 2})
+	_fixture("turbo_grill", "Turbo Grill", A + "turbo_grill.tscn", "appliance", 260.0, "Cooks 60% faster. Burns (and catches fire) just as fast if you look away.", {"flammable": true, "can_break": true, "powered": true, "unlock_day": 3})
+	_fixture("safety_fryer", "Safety Fryer", A + "safety_fryer.tscn", "appliance", 240.0, "Holds food at Crispy instead of burning it, and never catches fire.", {"can_break": true, "powered": true, "unlock_day": 2})
+	_fixture("safety_oven", "Safety Oven", A + "safety_oven.tscn", "appliance", 260.0, "Holds bakes at Golden instead of burning them, and never catches fire.", {"can_break": true, "powered": true, "collision_height": 1.3, "unlock_day": 2})
+	_fixture("rapid_sink", "Rapid Sink", A + "rapid_sink.tscn", "appliance", 160.0, "A pre-rinse sprayer: washes dishes twice as fast as the basic sink.")
+	_fixture("large_bin", "Large Bin", A + "large_bin.tscn", "service", 70.0, "Holds twice as much before somebody has to take the bag out.", {"collision_height": 0.75})
 	_fixture("fridge", "Glass Fridge", A + "fridge.tscn", "storage", 150.0, "Keeps one crate cold. Beef and lettuce spoil without it.", {"can_break": true, "collision_height": 1.9, "powered": true})
 	_fixture("sink", "Sink", A + "sink.tscn", "appliance", 70.0, "Drop dirty dishes in and hold USE to scrub.")
 	_fixture("dishwasher", "Hood Dishwasher", A + "dishwasher.tscn", "appliance", 220.0, "Load up to 10 dishes and press USE. Sometimes breaks down.", {"can_break": true, "collision_height": 1.4, "powered": true})
 	_fixture("trash_bin", "Trash Bin", A + "trash_bin.tscn", "service", 25.0, "Throw away food or scrape plates. Empty it when full.", {"collision_height": 0.75})
 	_fixture("dumpster", "Dumpster", A + "dumpster.tscn", "service", 60.0, "Outdoor bin for trash bags, empty crates and spoiled stock.", {"allowed_outdoors": true, "collision_height": 1.1})
 	_fixture("plate_rack", "Plate Rack", F + "plate_rack.tscn", "service", 45.0, "Holds clean plates. Comes with 4 plates.")
-	_fixture("mug_rack", "Mug Rack", F + "mug_rack.tscn", "service", 35.0, "Holds clean mugs. Comes with 4 mugs.")
+	_fixture("mug_rack", "Cup Rack", F + "mug_rack.tscn", "service", 35.0, "Holds clean mugs or glasses. Comes with 4.")
 	_fixture("shelf", "Storage Shelf", F + "shelf.tscn", "storage", 35.0, "Holds one crate where everyone can see it.", {"collision_height": 0.78})
 	_fixture("cold_shelf", "Steel Shelf", F + "cold_shelf.tscn", "storage", 45.0, "Wire shelving for walk-in coolers. Anything in a cold room stays fresh.", {"collision_height": 0.78})
 	_fixture("table", "Dining Table", F + "table.tscn", "furniture", 50.0, "Push tables together to seat bigger groups.", {"collision_height": 0.72, "allowed_outdoors": true})
@@ -311,8 +317,13 @@ func _fixtures() -> void:
 	_fixture("market_stall", "Market Stall", F + "market_stall.tscn", "service", 0.0, "Sells crates on a station platform.", {"purchasable": false, "movable": false, "allowed_outdoors": true, "collision_height": 1.0})
 	_fixture("open_sign", "Open Sign", F + "open_sign.tscn", "service", 0.0, "Hold USE to open the restaurant.", {"purchasable": false, "collision_height": 1.6})
 	_fixture("register", "Cash Register", F + "register.tscn", "service", 80.0, "Ka-ching. Purely for the vibes (and a spare counter).")
-	_fixture("plant_pot", "Potted Plant", F + "plant_pot.tscn", "decor", 25.0, "Makes the dining room a little nicer.", {"ambience": 0.02, "collision_height": 1.0, "allowed_outdoors": true})
-	_fixture("jukebox", "Jukebox", F + "jukebox.tscn", "decor", 180.0, "Customers wait a bit more patiently.", {"ambience": 0.05, "collision_height": 1.2, "unlock_day": 2})
+	# Decor works like PlateUp's: each piece in a dining area has an effect.
+	_fixture("plant_pot", "Potted Plant", F + "plant_pot.tscn", "decor", 25.0, "Calming: guests wait 5% longer for each plant (up to 30%).", {"decor": "patience", "decor_amount": 0.05, "collision_height": 1.0, "allowed_outdoors": true})
+	_fixture("jukebox", "Jukebox", F + "jukebox.tscn", "decor", 180.0, "Lively: guests eat 15% faster, so tables free up sooner (up to 45%).", {"decor": "eat_speed", "decor_amount": 0.15, "collision_height": 1.2, "unlock_day": 2})
+	_fixture("painting", "Wall Art", F + "painting.tscn", "decor", 70.0, "Charming: tips +8% for each piece (up to 40%). Hangs on the wall behind its spot.", {"decor": "tips", "decor_amount": 0.08, "blocks_movement": false, "collision_height": 0.1})
+	_fixture("rug", "Rug", F + "rug.tscn", "decor", 45.0, "Tidy: guests leave 25% fewer crumbs and spills for each rug (up to 75%).", {"decor": "tidy", "decor_amount": 0.25, "blocks_movement": false, "collision_height": 0.05})
+	_fixture("waiting_bench", "Waiting Bench", F + "waiting_bench.tscn", "service", 60.0, "A waiting area: two people in line sit here and lose patience at less than half the speed.", {"collision_height": 0.9, "allowed_outdoors": true})
+	_fixture("sprinkler", "Fire Sprinkler", F + "sprinkler.tscn", "service", 150.0, "Puts out any fire within 3 m by itself (it leaves a puddle).", {"blocks_movement": false, "collision_height": 0.1, "unlock_day": 2})
 	_fixture("extinguisher_station", "Extinguisher Stand", F + "extinguisher_station.tscn", "service", 60.0, "Holds a fire extinguisher, which slowly refills here.", {"collision_height": 1.8})
 	_fixture("mop_station", "Mop Bucket", F + "mop_station.tscn", "service", 30.0, "Home of the mop.", {"collision_height": 0.6})
 	_fixture("conveyor", "Conveyor Belt", M + "conveyor.tscn", "automation", 70.0, "Moves items toward the fixture it faces. Chain them!", {"collision_height": 0.72, "unlock_day": 2, "powered": true})
@@ -488,7 +499,7 @@ func _upgrade(id: String, name: String, price: float, effect: String, amount: fl
 
 func _upgrades() -> void:
 	_upgrade("more_plates", "Six More Plates", 40.0, "extra_plates", 6, true, "Added to your plate rack. More plates, more buffer before washing up.")
-	_upgrade("more_mugs", "Four More Mugs", 25.0, "extra_mugs", 4, true, "Added to your mug rack.")
+	_upgrade("more_mugs", "Four More Cups", 25.0, "extra_mugs", 4, true, "Four more mugs or glasses for your cup rack.")
 
 
 func _event(id: String, name: String, kind: String, chance: float, min_day: int, params: Dictionary, warning := "", desc := "") -> void:

@@ -13,4 +13,4 @@ menu_weight = 1.2
 eat_time = 8.0
 icon_color = Color(0.9098039, 0.6901961, 0.2901961, 1)
 plating = "drink"
-prep_steps = PackedStringArray("Put a clean mug under the beer tap", "Take it when it\'s full (not foaming over)")
+prep_steps = PackedStringArray("Put a clean glass under the beer tap", "Take it when it\'s full (not foaming over)")

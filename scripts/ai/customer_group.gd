@@ -76,7 +76,9 @@ func start(spawn: Vector3) -> void:
 func tick(delta: float) -> void:
 	match state:
 		State.ARRIVING, State.QUEUED:
-			_tick_patience(delta * (0.6 if state == State.ARRIVING else 1.0))
+			# Waiting outside before opening doesn't count against us.
+			if world().day.phase != GameConst.Phase.MORNING:
+				_tick_patience(delta * (0.6 if state == State.ARRIVING else 1.0) * manager.queue_patience_factor(self))
 		State.SEATING:
 			pass
 		State.BROWSING:
@@ -129,6 +131,8 @@ func seat_at(cluster_tables: Array, cluster_seats: Array) -> void:
 	Audio.play_at(&"door_bell", manager.front_door_pos())
 	for i in members.size():
 		var m := members[i]
+		if m.has_meta(&"bench"):
+			m.remove_meta(&"bench")
 		var seat: Dictionary = seats[i]
 		var table: Fixture = seat["table"]
 		var side: int = seat["side"]
@@ -298,7 +302,7 @@ func serve(actor: Node, dish: DishItem, near_table: Fixture) -> bool:
 	satisfaction_sum += sat
 	satisfaction_n += 1
 	var price := RecipeManager.order_price(order) * archetype.spend
-	var tip := price * 0.25 * archetype.tip * sat * sat * (1.0 + world().day.tip_bonus())
+	var tip := price * 0.25 * archetype.tip * sat * sat * (1.0 + world().day.tip_bonus() + manager.decor_bonus("tips"))
 	revenue += price + tip
 	order["price"] = price
 	order["tip"] = tip
@@ -313,7 +317,7 @@ func serve(actor: Node, dish: DishItem, near_table: Fixture) -> bool:
 	else:
 		world().fx.popup_text(m.global_position + Vector3(0, 2.0, 0), RecipeManager.quality_word(q), Pal.UI_GOOD if q >= 0.7 else Pal.UI_WARN)
 	m.anim = CharacterRig.Anim.EAT
-	m.eat_left = maxf(m.eat_left, r.eat_time / archetype.eat_speed)
+	m.eat_left = maxf(m.eat_left, r.eat_time / archetype.eat_speed / (1.0 + manager.decor_bonus("eat_speed")))
 	m.done_eating = false
 	_refresh_bubble(m)
 	if state == State.WAITING_FOOD:
@@ -377,7 +381,7 @@ func _pay() -> void:
 		m.anim = CharacterRig.Anim.CHEER if sat > 0.85 else CharacterRig.Anim.SIT
 		m.mark_dirty()
 	# Mess: families and kids leave crumbs, some spills.
-	var mess_chance := archetype.mess
+	var mess_chance := archetype.mess * (1.0 - manager.decor_bonus("tidy"))
 	for m in members:
 		if m.is_child:
 			mess_chance += 0.2
@@ -455,6 +459,8 @@ func _leave() -> void:
 	# leave immediately and are erased from `members`.
 	for m in members.duplicate():
 		m.seated = false
+		if m.has_meta(&"bench"):
+			m.remove_meta(&"bench")
 		if m.bubble == "pay" or m.bubble == "think":
 			m.bubble = ""
 		m.anim = CharacterRig.Anim.IDLE

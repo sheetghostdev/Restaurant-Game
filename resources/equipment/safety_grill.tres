@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/safety_grill.tscn" id="1_2fbjx"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_ldil1"]
+
+[resource]
+script = ExtResource("2_ldil1")
+id = &"safety_grill"
+display_name = "Safety Grill"
+scene = ExtResource("1_2fbjx")
+price = 220.0
+unlock_day = 2
+model = &"safety_grill"
+can_break = true
+powered = true
+description = "Holds patties at Medium instead of burning them, and never catches fire. A little slower."

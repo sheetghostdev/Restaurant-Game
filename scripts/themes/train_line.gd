@@ -176,13 +176,12 @@ func _stopped() -> void:
 	# Hungry passengers hop on here: they walk in from the platform through
 	# the coach doors and queue for the dining car.
 	if world.day.phase == GameConst.Phase.SERVICE:
-		var archs := world.format.archetypes
+		var archs := world.customers._eligible_archetypes(world.day.day, world.economy.reputation)
 		var spots: Array = world.layout_data().get("street", {}).get("board", [[-4, 7]])
-		for i in randi_range(2, 3):
-			var a := Content.archetype(archs[randi() % archs.size()])
-			if a and a.min_day <= world.day.day:
-				var c: Array = spots[i % spots.size()]
-				world.customers.spawn_group(a, false, Vector2i(int(c[0]), int(c[1])))
+		for i in randi_range(2, 3) if not archs.is_empty() else 0:
+			var a: CustomerArchetype = archs.pick_random()
+			var c: Array = spots[i % spots.size()]
+			world.customers.spawn_group(a, false, Vector2i(int(c[0]), int(c[1])))
 
 
 # -----------------------------------------------------------------------------

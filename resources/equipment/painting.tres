@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/furniture/painting.tscn" id="1_owqjc"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_f0vgb"]
+
+[resource]
+script = ExtResource("2_f0vgb")
+id = &"painting"
+display_name = "Wall Art"
+scene = ExtResource("1_owqjc")
+category = "decor"
+price = 70.0
+model = &"painting"
+blocks_movement = false
+collision_height = 0.1
+decor = "tips"
+decor_amount = 0.08
+description = "Charming: tips +8% for each piece (up to 40%). Hangs on the wall behind its spot."

@@ -5,6 +5,37 @@ class_name DishPlating
 
 const BURGER_ORDER := [&"bun", &"patty", &"cheese", &"lettuce_chopped", &"tomato_sliced"]
 
+## What an empty drink vessel looks like here: mugs where coffee is on the
+## menu, clear glasses everywhere else. Filled drinks always show their own
+## vessel (see vessel_key), so soda never looks like hot chocolate.
+static var cup := &"mug"
+
+
+static func set_format(f: RestaurantFormatDef) -> void:
+	cup = &"mug" if f == null or f.menu.has(&"coffee") or f.menu.has(&"latte") else &"glass"
+
+
+static func cup_word(plural := false) -> String:
+	if cup == &"glass":
+		return "Glasses" if plural else "Glass"
+	return "Mugs" if plural else "Mug"
+
+
+## The model for a single drink vessel holding `contents`: a pint for beer,
+## a tall iced glass for soda, a mug for coffee and milk, otherwise the
+## restaurant's empty cup.
+static func vessel_key(contents: Array, dirty := false) -> StringName:
+	var ids := []
+	for c in contents:
+		ids.push_back(c["id"])
+	if ids.has(&"beer"):
+		return &"beer_pint"
+	if ids.has(&"soda"):
+		return &"soda_glass"
+	if not ids.is_empty():
+		return &"mug"
+	return StringName(String(cup) + ("_dirty" if dirty else ""))
+
 
 static func build(dish: DishItem, parent: Node3D, parts: Array[Node3D]) -> void:
 	var ids := dish.content_ids()
@@ -141,8 +172,10 @@ static func make_order_model(r: RecipeDef, extras: Array) -> Node3D:
 		contents.push_back({"id": id, "ck": ck})
 	var parts: Array[Node3D] = []
 	if r.container == "mug":
-		root.add_child(Models.instance(&"mug"))
-		fill_mug(contents, root, parts)
+		var key := vessel_key(contents)
+		root.add_child(Models.instance(key))
+		if key == &"mug":
+			fill_mug(contents, root, parts)
 	else:
 		root.add_child(Models.instance(&"plate"))
 		var fake := DishItem.new()
@@ -153,7 +186,8 @@ static func make_order_model(r: RecipeDef, extras: Array) -> Node3D:
 
 
 ## The drink in a mug, just above the mug's cap: coffee (coloured by how far
-## it brewed), latte, beer, soda, or milk waiting for its coffee.
+## it brewed), latte, or milk waiting for its coffee. (Beer and soda have
+## their own glasses.)
 static func fill_mug(contents: Array, parent: Node3D, parts: Array[Node3D]) -> void:
 	var ids := []
 	var coffee := {}

@@ -35,6 +35,10 @@ func _ready() -> void:
 	_list.add_child(UITheme.button("Save game", func():
 		Net.request("save")
 		Events.notify("Game saved", &"info")))
+	_list.add_child(UITheme.button("Recipe book", func():
+		close()
+		if hud:
+			hud.recipe_book.open()))
 	_list.add_child(UITheme.button("Settings & controls", _toggle_settings))
 	_list.add_child(UITheme.button("Quit to title", func():
 		close()

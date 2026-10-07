@@ -93,6 +93,10 @@ func plan_day(day: int, reputation: float) -> void:
 			schedule.push_back([t, String(a.id)])
 			forecast[h] = forecast.get(h, 0) + 1
 	schedule.sort_custom(func(x, y): return x[0] < y[0])
+	# Nobody waits for the first customer: the first group is queuing at the
+	# door before opening (see early_arrival) and the next one follows soon.
+	if schedule.size() >= 2:
+		schedule[1][0] = minf(schedule[1][0], fmt.open_hour + 0.12)
 
 
 func _eligible_archetypes(day: int, rep: float) -> Array[CustomerArchetype]:
@@ -135,6 +139,17 @@ func is_rush_hour(hour: float) -> bool:
 # -----------------------------------------------------------------------------
 # Tick
 # -----------------------------------------------------------------------------
+
+## Shortly before opening the first group of the day turns up and waits at
+## the door (they're not impatient yet: the restaurant isn't open).
+func early_arrival() -> void:
+	if _sched_i >= schedule.size():
+		return
+	var g := spawn_group(Content.archetype(StringName(schedule[_sched_i][1])), true)
+	_sched_i += 1
+	if g:
+		Events.notify("The first guests are waiting at the door!", &"info")
+
 
 func _physics_process(delta: float) -> void:
 	if world == null or not Net.is_authority() or world.day == null:
@@ -298,11 +313,34 @@ func queue_point(k: int) -> Vector3:
 
 func _update_queue(force := false) -> void:
 	var k := 0
+	var seats := bench_seats()
 	for g in groups:
 		if g.state != CustomerGroup.State.ARRIVING and g.state != CustomerGroup.State.QUEUED:
 			continue
 		for m in g.members:
-			var p := queue_point(k)
+			# The first in line take the waiting benches; the rest queue as usual.
+			if k < seats.size():
+				var seat: Dictionary = seats[k]
+				k += 1
+				var sp: Vector3 = seat["pos"]
+				if not force and m.has_meta(&"qp") and (m.get_meta(&"qp") as Vector3).distance_to(sp) < 0.05:
+					continue
+				m.set_meta(&"qp", sp)
+				var gb := g
+				var yaw: float = seat["yaw"]
+				var mb := m
+				m.walk_path_to(sp, func():
+					gb.on_reached_queue()
+					mb.set_meta(&"bench", true)
+					mb.face(yaw)
+					mb.seated = true
+					mb.anim = CharacterRig.Anim.SIT
+					mb.mark_dirty())
+				continue
+			if m.has_meta(&"bench"):
+				m.remove_meta(&"bench")
+				m.anim = CharacterRig.Anim.IDLE
+			var p := queue_point(k - seats.size())
 			k += 1
 			if not force and m.has_meta(&"qp") and (m.get_meta(&"qp") as Vector3).distance_to(p) < 0.05:
 				continue
@@ -345,10 +383,6 @@ func _rebuild_clusters() -> void:
 	tables.sort_custom(func(a, b): return a.cell.y < b.cell.y or (a.cell.y == b.cell.y and a.cell.x < b.cell.x))
 	var by_cell := {}
 	for i in tables.size():
-		var st := tables[i].get_component("SeatingTable") as SeatingTable
-		if st.number != i + 1:
-			st.number = i + 1
-			tables[i].mark_dirty()
 		by_cell[tables[i].cell] = tables[i]
 	var fd := world.grid.front_door
 	var entry := Vector2i(fd.x, fd.y)
@@ -359,9 +393,15 @@ func _rebuild_clusters() -> void:
 		var cluster := {"tables": [], "seats": []}
 		var stack := [t]
 		seen[t] = true
+		# Tables pushed together are one table: same number, same colour.
+		var number := _clusters.size() + 1
 		while not stack.is_empty():
 			var cur: Fixture = stack.pop_back()
 			cluster["tables"].push_back(cur)
+			var st := cur.get_component("SeatingTable") as SeatingTable
+			if st.number != number:
+				st.number = number
+				cur.mark_dirty()
 			for d in SeatingTable.SIDES:
 				var n = by_cell.get(cur.cell + d)
 				if n and not seen.has(n) and not world.grid.wall_between(cur.cell, cur.cell + d):
@@ -383,13 +423,64 @@ func clusters() -> Array:
 	return _clusters
 
 
-## Decor in customer areas makes waiting more pleasant (patience bonus).
-func ambience_bonus() -> float:
+## Most each kind of decor can add, however much of it you buy.
+const DECOR_CAP := {"patience": 0.3, "eat_speed": 0.45, "tips": 0.4, "tidy": 0.75}
+const DECOR_WORDS := {"patience": "guests wait %d%% longer", "eat_speed": "guests eat %d%% faster", "tips": "tips +%d%%", "tidy": "%d%% less mess"}
+
+
+## The summed effect of one kind of decor in the dining areas, capped.
+func decor_bonus(kind: String) -> float:
 	var total := 0.0
 	for f in world.grid.all_fixtures():
-		if f.def and f.def.ambience > 0.0 and world.grid.is_customer_area(f.cell):
+		if f.def == null or f.lifted or not world.grid.is_customer_area(f.cell):
+			continue
+		if f.def.decor == kind:
+			total += f.def.decor_amount
+		elif kind == "patience" and f.def.decor == "" and f.def.ambience > 0.0:
 			total += f.def.ambience
-	return minf(total, 0.25)
+	return minf(total, float(DECOR_CAP.get(kind, 0.5)))
+
+
+## "guests wait 10% longer · tips +8%" for the catalog.
+func decor_summary() -> String:
+	var parts := []
+	for k in DECOR_CAP:
+		var v := decor_bonus(k)
+		if v > 0.001:
+			parts.push_back(String(DECOR_WORDS[k]) % roundi(v * 100.0))
+	return " · ".join(parts)
+
+
+func ambience_bonus() -> float:
+	return decor_bonus("patience")
+
+
+## Seats on waiting benches, in order: {pos, yaw}. People in line sit here
+## first, and lose patience much more slowly.
+func bench_seats() -> Array:
+	var out := []
+	var benches := world.grid.fixtures_of(&"waiting_bench").filter(func(f): return not f.lifted)
+	benches.sort_custom(func(a, b): return a.cell.x < b.cell.x or (a.cell.x == b.cell.x and a.cell.y < b.cell.y))
+	for f in benches:
+		var yaw := atan2(f.front_vec().x, f.front_vec().z)
+		for x in [-0.24, 0.24]:
+			out.push_back({"pos": f.global_transform * Vector3(x, 0, 0.12), "yaw": yaw})
+	return out
+
+
+const BENCH_PATIENCE := 0.4
+
+
+## How fast a queuing group loses patience: slower for those on benches.
+func queue_patience_factor(g: CustomerGroup) -> float:
+	if g.members.is_empty():
+		return 1.0
+	var sitting := 0
+	for m in g.members:
+		if m.has_meta(&"bench"):
+			sitting += 1
+	var frac := float(sitting) / g.members.size()
+	return lerpf(1.0, BENCH_PATIENCE, frac)
 
 
 func total_seats() -> int:

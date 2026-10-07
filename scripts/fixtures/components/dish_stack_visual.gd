@@ -7,7 +7,7 @@ var _key := ""
 
 
 func show_counts(plates: int, mugs: int, dirty: bool, spread := false) -> void:
-	var key := "%d|%d|%s|%s" % [plates, mugs, dirty, spread]
+	var key := "%d|%d|%s|%s|%s" % [plates, mugs, dirty, spread, DishPlating.cup]
 	if key == _key:
 		return
 	_key = key
@@ -24,7 +24,7 @@ func show_counts(plates: int, mugs: int, dirty: bool, spread := false) -> void:
 		add_child(p)
 		y += 0.034
 	for k in mugs:
-		var m := Models.instance(&"mug_dirty" if dirty else &"mug")
+		var m := Models.instance(DishPlating.vessel_key([], dirty))
 		var col := k % 3
 		var row := (k / 3) % 2
 		var layer := k / 6

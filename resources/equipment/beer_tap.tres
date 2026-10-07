@@ -11,4 +11,4 @@ scene = ExtResource("1_jq1p1")
 price = 140.0
 model = &"beer_tap"
 can_break = true
-description = "Pours pints into clean mugs. Swap in a fresh keg when it runs dry."
+description = "Pours golden pints into clean glasses. Swap in a fresh keg when it runs dry."

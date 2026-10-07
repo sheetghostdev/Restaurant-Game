@@ -9,5 +9,6 @@ display_name = "Lettuce"
 item_id = &"lettuce"
 quantity = 8
 price = 6.0
+container = "crate_cold"
 needs_cold = true
-description = "8 heads of crisp lettuce."
+description = "8 heads of crisp lettuce. Keep cold."

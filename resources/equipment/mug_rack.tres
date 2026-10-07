@@ -6,9 +6,9 @@
 [resource]
 script = ExtResource("2_m22sg")
 id = &"mug_rack"
-display_name = "Mug Rack"
+display_name = "Cup Rack"
 scene = ExtResource("1_fys6i")
 category = "service"
 price = 35.0
 model = &"mug_rack"
-description = "Holds clean mugs. Comes with 4 mugs."
+description = "Holds clean mugs or glasses. Comes with 4."

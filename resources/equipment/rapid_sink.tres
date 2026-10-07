@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/rapid_sink.tscn" id="1_miph7"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_hxy8f"]
+
+[resource]
+script = ExtResource("2_hxy8f")
+id = &"rapid_sink"
+display_name = "Rapid Sink"
+scene = ExtResource("1_miph7")
+price = 160.0
+model = &"rapid_sink"
+description = "A pre-rinse sprayer: washes dishes twice as fast as the basic sink."

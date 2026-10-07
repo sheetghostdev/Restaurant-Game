@@ -12,4 +12,4 @@ price = 3.0
 eat_time = 5.0
 icon_color = Color(0.47843137, 0.22745098, 0.16470589, 1)
 plating = "drink"
-prep_steps = PackedStringArray("Put a clean mug under the soda fountain", "Take it when it\'s full")
+prep_steps = PackedStringArray("Put a clean glass under the soda fountain", "Take it when it\'s full")

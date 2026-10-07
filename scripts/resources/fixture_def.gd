@@ -20,5 +20,11 @@ extends Resource
 @export var blocks_movement := true
 @export var collision_height := 0.8
 @export var allowed_outdoors := false
-@export var ambience := 0.0                       ## Decor bonus to customer mood.
+@export var ambience := 0.0                       ## Old decor field: counts as "patience".
+## Decor in the dining room has an effect, like the furniture in PlateUp:
+## "patience" (guests wait longer), "eat_speed" (they eat faster), "tips"
+## (bigger tips) or "tidy" (less mess). Each piece adds decor_amount.
+## Empty for anything that isn't decor.
+@export var decor := ""
+@export var decor_amount := 0.0
 @export_multiline var description := ""

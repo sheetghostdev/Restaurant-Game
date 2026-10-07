@@ -41,6 +41,7 @@ func _setup_ui_actions() -> void:
 		"pause": [KEY_ESCAPE, JOY_BUTTON_START],
 		"debug_toggle": [KEY_F1],
 		"overview_toggle": [KEY_TAB, JOY_BUTTON_BACK],
+		"recipe_book": [KEY_R, JOY_BUTTON_RIGHT_STICK],
 		"zoom_in": [KEY_EQUAL, KEY_KP_ADD],
 		"zoom_out": [KEY_MINUS, KEY_KP_SUBTRACT],
 		"quick_save": [KEY_F5],
@@ -50,7 +51,7 @@ func _setup_ui_actions() -> void:
 			InputMap.add_action(action)
 		for code in defs[action]:
 			var ev: InputEvent
-			if action in ["pause", "overview_toggle"] and code is int and code < 32:
+			if action in ["pause", "overview_toggle", "recipe_book"] and code is int and code < 32:
 				var jb := InputEventJoypadButton.new()
 				jb.button_index = code
 				jb.device = -1

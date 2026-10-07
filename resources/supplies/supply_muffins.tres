@@ -10,4 +10,4 @@ item_id = &"muffin"
 price = 8.0
 container = "carton"
 default_order = 0
-description = "10 blueberry muffins."
+description = "10 blueberry muffins, baked and ready: just plate them."
