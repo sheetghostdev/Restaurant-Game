@@ -198,5 +198,6 @@ func apply_shared(key: StringName, data: Dictionary) -> void:
 				world.theme_node.apply_shared(data)
 		&"results": Events.day_results.emit(data)
 		&"tour": world.tour = data
+		&"paper": world.day.apply_shared_paper(data)
 		&"layout":
 			world.grid.load_layout(data)

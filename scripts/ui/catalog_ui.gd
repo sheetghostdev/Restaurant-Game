@@ -213,7 +213,7 @@ func _build_equipment() -> void:
 			_content.add_child(UITheme.heading(fd.category.capitalize(), 22, Pal.UI_ACCENT))
 		var locked: bool = fd.unlock_day > w.day.day or fd.unlock_reputation > w.economy.reputation
 		var id: StringName = fd.id
-		var b := _buy_button("Buy", fd.price, func(): Net.request("buy_fixture", [String(id)]), not locked)
+		var b := _buy_button("Buy", w.build.price_of(fd), func(): Net.request("buy_fixture", [String(id)]), not locked)
 		if locked:
 			b.text = "Day %d · %.1f★" % [fd.unlock_day, fd.unlock_reputation]
 			b.set_meta(&"locked", true)

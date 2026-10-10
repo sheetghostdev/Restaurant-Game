@@ -29,6 +29,7 @@ var _overlay: WorldOverlay
 var _alert_rows := {}
 var _chip_rows := {}
 var results: ResultsScreen
+var paper: PaperUI
 var catalog: CatalogUI
 var pause_menu: PauseMenu
 var recipe_book: RecipeBook
@@ -65,6 +66,9 @@ func _ready() -> void:
 	results = ResultsScreen.new()
 	results.hud = self
 	add_child(results)
+	paper = PaperUI.new()
+	paper.hud = self
+	add_child(paper)
 	catalog = CatalogUI.new()
 	catalog.hud = self
 	add_child(catalog)
@@ -187,6 +191,7 @@ func _build_banner() -> void:
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.position = Vector2(-500, -170)
 	_banner.custom_minimum_size = Vector2(1000, 0)
+	_banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_banner.add_theme_constant_override("outline_size", 18)
 	_banner.add_theme_color_override("font_outline_color", Pal.UI_INK)
 	_banner.modulate.a = 0.0
@@ -235,7 +240,10 @@ func _process(delta: float) -> void:
 	_day_label.text = "DAY %d" % d.day
 	_clock_label.text = GameConst.clock_text(d.hour)
 	var phase_text := d.phase_name()
-	if d.phase == GameConst.Phase.MORNING:
+	if d.paper_pending():
+		phase_text = "Pick today's story"
+		_phase_label.add_theme_color_override("font_color", Pal.UI_ACCENT)
+	elif d.phase == GameConst.Phase.MORNING:
 		# The doors open by themselves: count down to it.
 		phase_text = "Prep · opens in %s" % GameConst.countdown(d.prep_left)
 		var hurry := d.prep_left <= 15.0 and fmod(Time.get_ticks_msec() * 0.001, 0.6) < 0.3
@@ -268,7 +276,8 @@ func _process(delta: float) -> void:
 		_streak.text = "STREAK ×%d · tips +%d%%" % [sk, roundi(world.day.tip_bonus() * 100.0)]
 	_update_chips()
 	_keep_clear()
-	_forecast.visible = d.phase == GameConst.Phase.MORNING or d.phase == GameConst.Phase.EVENING
+	_forecast.visible = (d.phase == GameConst.Phase.MORNING or d.phase == GameConst.Phase.EVENING) and not paper.visible
+	_toasts.visible = not paper.visible
 	if _forecast.visible and Engine.get_process_frames() % 30 == 0:
 		_refresh_forecast()
 	# Tips and toasts sit under the money card, the forecast, or the order
@@ -330,6 +339,12 @@ func _refresh_forecast() -> void:
 	var fc: Dictionary = world.replicator.shared.get(&"forecast", {})
 	if d.phase == GameConst.Phase.MORNING:
 		_forecast_body.add_child(UITheme.heading("Today", 26))
+		var story := d.headline()
+		if not story.is_empty():
+			var hl := UITheme.label("In the paper: %s" % String(story["title"]), 17, "bold", Pal.UI_ACCENT)
+			hl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			hl.custom_minimum_size = Vector2(270, 0)
+			_forecast_body.add_child(hl)
 		var groups: int = fc.get("g", 0)
 		_forecast_body.add_child(UITheme.label("Expected: ~%d groups" % groups, 18, "bold"))
 		var rh: Array = fc.get("rh", [])
@@ -561,7 +576,7 @@ func _update_chips() -> void:
 
 
 func is_modal_open() -> bool:
-	return results.visible or catalog.visible or pause_menu.visible
+	return results.visible or catalog.visible or pause_menu.visible or paper.visible
 
 
 ## Inner class: the day progress bar with rush-hour zones.

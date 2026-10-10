@@ -45,6 +45,7 @@ func _ready() -> void:
 	await t_spoilage()
 	await t_consequences()
 	await t_close_day()
+	await t_morning_paper()
 	await t_save_load()
 	print("")
 	print("==== %d checks, %d failures ====" % [checks, failures])
@@ -1111,6 +1112,76 @@ func t_close_day() -> void:
 	check(w.deliveries.order.get(&"supply_buns", 0) == 1 and not w.deliveries.order.has(&"supply_beef"), "auto lines stay on the order, one-offs are cleared")
 
 
+## The Morning Paper: from day 2 the crew picks one of three stories before
+## the prep clock starts.
+func t_morning_paper() -> void:
+	print("[morning paper]")
+	var d := w.day
+	check(d.paper_pending(), "day 2 starts with the morning paper")
+	var offers: Array = d.paper.get("offers", [])
+	var ids := {}
+	for h in offers:
+		ids[h["id"]] = true
+	check(offers.size() == 3 and ids.size() == 3, "three different stories (%s)" % ", ".join(ids.keys()))
+	var again := MorningPaper.offers(w, 2)
+	check(again.map(func(h): return h["id"]) == offers.map(func(h): return h["id"]), "the same paper for everyone (seeded by the day)")
+	await wait(0.3)
+	check(w.hud.paper.visible and w.input_blocked(p), "the paper is up and the crew reads it before doing anything")
+	check(w.hud.is_modal_open(), "nobody joins mid-read")
+	d.auto_open = true
+	var left := d.prep_left
+	await wait(1.0)
+	check(is_equal_approx(d.prep_left, left), "the prep clock waits for a story")
+	d.auto_open = false
+	# Every kind of story, one at a time.
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var pool := {}
+	for h in MorningPaper._pool(w, 2, rng):
+		pool[h["id"]] = h
+	var real := d.paper
+	var base := w.customers.schedule.size()
+	var story := func(id: String) -> void:
+		d.today = {}
+		d.paper = {"offers": [pool[id]], "pick": -1}
+		d.choose_headline(0)
+	story.call("rain")
+	check(w.customers.schedule.size() < base and d.tips_mult() == 2.0, "rain: fewer guests (%d → %d), double tips" % [base, w.customers.schedule.size()])
+	story.call("famous")
+	check(w.customers.schedule.size() > base, "in the papers: more guests (%d → %d)" % [base, w.customers.schedule.size()])
+	story.call("coach")
+	var booked := w.customers.schedule.filter(func(e): return e.size() > 2 and e[2] == "booking").size()
+	check(booked == int(pool["coach"]["fx"]["burst"]), "coach party: %d groups booked together" % booked)
+	var cash := w.economy.money
+	d._booked = {"seen": booked, "lost": 0, "party_happy": false}
+	var r := {}
+	d._headline_results(r)
+	check(w.economy.money > cash and r.get("headline", {}).get("good", false), "every coach group served pays the bonus")
+	story.call("clearance")
+	var conv := Content.fixture(&"conveyor")
+	check(w.build.price_of(conv) == roundf(conv.price * 0.7), "supplier clearance: equipment 30%% off (%s)" % GameConst.money(w.build.price_of(conv)))
+	cash = w.economy.money
+	story.call("ad")
+	check(absf(w.economy.money - cash - 60.0) < 0.01, "the ad pays $60")
+	story.call("craze")
+	var cr := Content.recipe(StringName(pool["craze"]["fx"]["recipe"]))
+	check(d.recipe_weight(cr) == 3.0 and is_equal_approx(d.price_mult(cr), 1.25), "%s craze: ordered more, sells for more" % cr.display_name)
+	if pool.has("critic"):
+		story.call("critic")
+		check(d.rep_mult() == 2.0 and w.customers.schedule.any(func(e): return e[1] == "critic"), "food critic: reviews count double, and the critic is booked")
+	# Back to the real paper: bin it, then pick it properly for the save test.
+	d.today = {}
+	d.paper = real.duplicate(true)
+	d.paper["pick"] = -1
+	d.choose_headline(-1)
+	check(not d.paper_pending() and d.headline().is_empty(), "binning the paper: an ordinary day")
+	d.paper["pick"] = -1
+	Net.request("headline", [0])
+	await wait(0.3)
+	check(not d.paper_pending() and String(d.headline().get("id", "")) == String(offers[0]["id"]), "picked through the network request: %s" % d.headline().get("title", ""))
+	check(not w.hud.paper.visible and not w.input_blocked(p), "the paper is put away")
+
+
 func t_save_load() -> void:
 	print("[save/load]")
 	await wait(1.0)
@@ -1129,6 +1200,7 @@ func t_save_load() -> void:
 	check(&"walk_in_cooler" in w.grid.built_expansions, "expansion restored")
 	check(w.grid.room_index(Vector2i(12, -6)) == w.grid.room_index(Vector2i(12, 4)), "the bigger kitchen is still one room after loading")
 	check(w.day.day == 2, "day restored")
+	check(not w.day.paper_pending() and not w.day.headline().is_empty(), "this morning's story is still picked after loading (%s)" % w.day.headline().get("title", ""))
 	# Nobody flips the sign: the doors still open when the countdown runs out.
 	w.day.auto_open = true
 	w.day.prep_left = 1.0

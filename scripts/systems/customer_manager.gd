@@ -44,12 +44,12 @@ func expected_groups(day: int, reputation: float) -> int:
 	return maxi(int(round(fmt.base_groups * growth * rep_mult * loc_demand * Difficulty.factor("groups"))), 3)
 
 
-func plan_day(day: int, reputation: float) -> void:
+func plan_day(day: int, reputation: float, mult := 1.0) -> void:
 	schedule.clear()
 	forecast.clear()
 	_sched_i = 0
 	var fmt := world.format
-	var n := expected_groups(day, reputation)
+	var n := maxi(int(round(expected_groups(day, reputation) * mult)), 2)
 	var hours: Array[int] = []
 	var weights: Array[float] = []
 	var total_w := 0.0
@@ -142,10 +142,23 @@ func is_rush_hour(hour: float) -> bool:
 
 ## Shortly before opening the first group of the day turns up and waits at
 ## the door (they're not impatient yet: the restaurant isn't open).
+## A booked group (the Morning Paper's coach party or birthday): it always
+## comes, at `hour`, tagged so the day can tell how it went.
+func add_booking(hour: float, archetype_id: String, tag: String) -> void:
+	schedule.push_back([hour, archetype_id, tag])
+	schedule.sort_custom(func(x, y): return x[0] < y[0])
+	forecast[int(hour)] = forecast.get(int(hour), 0) + 1
+
+
+func _spawn_scheduled(entry: Array, force := false) -> CustomerGroup:
+	var tag: String = entry[2] if entry.size() > 2 else ""
+	return spawn_group(Content.archetype(StringName(entry[1])), force or tag != "", Vector2i(-99999, 0), 6 if tag == "party" else 0, tag)
+
+
 func early_arrival() -> void:
 	if _sched_i >= schedule.size():
 		return
-	var g := spawn_group(Content.archetype(StringName(schedule[_sched_i][1])), true)
+	var g := _spawn_scheduled(schedule[_sched_i], true)
 	_sched_i += 1
 	if g:
 		Events.notify("The first guests are waiting at the door!", &"info")
@@ -156,7 +169,7 @@ func _physics_process(delta: float) -> void:
 		return
 	if world.day.phase == GameConst.Phase.SERVICE:
 		while _sched_i < schedule.size() and schedule[_sched_i][0] <= world.day.hour:
-			spawn_group(Content.archetype(StringName(schedule[_sched_i][1])))
+			_spawn_scheduled(schedule[_sched_i])
 			_sched_i += 1
 	for g in groups.duplicate():
 		g.tick(delta)
@@ -172,7 +185,7 @@ func _physics_process(delta: float) -> void:
 
 ## `at`: where they appear (a train platform at a stop); by default they
 ## arrive along the street (or from the train's other cars).
-func spawn_group(a: CustomerArchetype, force := false, at := Vector2i(-99999, 0)) -> CustomerGroup:
+func spawn_group(a: CustomerArchetype, force := false, at := Vector2i(-99999, 0), size := 0, tag := "") -> CustomerGroup:
 	if a == null:
 		return null
 	var waiting := 0
@@ -184,7 +197,8 @@ func spawn_group(a: CustomerArchetype, force := false, at := Vector2i(-99999, 0)
 	_next_group += 1
 	g.archetype = a
 	g.manager = self
-	var group_size := randi_range(a.group_min, a.group_max)
+	g.tag = tag
+	var group_size := size if size > 0 else randi_range(a.group_min, a.group_max)
 	if waiting + group_size > MAX_QUEUE_PEOPLE and not force:
 		# They see the line and walk on by.
 		world.day.record_balk(group_size)
@@ -601,14 +615,14 @@ func _pick_recipe(list: Array[RecipeDef], a: CustomerArchetype, exclude: Diction
 	for r in list:
 		if exclude.has(r.id) or (available_only and world.orders.recipe_blocked(r)):
 			continue
-		total += r.menu_weight * float(a.recipe_weights.get(String(r.id), a.recipe_weights.get(r.id, 1.0)))
+		total += r.menu_weight * float(a.recipe_weights.get(String(r.id), a.recipe_weights.get(r.id, 1.0))) * world.day.recipe_weight(r)
 	if total <= 0.0:
 		return null
 	var roll := randf() * total
 	for r in list:
 		if exclude.has(r.id) or (available_only and world.orders.recipe_blocked(r)):
 			continue
-		roll -= r.menu_weight * float(a.recipe_weights.get(String(r.id), a.recipe_weights.get(r.id, 1.0)))
+		roll -= r.menu_weight * float(a.recipe_weights.get(String(r.id), a.recipe_weights.get(r.id, 1.0))) * world.day.recipe_weight(r)
 		if roll <= 0.0:
 			return r
 	return null

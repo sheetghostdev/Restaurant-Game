@@ -193,13 +193,18 @@ func _snap_dir(v: Vector3) -> Vector2i:
 # Purchases
 # -----------------------------------------------------------------------------
 
+## What a piece of equipment costs today (sales from the Morning Paper).
+func price_of(fd: FixtureDef) -> float:
+	return roundf(fd.price * world.day.equip_mult())
+
+
 func buy_fixture(def_id: StringName) -> bool:
 	var fd := Content.fixture(def_id)
 	if fd == null or not fd.purchasable:
 		return false
 	if fd.only_theme != "" and world.location and fd.only_theme != world.location.theme:
 		return false
-	if not world.economy.spend(fd.price, fd.display_name):
+	if not world.economy.spend(price_of(fd), fd.display_name):
 		return false
 	world.deliveries.order_package(def_id)
 	var where := "on the loading dock"

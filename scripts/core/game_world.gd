@@ -327,7 +327,7 @@ func _process(_delta: float) -> void:
 func input_blocked(p: PlayerCharacter) -> bool:
 	if hud == null:
 		return false
-	if hud.catalog.blocks(p) or hud.pause_menu.visible or hud.results.visible:
+	if hud.catalog.blocks(p) or hud.pause_menu.visible or hud.results.visible or hud.paper.visible:
 		return true
 	return false
 

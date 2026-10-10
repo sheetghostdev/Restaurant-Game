@@ -148,6 +148,12 @@ func _tour_banner(t: Dictionary) -> void:
 ## sales, and stars decide how many guests come.
 func _consequences(r: Dictionary) -> void:
 	var lines := []
+	var hl: Dictionary = r.get("headline", {})
+	if not hl.is_empty():
+		var t := "Today's story: %s" % String(hl.get("title", ""))
+		if String(hl.get("line", "")) != "":
+			t += ". " + String(hl["line"])
+		lines.push_back([t, Pal.UI_GOOD if hl.get("good", true) else Pal.UI_BAD])
 	var lost := int(r.get("groups_lost", 0))
 	if lost > 0:
 		lines.push_back(["%d group%s walked out: −%.2f★ and %s in lost sales" % [lost, "" if lost == 1 else "s", float(r.get("rep_walkouts", 0.0)), GameConst.money(r.get("lost_sales", 0.0))], Pal.UI_BAD])

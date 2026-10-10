@@ -6,6 +6,7 @@ extends RefCounted
 
 enum State { ARRIVING, QUEUED, SEATING, BROWSING, READY, WAITING_FOOD, EATING, PAYING, LEAVING, GONE }
 
+var tag := ""               ## "booking" (coach party), "party" (birthday) or ""
 var id := 0
 var archetype: CustomerArchetype
 var members: Array[Customer] = []
@@ -301,8 +302,8 @@ func serve(actor: Node, dish: DishItem, near_table: Fixture) -> bool:
 	order["satisfaction"] = sat
 	satisfaction_sum += sat
 	satisfaction_n += 1
-	var price := RecipeManager.order_price(order) * archetype.spend
-	var tip := price * 0.25 * archetype.tip * sat * sat * (1.0 + world().day.tip_bonus() + manager.decor_bonus("tips"))
+	var price := RecipeManager.order_price(order) * archetype.spend * world().day.price_mult(r)
+	var tip := price * 0.25 * archetype.tip * sat * sat * (1.0 + world().day.tip_bonus() + manager.decor_bonus("tips")) * world().day.tips_mult()
 	revenue += price + tip
 	order["price"] = price
 	order["tip"] = tip

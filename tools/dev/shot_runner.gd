@@ -213,6 +213,13 @@ func _run_scenario() -> void:
 			w.staff.hire(&"dish_hand")
 			w.staff.hire(&"stocker")
 			await get_tree().create_timer(1.0).timeout
+		"paper", "paper_picked":
+			# Day 2's morning paper (and, for paper_picked, the first story run).
+			w.day.day = 2
+			w.day._begin_morning(false)
+			await get_tree().create_timer(1.0).timeout
+			if scenario == "paper_picked":
+				w.day.choose_headline(0)
 		"catalog":
 			var p2: PlayerCharacter = w.players()[0]
 			w.hud.catalog.open_for(p2)

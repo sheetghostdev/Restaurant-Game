@@ -211,6 +211,7 @@ func _do_request(action: String, args: Array, _from: int) -> void:
 		"auto_order": w.deliveries.set_auto(StringName(args[0]), bool(args[1]))
 		"strike": w.orders.set_struck(StringName(args[0]), bool(args[1]))
 		"continue_results": w.day.continue_from_results()
+		"headline": w.day.choose_headline(int(args[0]))
 		# Franchise Tour: on to the next place, or back to the title.
 		"tour_next": get_tree().call_group.call_deferred(&"main", "start_next_leg")
 		"tour_end": get_tree().call_group.call_deferred(&"main", "end_tour")
