@@ -379,7 +379,11 @@ func _build_expansions() -> void:
 		var b := _buy_button("Build", e.price, func():
 			Net.request("buy_expansion", [String(id)])
 			_refresh_later_tab("expansions"), calm)
-		if not calm:
+		if e.unlock_day > w.day.day:
+			b.text = "Day %d" % e.unlock_day
+			b.set_meta(&"locked", true)
+			b.disabled = true
+		elif not calm:
 			b.text = "After closing"
 			b.set_meta(&"locked", true)
 		_row("model:for_sale_sign", e.display_name, e.description, b)

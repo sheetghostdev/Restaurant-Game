@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ExpansionDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/expansion_def.gd" id="1_rbj3x"]
+
+[resource]
+script = ExtResource("1_rbj3x")
+id = &"kitchen_extension"
+display_name = "Kitchen Extension"
+room_type = &"kitchen"
+rect = Rect2i(9, -3, 7, 3)
+grows_room = &"kitchen"
+description = "Push the kitchen's back wall out three metres: one bigger kitchen with room for more stations and automation."

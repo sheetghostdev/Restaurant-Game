@@ -37,6 +37,14 @@ func _ready() -> void:
 			for i in range(1, n):
 				var pl := _world().add_local_player(Inputs.PAD_BASE + i)
 				pl.global_position = Vector3(10.5 + i * 1.2, 0, 5.0)
+	for a in OS.get_cmdline_user_args():
+		# --expand=a,b builds expansions first (money provided).
+		if a.begins_with("--expand=") and _world():
+			_world().economy.earn(5000.0, "shot")
+			_world().day.day = 5
+			for id in a.substr(9).split(","):
+				_world().build.buy_expansion(StringName(id))
+			await get_tree().create_timer(0.5).timeout
 	await _run_scenario()
 	for a in OS.get_cmdline_user_args():
 		# --at=x,z moves the first player (and so the camera focus) there.

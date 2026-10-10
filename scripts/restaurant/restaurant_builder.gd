@@ -615,10 +615,28 @@ func _build_lights() -> void:
 				room_lights.push_back(l)
 
 
+## Rough footprint of the bigger scenery: an expansion built over its spot
+## (a kitchen extension) clears it away rather than growing a tree indoors.
+const PROP_RADIUS := {&"tree": 1.1, &"solar_panel": 1.8, &"antenna_mast": 0.8, &"pallet": 0.6}
+
+
+func _prop_fits(key: StringName, x: float, z: float) -> bool:
+	var r: float = PROP_RADIUS.get(key, 0.3)
+	for cx in range(floori(x - r), floori(x + r) + 1):
+		for cz in range(floori(z - r), floori(z + r) + 1):
+			if grid.is_building(Vector2i(cx, cz)):
+				var rt := grid.room_type_at(Vector2i(cx, cz))
+				if rt == null or not rt.outdoor or key == &"tree":
+					return false
+	return true
+
+
 func _build_props() -> void:
 	for p in _layout_props:
 		var key := StringName(p["m"])
 		var pos: Array = p["p"]
+		if not _prop_fits(key, float(pos[0]), float(pos[1])):
+			continue
 		var n := Models.instance(key)
 		n.position = Vector3(pos[0], ground_y + 0.02, pos[1])
 		n.rotation.y = deg_to_rad(float(p.get("y", 0.0)))

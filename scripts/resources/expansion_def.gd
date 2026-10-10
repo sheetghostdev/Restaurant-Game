@@ -10,6 +10,10 @@ extends Resource
 @export var price := 400.0
 @export var doors: Array[Vector4i] = []           ## (ax, az, bx, bz)
 @export var requires: StringName                  ## Another expansion that must exist first.
+## Grows an existing room (by its layout id, e.g. "kitchen") over `rect`
+## instead of adding a new one: no wall in between, one bigger room. Rooms
+## that lie wholly inside `rect` are knocked through and become part of it.
+@export var grows_room: StringName
 @export var unlock_day := 1
 @export var starter_fixtures: Array[Dictionary] = []  ## [{def, cell:Vector2i, rot}]
 @export_multiline var description := ""

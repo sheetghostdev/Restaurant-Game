@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ExpansionDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/expansion_def.gd" id="1_re0jd"]
+
+[resource]
+script = ExtResource("1_re0jd")
+id = &"galley_through"
+display_name = "Galley Through-Car"
+room_type = &"galley"
+rect = Rect2i(17, 0, 4, 6)
+price = 450.0
+grows_room = &"kitchen"
+description = "Knock the galley through into the baggage car: one long kitchen car. The shelves stay where they are."

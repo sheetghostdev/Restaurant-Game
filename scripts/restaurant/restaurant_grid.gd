@@ -114,6 +114,47 @@ func add_room(id: StringName, type: StringName, rect: Rect2i) -> void:
 	layout_changed.emit()
 
 
+## Index of the room with this layout id, or -1.
+func room_by_id(id: StringName) -> int:
+	for i in rooms.size():
+		if rooms[i]["id"] == id:
+			return i
+	return -1
+
+
+## Can room `id` grow over `rect` into one rectangle? Rooms wholly inside
+## `rect` may be knocked through; any other overlap says no.
+func can_grow_room(id: StringName, rect: Rect2i) -> bool:
+	var i := room_by_id(id)
+	if i < 0:
+		return false
+	var cur: Rect2i = rooms[i]["rect"]
+	var merged := cur.merge(rect)
+	if merged.get_area() != cur.get_area() + rect.get_area() - cur.intersection(rect).get_area():
+		return false   # not side by side along a whole edge
+	for j in rooms.size():
+		if j == i:
+			continue
+		var r: Rect2i = rooms[j]["rect"]
+		if r.intersects(rect) and not rect.encloses(r):
+			return false
+	return true
+
+
+## Grows room `id` over `rect` (see can_grow_room).
+func grow_room(id: StringName, rect: Rect2i) -> void:
+	var i := room_by_id(id)
+	if i < 0:
+		return
+	var merged: Rect2i = (rooms[i]["rect"] as Rect2i).merge(rect)
+	for j in range(rooms.size() - 1, -1, -1):
+		if j != i and rect.encloses(rooms[j]["rect"]):
+			rooms.remove_at(j)
+	rooms[room_by_id(id)]["rect"] = merged
+	_rebuild_index()
+	layout_changed.emit()
+
+
 func set_opening(a: Vector2i, b: Vector2i, type: String) -> void:
 	if type == "":
 		openings.erase(edge_key(a, b))

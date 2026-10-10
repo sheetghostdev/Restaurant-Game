@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ExpansionDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/expansion_def.gd" id="1_a6dcx"]
+
+[resource]
+script = ExtResource("1_a6dcx")
+id = &"galley_module"
+display_name = "Galley Module"
+room_type = &"space_galley"
+rect = Rect2i(9, -4, 7, 4)
+price = 450.0
+grows_room = &"kitchen"
+description = "Bolt a module onto the galley: one bigger kitchen with room for automation."

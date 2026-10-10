@@ -1071,6 +1071,20 @@ func t_close_day() -> void:
 	check(w.build.buy_expansion(&"walk_in_cooler"), "built the walk-in cooler")
 	check(w.grid.is_cold_cell(Vector2i(17, -3)), "cooler cells are cold")
 	check(w.grid.nav.reachable(Vector2i(17, 2), Vector2i(17, -2)), "cooler reachable from storage")
+	# A bigger kitchen: the kitchen room itself grows, no wall in between.
+	var kitchen_before: Rect2i = w.grid.rooms[w.grid.room_by_id(&"kitchen")]["rect"]
+	w.economy.earn(1200.0, "test")
+	check(not w.build.buy_expansion(&"kitchen_extension_2"), "the Big Kitchen needs the first extension (and day 3)")
+	check(w.build.buy_expansion(&"kitchen_extension"), "built the kitchen extension")
+	var kitchen_after: Rect2i = w.grid.rooms[w.grid.room_by_id(&"kitchen")]["rect"]
+	check(kitchen_after.size.y == kitchen_before.size.y + 3 and w.grid.room_index(Vector2i(12, -2)) == w.grid.room_index(Vector2i(12, 4)), "the kitchen grew three rows (%s → %s)" % [kitchen_before, kitchen_after])
+	check(not w.grid.wall_between(Vector2i(12, -1), Vector2i(12, 0)), "no wall where the old back wall was")
+	check(w.grid.nav.reachable(Vector2i(12, 4), Vector2i(12, -3)), "the new space is reachable from the old kitchen")
+	check(w.build.can_place_at(Vector2i(12, -2), Content.fixture(&"conveyor")), "room for equipment in the new space")
+	check(w.grid.is_staff_only(Vector2i(12, -2)), "guests still stay out of it")
+	w.day.day = 3
+	check(w.build.buy_expansion(&"kitchen_extension_2") and w.grid.room_index(Vector2i(12, -6)) == w.grid.room_index(Vector2i(12, 4)), "and grew again: the Big Kitchen")
+	w.day.day = 1
 	w.economy.earn(300.0, "test")
 	check(w.build.buy_expansion(&"patio"), "built the patio")
 	check(w.grid.wall_between(Vector2i(-3, 8), Vector2i(-3, 9)), "patio fence blocks the street")
@@ -1113,6 +1127,7 @@ func t_save_load() -> void:
 	check(w.grid.all_fixtures().size() == fixtures_before, "fixtures restored (%d vs %d)" % [w.grid.all_fixtures().size(), fixtures_before])
 	check(absf(w.economy.money - money) < 0.01, "money restored")
 	check(&"walk_in_cooler" in w.grid.built_expansions, "expansion restored")
+	check(w.grid.room_index(Vector2i(12, -6)) == w.grid.room_index(Vector2i(12, 4)), "the bigger kitchen is still one room after loading")
 	check(w.day.day == 2, "day restored")
 	# Nobody flips the sign: the doors still open when the countdown runs out.
 	w.day.auto_open = true

@@ -253,10 +253,19 @@ func buy_expansion(exp_id: StringName) -> bool:
 	if not world.is_calm():
 		Events.notify("Construction can only happen outside service hours", &"error")
 		return false
+	if e.unlock_day > world.day.day:
+		Events.notify("%s can be built from day %d" % [e.display_name, e.unlock_day], &"error")
+		return false
+	if not fits(e) or (e.requires != &"" and not (e.requires in world.grid.built_expansions)):
+		return false
 	if not world.economy.spend(e.price, e.display_name):
 		return false
 	world.grid.built_expansions.push_back(exp_id)
-	world.grid.add_room(exp_id, e.room_type, e.rect)
+	if e.grows_room != &"":
+		world.grid.grow_room(e.grows_room, e.rect)
+		_open_way_into(e.rect)
+	else:
+		world.grid.add_room(exp_id, e.room_type, e.rect)
 	for d in e.doors:
 		var a := Vector2i(d.x, d.y)
 		var b := Vector2i(d.z, d.w)
@@ -275,6 +284,55 @@ func buy_expansion(exp_id: StringName) -> bool:
 	world.customers.mark_tables_dirty()
 	Events.notify("%s built!" % e.display_name, &"big", Pal.UI_GOOD)
 	return true
+
+
+## A kitchen that grew over its old back wall usually has a row of stations
+## along it, sealing the new space off. If nobody can walk in, move one plain
+## counter (nearest the middle) to the far side of the new space.
+func _open_way_into(rect: Rect2i) -> void:
+	var inside := Vector2i(-99999, 0)
+	for x in range(rect.position.x, rect.end.x):
+		for z in range(rect.position.y, rect.end.y):
+			if inside.x == -99999 and world.grid.walkable(Vector2i(x, z)):
+				inside = Vector2i(x, z)
+	var outside := Vector2i(-99999, 0)
+	var edge := []   ## [cell in the old room next to the new space, fixture]
+	for x in range(rect.position.x - 1, rect.end.x + 1):
+		for z in range(rect.position.y - 1, rect.end.y + 1):
+			var c := Vector2i(x, z)
+			if rect.has_point(c) or world.grid.room_index(c) != world.grid.room_index(inside):
+				continue
+			var touches := false
+			for d in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+				if rect.has_point(c + d):
+					touches = true
+			if not touches:
+				continue
+			var f := world.grid.fixture_at(c)
+			if f == null and world.grid.walkable(c):
+				outside = c
+			elif f and f.can_lift():
+				edge.push_back([c, f])
+	if inside.x == -99999 or outside.x != -99999:
+		return
+	var mid := Rect2(rect).get_center()
+	edge.sort_custom(func(a, b):
+		var pa: bool = (a[1] as Fixture).def_id == &"counter"
+		var pb: bool = (b[1] as Fixture).def_id == &"counter"
+		if pa != pb:
+			return pa
+		return absf(a[0].x + 0.5 - mid.x) < absf(b[0].x + 0.5 - mid.x))
+	if edge.is_empty():
+		return
+	var f: Fixture = edge[0][1]
+	var gap: Vector2i = edge[0][0]
+	var far := Vector2i(gap.x, rect.position.y if gap.y >= rect.end.y else rect.end.y - 1)
+	var target := nearest_free(far, f.def, f)
+	world.grid.vacate(f)
+	f.place_at(target, f.rot)
+	world.grid.occupy(f)
+	f.mark_dirty()
+	Events.notify("Moved a %s to make a way into the new space" % f.display_name().to_lower(), &"info")
 
 
 ## Moves a fixture out of the way when a new doorway is built through its cell.
@@ -323,8 +381,21 @@ func available_expansions() -> Array[ExpansionDef]:
 			continue
 		if e.requires != &"" and not (e.requires in world.grid.built_expansions):
 			continue
+		if not fits(e):
+			continue
 		out.push_back(e)
 	return out
+
+
+## Room for it: a new room mustn't overlap one that's already there (an old
+## save's Dish Room sits where the kitchen extension would go).
+func fits(e: ExpansionDef) -> bool:
+	if e.grows_room != &"":
+		return world.grid.can_grow_room(e.grows_room, e.rect)
+	for r in world.grid.rooms:
+		if (r["rect"] as Rect2i).intersects(e.rect):
+			return false
+	return true
 
 
 func setup_plots() -> void:

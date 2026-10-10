@@ -444,8 +444,10 @@ func _rooms() -> void:
 	_room("cargo", "Cargo Hold", "deck", Color("9aa3ae"), Color("6f7883"), Color("c9cfd6"), {"light_color": Color("e6eeff"), "has_windows": false, "staff_only": true})
 
 
-func _expansion(id: String, name: String, type: String, rect: Rect2i, price: float, doors: Array, fixtures: Array, desc: String) -> void:
+func _expansion(id: String, name: String, type: String, rect: Rect2i, price: float, doors: Array, fixtures: Array, desc: String, opts := {}) -> void:
 	var e := ExpansionDef.new()
+	for k in opts:
+		e.set(k, opts[k])
 	e.id = StringName(id)
 	e.display_name = name
 	e.room_type = StringName(type)
@@ -472,6 +474,20 @@ func _expansions() -> void:
 		[Vector4i(12, -1, 12, 0)],
 		[{"def": "sink", "cell": Vector2i(10, -4), "rot": 0}],
 		"A back room just for washing up — keeps the line clear.")
+	# Bigger kitchens: the kitchen room itself grows (no wall), room for
+	# conveyors, grabbers and more stations.
+	_expansion("kitchen_extension", "Kitchen Extension", "kitchen", Rect2i(9, -3, 7, 3), 400.0, [], [],
+		"Push the kitchen's back wall out three metres: one bigger kitchen with room for more stations and automation.",
+		{"grows_room": &"kitchen"})
+	_expansion("kitchen_extension_2", "Big Kitchen", "kitchen", Rect2i(9, -6, 7, 3), 600.0, [], [],
+		"Push it back again for a really big kitchen: a whole production line fits.",
+		{"grows_room": &"kitchen", "requires": &"kitchen_extension", "unlock_day": 3})
+	_expansion("galley_through", "Galley Through-Car", "galley", Rect2i(17, 0, 4, 6), 450.0, [], [],
+		"Knock the galley through into the baggage car: one long kitchen car. The shelves stay where they are.",
+		{"grows_room": &"kitchen"})
+	_expansion("galley_module", "Galley Module", "space_galley", Rect2i(9, -4, 7, 4), 450.0, [], [],
+		"Bolt a module onto the galley: one bigger kitchen with room for automation.",
+		{"grows_room": &"kitchen"})
 	_expansion("walk_in_cooler", "Walk-in Cooler", "cooler", Rect2i(16, -4, 4, 4), 520.0,
 		[Vector4i(17, -1, 17, 0)],
 		[{"def": "cold_shelf", "cell": Vector2i(16, -4), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(17, -4), "rot": 0}, {"def": "cold_shelf", "cell": Vector2i(18, -4), "rot": 0}],
@@ -634,15 +650,15 @@ func _location(id: String, name: String, opts: Dictionary) -> void:
 
 func _locations() -> void:
 	_location("main_street", "Main Street", {"layout_path": "res://data/layouts/main_street.json",
-		"expansions": ["dining_annex", "dish_room", "walk_in_cooler", "patio"], "theme": "street", "supply_mode": "truck",
+		"expansions": ["dining_annex", "kitchen_extension", "kitchen_extension_2", "walk_in_cooler", "patio"], "theme": "street", "supply_mode": "truck",
 		"accent": Color("4f8f8a"), "tagline": "A small-town storefront with room to grow.",
 		"description": "The classic. Order tomorrow's ingredients from the manager's desk; a truck delivers them every morning."})
 	_location("express", "Dining Car Express", {"layout_path": "res://data/layouts/train.json",
-		"expansions": [], "theme": "train", "supply_mode": "market",
+		"expansions": ["galley_through"], "theme": "train", "supply_mode": "market",
 		"stops": ["Central Depot", "Millbrook", "Cedar Falls", "Port Quinn", "Ashdown", "Harlow Junction", "Briar Hill", "Stonebridge", "Lark Valley"],
 		"accent": Color("2f5d50"), "tagline": "A restaurant on rails. Shop at every stop.",
 		"description": "No delivery truck: buy ingredients from market stalls on the platform at each stop, and get back aboard before the whistle. Every stop has different deals."})
 	_location("orbital", "Orbital Galley", {"layout_path": "res://data/layouts/space.json",
-		"expansions": ["hydro_bay"], "theme": "space", "supply_mode": "grow",
+		"expansions": ["galley_module", "hydro_bay"], "theme": "space", "supply_mode": "grow",
 		"accent": Color("3d4f7a"), "tagline": "Feeding hungry travellers in orbit.",
 		"description": "Nothing gets delivered up here: grow vegetables in hydroponic planters and print everything else on the food printer (it costs credits). Alien guests welcome."})

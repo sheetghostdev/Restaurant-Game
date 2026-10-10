@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ExpansionDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/expansion_def.gd" id="1_d3yh6"]
+
+[resource]
+script = ExtResource("1_d3yh6")
+id = &"kitchen_extension_2"
+display_name = "Big Kitchen"
+room_type = &"kitchen"
+rect = Rect2i(9, -6, 7, 3)
+price = 600.0
+requires = &"kitchen_extension"
+grows_room = &"kitchen"
+unlock_day = 3
+description = "Push it back again for a really big kitchen: a whole production line fits."
