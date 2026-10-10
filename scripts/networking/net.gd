@@ -199,6 +199,7 @@ func _do_request(action: String, args: Array, _from: int) -> void:
 		return
 	match action:
 		"buy_fixture": w.build.buy_fixture(StringName(args[0]))
+		"call_rep": w.build.call_rep()
 		"buy_upgrade": w.build.buy_upgrade(StringName(args[0]))
 		"buy_expansion": w.build.buy_expansion(StringName(args[0]))
 		"hire": w.staff.hire(StringName(args[0]))

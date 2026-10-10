@@ -1092,6 +1092,23 @@ func t_close_day() -> void:
 	check(not w.grid.wall_between(Vector2i(-1, 4), Vector2i(0, 4)), "patio door opens to the dining room")
 	check(w.grid.nav.reachable(w.grid.street_point("spawn_a"), Vector2i(-2, 4)), "patio reachable via the front door")
 	check(w.build.buy_fixture(&"conveyor"), "ordered a conveyor")
+	# Supplier deals: a few things on sale today; the rep swaps them.
+	check(w.build.deals.size() == 3, "three supplier deals today (%s)" % ", ".join(w.build.deals))
+	var dfd := Content.fixture(w.build.deals[0])
+	check(w.build.price_of(dfd) < dfd.price, "a deal is cheaper (%s, was %s)" % [GameConst.money(w.build.price_of(dfd)), GameConst.money(dfd.price)])
+	w.economy.earn(500.0, "test")
+	var seen := {}
+	var swapped := true
+	for k in 4:
+		for id in w.build.deals:
+			seen[id] = true
+		var before := w.build.deals.duplicate()
+		var fee := w.build.rep_call_price()
+		var cash := w.economy.money
+		swapped = swapped and w.build.call_rep() and absf(cash - fee - w.economy.money) < 0.01 and w.build.deals != before
+	check(swapped and w.build.rep_call_price() == BuildManager.REP_CALL_PRICE * 5, "calling the rep swaps the deals, and costs more each call")
+	var odd := seen.keys().filter(func(id): return id in [&"oven", &"safety_oven", &"beer_tap", &"soda_fountain", &"mixing_bowl"])
+	check(odd.is_empty(), "no deals on gear a diner can't use (%d different deals seen)" % seen.size())
 	# Supplies: the truck only brings what's ordered; auto lines repeat.
 	check(w.deliveries.ordered_crates() == 0, "nothing on tomorrow's order by default")
 	w.deliveries.adjust_order(&"supply_beef", 1)
@@ -1100,6 +1117,7 @@ func t_close_day() -> void:
 	var pending_before := w.deliveries.pending.size()
 	use(sign_f, 2.5)
 	check(w.day.phase == GameConst.Phase.MORNING and w.day.day == 2, "day 2 morning (holding USE on past lights-out doesn't skip the prep)")
+	check(w.build.rep_calls == 0 and w.build.deals.size() == 3, "new deals in the morning, and the rep's fee is back to %s" % GameConst.money(w.build.rep_call_price()))
 	var truck_items := []
 	for d in w.deliveries.pending.slice(pending_before):
 		if d["label"] == "Morning delivery":
@@ -1159,7 +1177,7 @@ func t_morning_paper() -> void:
 	check(w.economy.money > cash and r.get("headline", {}).get("good", false), "every coach group served pays the bonus")
 	story.call("clearance")
 	var conv := Content.fixture(&"conveyor")
-	check(w.build.price_of(conv) == roundf(conv.price * 0.7), "supplier clearance: equipment 30%% off (%s)" % GameConst.money(w.build.price_of(conv)))
+	check(w.build.price_of(conv) == roundf(conv.price * 0.7 * (BuildManager.DEAL_MULT if w.build.is_deal(conv.id) else 1.0)), "supplier clearance: equipment 30%% off (%s)" % GameConst.money(w.build.price_of(conv)))
 	cash = w.economy.money
 	story.call("ad")
 	check(absf(w.economy.money - cash - 60.0) < 0.01, "the ad pays $60")

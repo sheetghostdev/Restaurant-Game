@@ -100,6 +100,7 @@ func _begin_morning(first_day: bool, from_load := false) -> void:
 	if not from_load:
 		world.deliveries.morning_delivery(first_day)
 	world.staff.on_new_day()
+	world.build.roll_deals()
 	_pick_goals()
 	if day >= MorningPaper.FIRST_DAY:
 		paper = {"offers": MorningPaper.offers(world, day), "pick": -1}

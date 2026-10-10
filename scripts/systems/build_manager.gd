@@ -6,9 +6,18 @@ extends Node
 
 const KNOCK_COST := 60.0
 const BRICK_COST := 30.0
+const DEAL_COUNT := 3
+const DEAL_MULT := 0.65     ## supplier deals: 35% off
+const REP_CALL_PRICE := 20.0
 
 var world: GameWorld
 var upgrades := {}          ## id -> times bought
+## Supplier deals: each day the supplier puts a few pieces of equipment on
+## sale (seeded by the day, so everyone sees the same). Calling the rep
+## swaps them for others, for a fee that goes up with every call that day.
+## The rest of the catalog is always there at full price.
+var deals: Array[StringName] = []
+var rep_calls := 0
 var _ghosts := {}           ## player -> Node3D
 var _wall_handles: Array[WallHandle] = []
 
@@ -193,9 +202,101 @@ func _snap_dir(v: Vector3) -> Vector2i:
 # Purchases
 # -----------------------------------------------------------------------------
 
-## What a piece of equipment costs today (sales from the Morning Paper).
+## What a piece of equipment costs today (supplier deals, and sales from
+## the Morning Paper).
 func price_of(fd: FixtureDef) -> float:
-	return roundf(fd.price * world.day.equip_mult())
+	var m := world.day.equip_mult()
+	if fd.id in deals:
+		m *= DEAL_MULT
+	return roundf(fd.price * m)
+
+
+func is_deal(id: StringName) -> bool:
+	return id in deals
+
+
+## The supplier's name depends on where we are.
+func supplier_name() -> String:
+	match world.location.theme if world.location else "street":
+		"train": return "Depot Outfitters"
+		"space": return "Orbital Fit-Out Co."
+	return "Dot's Restaurant Supply"
+
+
+## Authority: today's deals. `new_day` resets the rep's call fee.
+func roll_deals(new_day := true) -> void:
+	if new_day:
+		rep_calls = 0
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([world.day.day, rep_calls, String(world.format.id), String(world.location.id) if world.location else "", world.restaurant_name])
+	var theme := world.location.theme if world.location else "street"
+	var pool := []
+	for fd in Content.sorted_values(Content.fixtures):
+		if fd.purchasable and fd.price > 0.0 and (fd.only_theme == "" or fd.only_theme == theme) \
+				and fd.unlock_day <= world.day.day and fd.unlock_reputation <= world.economy.reputation \
+				and _useful_here(fd):
+			pool.push_back(fd)
+	for i in range(pool.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var tmp = pool[i]
+		pool[i] = pool[j]
+		pool[j] = tmp
+	var old := deals.duplicate()
+	var picked: Array[StringName] = []
+	var cats := {}
+	# Different kinds of equipment where possible, and fresh ones after a call.
+	for pass_i in 3:
+		for fd in pool:
+			if picked.size() >= DEAL_COUNT or fd.id in picked:
+				continue
+			if pass_i < 2 and fd.id in old:
+				continue
+			if pass_i < 1 and cats.has(fd.category):
+				continue
+			picked.push_back(fd.id)
+			cats[fd.category] = true
+	deals = picked
+	_publish_deals()
+
+
+## No pizza ovens on special at a diner: cooking gear is only a deal where
+## the menu needs it (its upgraded versions included).
+func _useful_here(fd: FixtureDef) -> bool:
+	if fd.category != "appliance":
+		return true
+	var base := String(fd.id)
+	for pre in ["safety_", "turbo_", "rapid_"]:
+		base = base.trim_prefix(pre)
+	if base in ["sink", "dishwasher", "food_printer", "hydro_planter"]:
+		return true
+	return StringName(base) in world.format.stations
+
+
+func rep_call_price() -> float:
+	return REP_CALL_PRICE * (rep_calls + 1)
+
+
+## Authority: phone the supplier's rep for different deals.
+func call_rep() -> bool:
+	if not world.economy.spend(rep_call_price(), "Supplier rep"):
+		return false
+	rep_calls += 1
+	roll_deals(false)
+	Audio.play_ui(&"ui_confirm")
+	Events.notify("%s: new deals on the catalog" % supplier_name(), &"info")
+	return true
+
+
+func _publish_deals() -> void:
+	if world.replicator:
+		world.replicator.publish(&"deals", {"ids": deals.map(func(x): return String(x)), "calls": rep_calls})
+
+
+func apply_shared_deals(d: Dictionary) -> void:
+	deals.clear()
+	for x in d.get("ids", []):
+		deals.push_back(StringName(x))
+	rep_calls = int(d.get("calls", 0))
 
 
 func buy_fixture(def_id: StringName) -> bool:

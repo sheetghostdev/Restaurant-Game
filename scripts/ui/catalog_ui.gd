@@ -205,6 +205,7 @@ func _build_equipment() -> void:
 		17, "body", Pal.UI_ACCENT if summary != "" else Pal.UI_INK_SOFT)
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_content.add_child(info)
+	_build_deals()
 	for fd in defs:
 		if not fd.purchasable or (fd.only_theme != "" and fd.only_theme != theme):
 			continue
@@ -217,7 +218,63 @@ func _build_equipment() -> void:
 		if locked:
 			b.text = "Day %d · %.1f★" % [fd.unlock_day, fd.unlock_reputation]
 			b.set_meta(&"locked", true)
-		_row("fixture:%s" % fd.id, fd.display_name, fd.description, b)
+		_row("fixture:%s" % fd.id, fd.display_name + ("  · DEAL" if w.build.is_deal(fd.id) else ""), fd.description, b)
+
+
+## Today's supplier deals, and the rep's phone number.
+func _build_deals() -> void:
+	var w := hud.world
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", UITheme.card(Color("fdf0d2"), Pal.UI_WARN, 12, 3, false))
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 6)
+	box.add_child(v)
+	v.add_child(UITheme.heading("Today's deals · %s" % w.build.supplier_name(), 22, Pal.UI_INK))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	v.add_child(row)
+	for id in w.build.deals:
+		var fd := Content.fixture(id)
+		if fd == null:
+			continue
+		var card := PanelContainer.new()
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		card.add_theme_stylebox_override("panel", UITheme.card(Color("fffaf0"), Pal.UI_INK_SOFT, 10, 2, false))
+		var cv := VBoxContainer.new()
+		card.add_child(cv)
+		var top := HBoxContainer.new()
+		cv.add_child(top)
+		var tr := TextureRect.new()
+		tr.custom_minimum_size = Vector2(56, 56)
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.texture = IconRenderer.get_icon("fixture:%s" % fd.id)
+		top.add_child(tr)
+		var nv := VBoxContainer.new()
+		nv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var nl := UITheme.label(fd.display_name, 18, "bold")
+		nl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		nv.add_child(nl)
+		var was := UITheme.label("was %s" % GameConst.money(roundf(fd.price * w.day.equip_mult())), 15, "regular", Pal.UI_INK_SOFT)
+		nv.add_child(was)
+		top.add_child(nv)
+		var fid: StringName = fd.id
+		var b := _buy_button("Buy", w.build.price_of(fd), func(): Net.request("buy_fixture", [String(fid)]))
+		b.custom_minimum_size = Vector2(0, 0)
+		cv.add_child(b)
+		row.add_child(card)
+	var foot := HBoxContainer.new()
+	v.add_child(foot)
+	var sub := UITheme.label("%d%% off these today only. Not what you need? The rep can swap them." % roundi((1.0 - BuildManager.DEAL_MULT) * 100.0), 15, "regular", Pal.UI_INK_SOFT)
+	sub.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	foot.add_child(sub)
+	var call := _buy_button("Call the rep", w.build.rep_call_price(), func():
+		Net.request("call_rep")
+		_refresh_later_tab("equipment"))
+	call.custom_minimum_size = Vector2(220, 0)
+	foot.add_child(call)
+	_content.add_child(box)
 
 
 ## The menu board: cross ingredients off so guests stop ordering them.
