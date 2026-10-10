@@ -60,6 +60,7 @@ func _exit_tree() -> void:
 
 func _ready() -> void:
 	lighting.builder = builder
+	lighting.camera = camera
 	grid.layout_changed.connect(_on_layout_changed)
 	Inputs.device_join_requested.connect(_on_join_requested)
 	camera.tilt_shift = Settings.get_value("tilt_shift")
@@ -120,6 +121,8 @@ func load_save(data: Dictionary) -> void:
 	for r in records:
 		if r.get("k") in ["player", "customer", "truck"]:
 			continue
+		if r.get("def", "") == "chair":
+			continue   # older saves: tables bring their own chairs now
 		spawn_entity(StringName(r["k"]), StringName(r.get("def", "")), r.get("st", {}), r.get("loc", {}), int(r.get("id", 0)))
 	economy.load_data(data.get("economy", {}))
 	deliveries.load_data(data.get("deliveries", {}))

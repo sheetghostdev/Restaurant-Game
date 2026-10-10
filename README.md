@@ -92,12 +92,13 @@ All verbs are contextual. **GRAB** moves things and **USE** operates things.
 ## How a day works
 
 ```
-MORNING PREP (against the clock: 2 minutes on Normal, a bit longer on day one)
+MORNING PREP (against the clock: 100 seconds on Normal, a bit longer on day one)
   The delivery truck reverses to the loading dock and drops what you ordered.
   Carry crates inside (cold stock goes in the fridge), chop, arrange.
   The forecast card shows expected guests, rush hours and today's two goals.
   A few seconds before opening, the first guests turn up and wait at the door.
-        ↓  the doors open by themselves when the countdown runs out
+        ↓  hold USE on the OPEN sign when you're ready, or the doors open by
+           themselves when the countdown runs out
 SERVICE (timed, in about 7 minutes: 11am–9pm for the diner, 7am–3pm for
 the coffee shop, 12pm–10pm for pizza, 4pm–midnight for the bar)
   Guests queue outside, get seated, read the menu, wave for you to take their
@@ -127,7 +128,7 @@ supplier list.
 | Restaurant | Menu | How |
 |---|---|---|
 | **Diner** | Burger, fries, salad, coffee | Grill a patty to *Medium* and plate it with a bun; guests pick their own extras (lettuce, tomato) and the ticket shows exactly which. Chop and fry potatoes; chop a salad; mugs under the coffee machine |
-| **Coffee Shop** (7am–3pm) | Coffee, latte, croissant, muffin | Lots of small quick orders and a big morning rush. Milk in a mug, then coffee on top, is a latte. Bake croissants in the oven until golden (jam optional); muffins just go on a plate |
+| **Coffee Shop** (7am–3pm) | Coffee, latte, croissant, muffin | Lots of small quick orders and a big morning rush. Milk in a mug, then coffee on top, is a latte. Bake croissants in the oven until golden (jam optional). Muffins are baked by the trayful: flour and an egg in the mixing bowl, hold USE to whisk, bake the tray golden, then USE it to take muffins out (straight onto a plate you're holding) |
 | **Pizza Parlor** (12pm–10pm) | Pizza, salad, soda | Build the pizza on a plate (dough, sauce, cheese, plus pepperoni or sliced mushrooms if the guest wants them) and bake the whole plate in the oven. Sodas come from the fountain |
 | **Bar & Grill** (4pm–midnight) | Beer, soda, wings, fries | Pour pints under the tap and take them before they foam over; swap in a fresh keg when it runs dry. Fry wings (dip optional) and fries. Sports fans arrive for the evening game |
 
@@ -163,7 +164,8 @@ burnt or spoiled food.
 * **Finite dishware.** Plates, mugs and glasses get dirty and must go through
   the sink (a dishwasher is something you buy). If nobody washes up, you
   can't serve anything. Sodas come in a tall iced glass with a straw and
-  beer in a foamy pint, so they never look like coffee.
+  beer in a foamy pint, so they never look like coffee. Drinks go down as
+  guests drink them, and a finished one is an empty cup with dregs in it.
 * **Customers.** Thirteen archetypes (townsfolk, families, work crews, business
   lunches, dates, tourists, tired travelers, the Regular, food critics,
   commuters, students, sports fans, night owls), each with different
@@ -176,8 +178,16 @@ burnt or spoiled food.
   how many guests come: the lunch and dinner rushes are reliable.
 * **Build mode.** Move and rotate any fixture on a grid, knock doorways through
   walls or wall them up, and buy expansions: Dining Annex, Dish Room, Walk-in
-  Cooler (everything inside stays fresh) and Sidewalk Patio. Tables pushed
-  together share one cloth colour.
+  Cooler (everything inside stays fresh) and Sidewalk Patio.
+* **Tables come with chairs** (like PlateUp): every side of a table that faces
+  free dining-room floor gets a chair. Pick a table up with one GRAB press
+  before opening or in the evening, put it anywhere, and push tables together
+  to seat bigger groups; joined tables share one cloth colour and lose the
+  chairs between them.
+* **Guests stay front of house.** They walk only through the dining room, the
+  patio, the street (and the train's coaches and the station's airlock), never
+  through the kitchen, storage or cooler. Only the health inspector goes back
+  there.
 * **Decor that does something** (like PlateUp's furniture). In the dining room,
   plants make guests wait longer, the jukebox makes them eat faster, wall art
   raises tips and rugs mean less mess. Each kind is capped, and the catalog
@@ -200,8 +210,10 @@ burnt or spoiled food.
   but doesn't wipe the restaurant.
 * **Presentation.** Procedural low-poly miniature-diorama art: chamfered model
   pieces, baked AO, a display plinth, a cutaway building with "section cut"
-  wall caps, tilt-shift blur, and lighting that follows the time of day. There
-  is layered adaptive music (prep → service → rush) and 60+ sound effects.
+  wall caps, tilt-shift blur, and lighting that follows the time of day. The
+  sun's shadow map is fitted to the camera so chair legs cast crisp shadows
+  (Settings → "Sharp shadows" can be turned off on slower PCs). There is
+  layered adaptive music (prep → service → rush) and 60+ sound effects.
 * **Paper tickets.** One small slip per table in a band along the top of the
   screen, most impatient first. Tables are named by the colour of their cloth
   ("Red table"); each dish shows a picture of exactly what to make, with its
@@ -274,7 +286,7 @@ More detail:
 # Full-day gameplay test: delivery, prep, cooking, plating, customers, washing,
 # build mode, disasters, staff, automation, spoilage, closing, results,
 # expansions, patio fences, power cut, save/load, difficulty, regressions
-# (about 180 checks; the exact number depends on what the guests order).
+# (about 220 checks; the exact number depends on what the guests order).
 godot --headless --path . res://tests/test_runner.tscn
 
 # Every kind of restaurant: its kitchen, pantry, supplier, hours and

@@ -74,7 +74,7 @@ func _client() -> void:
 	if w.day.phase != GameConst.Phase.SERVICE: fails += 1; print("CLIENT FAIL: phase not replicated")
 	if w.economy.money < 370.0: fails += 1; print("CLIENT FAIL: money not replicated")
 	if w.all_of_kind(&"customer").size() < 2: fails += 1; print("CLIENT FAIL: customers not replicated")
-	if w.grid.all_fixtures().size() < 55: fails += 1; print("CLIENT FAIL: fixtures not replicated")
+	if w.grid.all_fixtures().size() < 40: fails += 1; print("CLIENT FAIL: fixtures not replicated")
 	var held_by_host := false
 	for p in players:
 		if not p.is_local() and p.held() is CrateItem:

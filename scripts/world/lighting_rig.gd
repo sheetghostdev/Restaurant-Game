@@ -9,6 +9,8 @@ var sun: DirectionalLight3D
 var fill: DirectionalLight3D
 var sky_mat: ShaderMaterial
 var builder: RestaurantBuilder
+## The shadow map is fitted to what this camera can see (set by GameWorld).
+var camera: DioramaCamera
 
 var _current := {}
 var _target := {}
@@ -62,8 +64,10 @@ func _ready() -> void:
 	sun.shadow_enabled = true
 	sun.shadow_bias = 0.03
 	sun.shadow_normal_bias = 1.2
-	sun.shadow_blur = 0.8
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	# One shadow map stretched over just the part of the world the camera
+	# sees (see _fit_shadows): crisp chair legs instead of blocky smudges.
+	sun.shadow_blur = 0.6
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = 60.0
 	sun.light_angular_distance = 0.0
 	add_child(sun)
@@ -126,10 +130,20 @@ func _lerp(a: Dictionary, b: Dictionary, t: float) -> Dictionary:
 
 
 func _process(delta: float) -> void:
+	_fit_shadows()
 	if _target.is_empty():
 		return
 	_current = _lerp(_current, _target, clampf(delta * 1.5, 0.0, 1.0))
 	_apply(_current)
+
+
+## The camera looks down from a fixed angle, so everything on screen lies
+## within a band around its focus distance: the shadow map only needs to
+## reach a little past it. (A larger reach spreads the same map thinner.)
+func _fit_shadows() -> void:
+	if camera == null or not is_instance_valid(camera):
+		return
+	sun.directional_shadow_max_distance = clampf(camera.distance() + 24.0, 30.0, 140.0)
 
 
 func _apply(s: Dictionary) -> void:

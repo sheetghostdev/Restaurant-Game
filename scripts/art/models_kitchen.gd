@@ -15,6 +15,8 @@ static func build(key: StringName, b: MeshBuilder) -> bool:
 	match key:
 		&"counter": _counter(b)
 		&"cutting_board": _cutting_board(b)
+		&"mixing_bowl": _mixing_bowl(b)
+		&"mix_fill": _mix_fill(b)
 		&"grill": _grill(b)
 		&"grill_glow": _grill_glow(b)
 		&"fryer": _fryer(b)
@@ -113,6 +115,35 @@ static func _pass_counter(b: MeshBuilder) -> void:
 		b.block(Vector3(x, H, -0.38), Vector3(0.05, 0.62, 0.05), Pal.STEEL_DARK, 0.01)
 	b.box(Vector3(0, H + 0.64, -0.3), Vector3(0.96, 0.08, 0.22), Pal.STEEL_DARK, 0.02)
 	b.box(Vector3(0, H + 0.595, -0.3), Vector3(0.8, 0.015, 0.14), Color("ffcf85"))
+
+
+## A baking station: a big glazed mixing bowl with a whisk at the back of a
+## butcher-block counter; the finished tray of batter sits at the front.
+static func _mixing_bowl(b: MeshBuilder) -> void:
+	cabinet(b)
+	worktop(b, Pal.BUTCHER)
+	var glaze := Color("4f8fc0")
+	b.cyl(Vector3(0, H, -0.22), 0.11, 0.03, glaze.darkened(0.25), 12, 0.01)
+	# Deep bowl: blue outside, a shaded cream inside and a thick blue rim.
+	b.cyl(Vector3(0, H + 0.03, -0.22), 0.13, 0.13, glaze, 12, 0.0, Color("d6cdbd"), 0.205)
+	b.push_at(Vector3(0, 0, -0.22))
+	ModelsProps._tube(b, H + 0.15, 0.218, 0.028, 0.035, glaze.lightened(0.18), 14)
+	b.pop()
+	# A big balloon whisk leaning in the bowl
+	b.push_at(Vector3(0.09, H + 0.2, -0.26), 0.5, Vector3.ONE, 0.0, -0.7)
+	b.cyl(Vector3(0, 0.02, 0), 0.018, 0.2, Pal.WALNUT, 6, 0.005)
+	for k in 3:
+		b.push_at(Vector3(0, -0.06, 0), k * PI / 3.0)
+		b.box(Vector3(0, 0, 0), Vector3(0.1, 0.16, 0.008), Color("e6ebee"))
+		b.pop()
+	b.pop()
+	# A little flour spilt on the counter
+	b.sphere(Vector3(-0.28, H + 0.002, -0.05), Vector3(0.07, 0.004, 0.05), Color("fbf8f0"))
+
+
+## What's in the mixing bowl (tinted: flour white to batter yellow).
+static func _mix_fill(b: MeshBuilder) -> void:
+	b.cyl(Vector3.ZERO, 0.175, 0.016, Color.WHITE, 12, 0.006, Color.WHITE, 0.17)
 
 
 static func _cutting_board(b: MeshBuilder) -> void:

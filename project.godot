@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Mise en Chaos"
 config/description="A cooperative restaurant logistics game: build it, stock it, and somehow keep it running."
-config/version="0.5.0"
+config/version="0.6.0"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 boot_splash/bg_color=Color(0.184, 0.498, 0.478, 1)

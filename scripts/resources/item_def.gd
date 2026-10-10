@@ -19,6 +19,14 @@ extends Resource
 @export var cook_profile: CookProfile
 @export var plate_layer := 0                      ## Stacking order when plated.
 @export var grow_seconds := 0.0                   ## > 0: hydroponic planters can grow it (seconds per unit).
+@export_group("Batches")
+## Whisked in a mixing bowl from these ingredients (flour + egg = muffin
+## batter). An id can appear twice for two of it.
+@export var mixed_from: Array[StringName] = []
+@export var mix_work := 2.5                       ## Seconds of whisking.
+@export var portions := 0                         ## > 0: a batch (a tray of muffins) you USE to take one at a time.
+@export var portion_item: StringName              ## What each portion is (a muffin), keeping the batch's cooking.
+@export var base_model: StringName                ## Part of the model the cook colour doesn't tint (the tin).
 @export_group("Freshness")
 @export var perishable := false
 @export var spoil_seconds := 300.0                ## Time out of cold storage before spoiling.

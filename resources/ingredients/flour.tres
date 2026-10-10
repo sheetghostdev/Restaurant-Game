@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_icl4w"]
+
+[resource]
+script = ExtResource("1_icl4w")
+id = &"flour"
+display_name = "Flour"
+model = &"flour_bag"
+color = Color(0.95686275, 0.9372549, 0.8901961, 1)
+tags = PackedStringArray("baking")
+unit_cost = 0.3
+description = "Goes in the mixing bowl with an egg to make muffin batter."

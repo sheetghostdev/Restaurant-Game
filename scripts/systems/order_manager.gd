@@ -107,8 +107,9 @@ func is_struck(ingredient: StringName) -> bool:
 ## True if any required component of `r` comes from a struck ingredient.
 func recipe_blocked(r: RecipeDef) -> bool:
 	for c in r.required:
-		if struck.has(Content.base_ingredient(c)):
-			return true
+		for b in Content.base_ingredients(c):
+			if struck.has(b):
+				return true
 	return false
 
 

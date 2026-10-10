@@ -1,11 +1,13 @@
 class_name GridNav
 extends RefCounted
-## Grid pathfinding for customers and staff. Uses AStar2D over the restaurant
+## Grid pathfinding for customers and staff (guests get their own instance
+## that keeps them out of the kitchen). Uses AStar2D over the restaurant
 ## grid with edges removed where walls stand, so pathing is deterministic,
 ## cheap, and always agrees with what players see. Paths are string-pulled so
 ## NPCs walk in natural straight lines instead of grid zigzags.
 
 var grid: RestaurantGrid
+var guests := false          ## Guest paths: staff-only rooms are closed.
 var astar := AStar2D.new()
 var _dirty := true
 var _origin := Vector2i.ZERO
@@ -16,8 +18,13 @@ const DIRS := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 const DIAG := [Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(-1, -1)]
 
 
-func _init(g: RestaurantGrid) -> void:
+func _init(g: RestaurantGrid, guests_only := false) -> void:
 	grid = g
+	guests = guests_only
+
+
+func _ok(c: Vector2i) -> bool:
+	return grid.walkable(c) and not (guests and grid.is_staff_only(c))
 
 
 func mark_dirty() -> void:
@@ -44,7 +51,7 @@ func rebuild() -> void:
 			var c := _origin + Vector2i(x, z)
 			var id := _id(c)
 			astar.add_point(id, Vector2(c.x + 0.5, c.y + 0.5))
-			if not grid.walkable(c):
+			if not _ok(c):
 				astar.set_point_disabled(id, true)
 	for z in _h:
 		for x in _w:
@@ -59,7 +66,7 @@ func rebuild() -> void:
 					continue
 				var a := Vector2i(n.x, c.y)
 				var b := Vector2i(c.x, n.y)
-				if not (grid.walkable(a) and grid.walkable(b)):
+				if not (_ok(a) and _ok(b)):
 					continue
 				if grid.wall_between(c, a) or grid.wall_between(a, n) or grid.wall_between(c, b) or grid.wall_between(b, n):
 					continue
@@ -139,7 +146,7 @@ func _line_clear(a: Vector2, b: Vector2) -> bool:
 		for off in [Vector2.ZERO, perp, -perp]:
 			var q: Vector2 = p + off
 			var c := Vector2i(floori(q.x), floori(q.y))
-			if not grid.walkable(c):
+			if not _ok(c):
 				# allow the start/end cells themselves
 				if c != Vector2i(floori(a.x), floori(a.y)) and c != Vector2i(floori(b.x), floori(b.y)):
 					return false

@@ -14,13 +14,5 @@ starter_fixtures = Array[Dictionary]([{
 "cell": Vector2i(-3, 4),
 "def": "table",
 "rot": 0
-}, {
-"cell": Vector2i(-3, 3),
-"def": "chair",
-"rot": 0
-}, {
-"cell": Vector2i(-3, 5),
-"def": "chair",
-"rot": 2
 }])
 description = "Outdoor seating off the dining room. Customers love the sun."

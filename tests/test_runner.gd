@@ -40,6 +40,7 @@ func _ready() -> void:
 	await t_automation()
 	await t_regressions()
 	await t_round5()
+	await t_round6()
 	await t_menu_board()
 	await t_spoilage()
 	await t_consequences()
@@ -168,8 +169,8 @@ func held_id() -> String:
 func t_layout() -> void:
 	print("[layout]")
 	check(w.grid.rooms.size() == 4, "four starting rooms")
-	check(w.grid.all_fixtures().size() >= 55, "fixtures spawned (%d)" % w.grid.all_fixtures().size())
-	check(w.customers.total_seats() == 16, "16 seats across the dining room (%d)" % w.customers.total_seats())
+	check(w.grid.all_fixtures().size() >= 40, "fixtures spawned (%d)" % w.grid.all_fixtures().size())
+	check(w.customers.total_seats() == 24, "24 seats: tables bring a chair for every free side (%d)" % w.customers.total_seats())
 	check(w.grid.nav.reachable(Vector2i(4, 10), Vector2i(2, 1)), "customers can path from the street to a chair")
 	check(w.day.phase == GameConst.Phase.MORNING, "game starts in morning prep")
 	check(w.grid.fixtures_of(&"dishwasher").is_empty(), "no dishwasher at the start (you buy one)")
@@ -445,6 +446,36 @@ func t_build_mode() -> void:
 	await press_grab(0.05)
 	check(p.carried_fixture == null and tom.slot and tom.slot.owner_entity == c2, "put down with the tomato still on it")
 	w.despawn(tom)
+	# Tables bring their own chairs: rearrange the dining room like PlateUp.
+	var cm := w.customers
+	var t1 := fixture(&"table", 0)
+	var home := t1.cell
+	var partner := w.grid.fixture_at(home + Vector2i(1, 0))
+	var st1 := t1.get_component("SeatingTable") as SeatingTable
+	var stp := partner.get_component("SeatingTable") as SeatingTable
+	check(st1.seated_sides().size() == 3, "the end table of a pair has three chairs (%d)" % st1.seated_sides().size())
+	approach(t1)
+	await press_grab(0.05)
+	check(p.carried_fixture == t1, "one press picks up an empty table")
+	check(stp.seated_sides().size() == 4, "its partner gets a chair where they were joined")
+	p.global_position = GameConst.cell_center(Vector2i(4, 3))
+	p.rotation.y = 0.0
+	p.facing = Vector3(0, 0, 1)
+	check(w.build.try_place_carried(p) and t1.cell == Vector2i(4, 4), "put it down on its own in the middle (%s)" % str(t1.cell))
+	check(st1.seated_sides().size() == 4, "on its own it seats four")
+	cm.mark_tables_dirty()
+	var n1 := st1.number
+	cm.clusters()
+	check(st1.number != stp.number, "and it's its own table, with its own colour")
+	# Push it back against its partner: one bigger table again.
+	approach(t1)
+	await press_grab(0.05)
+	p.global_position = GameConst.cell_center(home + Vector2i(0, -1))
+	p.rotation.y = 0.0
+	p.facing = Vector3(0, 0, 1)
+	check(w.build.try_place_carried(p) and t1.cell == home, "pushed back next to its partner")
+	cm.clusters()
+	check(st1.number == stp.number and st1.seated_sides().size() == 3, "joined again: one colour, no chair between them")
 
 
 func t_service() -> void:
@@ -452,12 +483,13 @@ func t_service() -> void:
 	# Nobody opens the doors: they open when prep time runs out.
 	var sign0 := fixture(&"open_sign")
 	approach(sign0)
-	check(w.interaction._query(sign0, p, GameConst.Verb.USE).get("blocked", false), "the sign can't open early")
+	var sq := w.interaction._query(sign0, p, GameConst.Verb.USE)
+	check(sq.get("hold", false) and not sq.get("blocked", false) and String(sq.get("label", "")).begins_with("Open now"), "during prep the sign offers to open now")
+	check(Difficulty.factor("prep_seconds") <= 100.0, "prep is under two minutes on Normal (%ds)" % int(Difficulty.factor("prep_seconds")))
 	w.day.auto_open = true
-	w.day.prep_left = 1.0
-	await wait(1.5)
-	check(w.day.phase == GameConst.Phase.SERVICE, "the doors opened by themselves")
-	check(w.day.phase == GameConst.Phase.SERVICE, "restaurant opened")
+	use(sign0, 1.0)
+	await frames(2)
+	check(w.day.phase == GameConst.Phase.SERVICE, "holding USE on the sign opened the doors early (%.0fs of prep left)" % w.day.prep_left)
 	check(w.customers.groups.size() >= 1, "the first guests were already waiting at the door")
 	var g := w.customers.spawn_group(Content.archetype(&"traveler"), true)
 	check(g != null and g.members.size() == 1, "spawned a tired traveler")
@@ -819,7 +851,7 @@ func t_round5() -> void:
 		if sd.needs_cold != (sd.container == "crate_cold"):
 			cold_ok = false
 	check(cold_ok, "every chilled supply (and only those) comes in a silver cooler")
-	check(DishPlating.vessel_key([{"id": &"beer"}]) == &"beer_pint" and DishPlating.vessel_key([{"id": &"soda"}]) == &"soda_glass", "beer and soda come in their own glasses")
+	check(DishPlating.vessel_key([{"id": &"beer", "ck": 0.8}]) == &"beer_pint" and DishPlating.vessel_key([{"id": &"soda", "ck": 0.8}]) == &"soda_glass", "beer and soda come in their own glasses")
 	check(DishPlating.vessel_key([{"id": &"coffee"}]) == &"mug" and DishPlating.cup == &"mug", "coffee (and the diner's empty cups) are mugs")
 	# The recipe book: a card per dish, each ingredient's journey as pictures.
 	var rb := w.hud.recipe_book
@@ -835,11 +867,114 @@ func t_round5() -> void:
 	check(icons.call(&"burger").has("station:grill") and icons.call(&"burger").has("cooked:patty"), "burger card: raw patty › grill › cooked patty")
 	check(icons.call(&"fries").has("item:potato") and icons.call(&"fries").has("station:cutting_board") and icons.call(&"fries").has("station:fryer"), "fries card: potato › chop › fry")
 	check(icons.call(&"croissant").has("station:oven"), "croissant card says bake it")
-	check(icons.call(&"muffin").filter(func(k): return String(k).begins_with("station:")).is_empty(), "muffin card: no cooking")
+	check(icons.call(&"muffin").has("station:mixing_bowl") and icons.call(&"muffin").has("station:oven") and icons.call(&"muffin").has("item:egg"), "muffin card: flour + egg › whisk › bake")
 	check(icons.call(&"pizza").has("model:plate") and icons.call(&"pizza").has("station:oven"), "pizza card: build on a plate, then bake")
 	check(icons.call(&"beer").has("station:beer_tap") and icons.call(&"beer").has("model:glass"), "beer card: clean glass › beer tap")
 	var croissant := Content.item(&"croissant").cook_profile
 	check(croissant.color_at(0.0).get_luminance() > croissant.color_at(0.75).get_luminance() + 0.15, "raw croissants look clearly paler than baked ones")
+
+
+func t_round6() -> void:
+	print("[round 6]")
+	# Drinks: the level drops while guests drink; finished ones look empty.
+	check(DishPlating.vessel_key([{"id": &"soda", "ck": 0.8}], false, 0.5) == &"soda_glass_2", "a half-drunk soda shows half a glass")
+	check(DishPlating.vessel_key([{"id": &"beer", "ck": 0.8}], false, 0.25) == &"beer_pint_1", "a nearly finished pint")
+	check(DishPlating.vessel_key([{"id": &"soda", "ck": 0.1}]) == &"soda_glass_1", "a glass fills up while it's pouring")
+	check(DishPlating.vessel_key([], true) == &"mug_dirty", "a finished drink is an empty, dirty cup")
+	var table: Fixture = null
+	for tf in w.grid.fixtures_of(&"table"):
+		var tst := tf.get_component("SeatingTable") as SeatingTable
+		if table == null and w.customers.group_at_table(tf) == null and tst.is_clean():
+			table = tf
+	var st := table.get_component("SeatingTable") as SeatingTable
+	var side: int = st.seated_sides()[0]
+	var mug: DishItem = w.spawn_item(&"dishware", {"p": 0, "m": 1, "c": [{"id": "coffee", "ck": 0.8}]}, {"slot": [table.net_id, st.side_slot(side, 1).index]})
+	var arch := Content.archetype(&"traveler")
+	var guest: Customer = w.spawn_entity(&"customer", &"customer", {"a": "traveler", "app": w.customers._app_save(w.customers._appearance_for(arch, 0)), "m": 1.0}, {"pos": [0, 0, 0], "yaw": 0.0})
+	guest.seat_table = table
+	guest.seat_side = side
+	guest.eat_total = 8.0
+	guest.eat_left = 3.9
+	var cg := CustomerGroup.new()
+	cg._sip(guest)
+	check(is_equal_approx(mug.level, 0.5) and mug.get_state().get("lv", 1.0) == 0.5, "halfway through, their coffee is half full")
+	cg._finish_eating(guest)
+	check(mug.dirty and mug.contents.is_empty() and mug.level == 1.0, "when they're done the mug is empty and dirty")
+	w.despawn(mug)
+	w.despawn(guest)
+	# Shadows: one shadow map fitted to what the camera sees.
+	await frames(2)
+	var sun := w.lighting.sun
+	check(sun.directional_shadow_mode == DirectionalLight3D.SHADOW_ORTHOGONAL and absf(sun.directional_shadow_max_distance - clampf(w.camera.distance() + 24.0, 30.0, 140.0)) < 1.0, "the sun's shadow map is fitted to the camera (%.0f m)" % sun.directional_shadow_max_distance)
+	check(Settings.get_value("sharp_shadows") == true, "sharp shadows are on by default")
+	# Guests never cut through the kitchen or storage.
+	var targets := [w.grid.street_point("spawn_a", Vector2i(-3, 12)), w.grid.street_point("spawn_b", Vector2i(-3, 12)), w.grid.street_point("queue", Vector2i(4, 10))]
+	var paths := 0
+	var through := []
+	for c in w.customers.clusters():
+		for seat in c["seats"]:
+			var chair: Vector2i = seat["table"].cell + SeatingTable.SIDES[seat["side"]]
+			for tc in targets:
+				var path := w.grid.guest_nav.find_path(GameConst.cell_center(chair), tc)
+				paths += 1
+				var prev := GameConst.cell_center(chair)
+				for pt in path:
+					for k in 8:
+						var q := prev.lerp(pt, k / 8.0)
+						var qc := GameConst.world_to_cell(q)
+						if w.grid.is_staff_only(qc) and not (qc in through):
+							through.push_back(qc)
+					prev = pt
+	check(paths > 0 and through.is_empty(), "%d guest paths from the seats to the street, none through the back (%s)" % [paths, str(through)])
+	check(w.grid.nav.reachable(GameConst.world_to_cell(w.customers.front_door_pos()), Vector2i(12, 4)), "staff (and the health inspector) can still get into the kitchen")
+	# Muffins: flour + egg in the mixing bowl, whisk, bake the tray, take them out.
+	var free := []
+	for y in range(2, 8):
+		for x in range(16, 20):
+			var c := Vector2i(x, y)
+			if w.grid.fixture_at(c) == null and w.build.can_place_at(c, Content.fixture(&"oven")) and free.size() < 2:
+				free.push_back(c)
+	var bowl := w.spawn_fixture(&"mixing_bowl", free[0], 0)
+	var oven := w.spawn_fixture(&"oven", free[1], 0)
+	var mx := bowl.get_component("Mixer") as Mixer
+	if p.held():
+		w.despawn(p.held())
+	p.hold(w.spawn_item(&"flour"))
+	check(grab(bowl) and mx.added == [&"flour"], "flour goes in the mixing bowl")
+	var q := w.interaction._query(bowl, p, GameConst.Verb.USE)
+	check(q.get("blocked", false) and String(q.get("label", "")).contains("egg"), "it needs an egg before it can be whisked (%s)" % q.get("label", ""))
+	p.hold(w.spawn_item(&"egg"))
+	check(grab(bowl) and mx.added.size() == 2, "an egg goes in too")
+	use(bowl, 3.0)
+	var tray := bowl.primary_slot().item as FoodItem
+	check(tray != null and tray.def_id == &"muffin_tray" and mx.added.is_empty(), "whisked into a tray of muffin batter")
+	if tray == null:
+		return
+	check(tray.use_query(p).get("blocked", false), "raw batter: bake it first")
+	check(grab(bowl) and p.held() == tray, "picked up the tray")
+	check(grab(oven) and oven.primary_slot().item == tray, "into the oven")
+	var tw := 0.0
+	while tray.stage() < 1 and tw < 15.0:
+		await wait(0.5)
+		tw += 0.5
+	check(tray.stage() == 1, "baked golden (%.0fs)" % tw)
+	check(grab(oven) and p.held() == tray and grab(bowl), "out of the oven and set down")
+	RecipeManager.menu.push_back(&"muffin")   # (this is the diner: muffins just for the test)
+	p.hold(w.spawn_item(&"dishware", {"p": 1, "m": 0}))
+	check(use(bowl), "USE with a plate takes a muffin onto it")
+	var plate := p.held() as DishItem
+	check(plate.contents.size() == 1 and plate.recipe() == Content.recipe(&"muffin") and plate.quality() >= 0.95, "a golden muffin, ready to serve (%s)" % plate.status_text())
+	check(tray.portions_left() == 3, "three left in the tray")
+	for i in 3:
+		w.despawn(p.take_held())
+		use(bowl)
+	check(p.held() is FoodItem and p.held().def_id == &"muffin" and (not is_instance_valid(tray) or tray.is_queued_for_deletion()), "the last one taken, the empty tin is cleared away")
+	w.despawn(p.take_held())
+	RecipeManager.menu.erase(&"muffin")
+	w.despawn(bowl)
+	w.despawn(oven)
+	var cafe: RestaurantFormatDef = Content.formats[&"coffee_shop"]
+	check(cafe.stations.has(&"mixing_bowl") and cafe.supplies.has(&"supply_flour") and cafe.supplies.has(&"supply_eggs") and not cafe.supplies.has(&"supply_muffins"), "the coffee shop bakes its own muffins")
 
 
 func t_menu_board() -> void:
@@ -948,8 +1083,8 @@ func t_close_day() -> void:
 	w.deliveries.adjust_order(&"supply_buns", 1)
 	w.deliveries.set_auto(&"supply_buns", true)
 	var pending_before := w.deliveries.pending.size()
-	use(sign_f, 1.0)
-	check(w.day.phase == GameConst.Phase.MORNING and w.day.day == 2, "day 2 morning")
+	use(sign_f, 2.5)
+	check(w.day.phase == GameConst.Phase.MORNING and w.day.day == 2, "day 2 morning (holding USE on past lights-out doesn't skip the prep)")
 	var truck_items := []
 	for d in w.deliveries.pending.slice(pending_before):
 		if d["label"] == "Morning delivery":
@@ -979,4 +1114,9 @@ func t_save_load() -> void:
 	check(absf(w.economy.money - money) < 0.01, "money restored")
 	check(&"walk_in_cooler" in w.grid.built_expansions, "expansion restored")
 	check(w.day.day == 2, "day restored")
+	# Nobody flips the sign: the doors still open when the countdown runs out.
+	w.day.auto_open = true
+	w.day.prep_left = 1.0
+	await wait(1.5)
+	check(w.day.phase == GameConst.Phase.SERVICE, "the doors open by themselves when prep runs out")
 	print("     entities before %d after %d" % [n_before, w.entities.size()])

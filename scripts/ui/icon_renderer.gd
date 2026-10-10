@@ -96,16 +96,21 @@ func _build(key: String) -> Dictionary:
 			# "cooked:patty" shows it done just right (tickets); "item:" raw.
 			var d := Content.item(id)
 			if d:
-				n = Models.instance(d.model)
-				# Food is small: frame it tightly so it reads even as a chip.
-				frame_size = 0.26 if d.item_class == "food" else 0.36
-				if d.cook_profile:
-					var ck := 0.0
-					if kind == "cooked":
-						var p := d.cook_profile
-						var i := p.perfect_stage
-						ck = ((0.0 if i == 0 else p.stage_ends[i - 1]) + p.stage_ends[i]) * 0.5
-					n.set_meta(&"content", {"id": d.id, "ck": ck})
+				var ck := 0.0
+				if d.cook_profile and kind == "cooked":
+					var p := d.cook_profile
+					var i := p.perfect_stage
+					ck = ((0.0 if i == 0 else p.stage_ends[i - 1]) + p.stage_ends[i]) * 0.5
+				if d.base_model != &"" or d.portions > 0:
+					# A batch (muffin tin): the tin plus its tinted portions.
+					n = FoodItem.make_model(d, ck)
+					frame_size = 0.42
+				else:
+					n = Models.instance(d.model)
+					if d.cook_profile:
+						n.set_meta(&"content", {"id": d.id, "ck": ck})
+					# Food is small: frame it tightly so it reads even as a chip.
+					frame_size = 0.26 if d.item_class == "food" else 0.36
 		"fixture":
 			var f := Content.fixture(id)
 			if f:

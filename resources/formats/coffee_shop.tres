@@ -21,23 +21,24 @@ hourly_demand = {
 14: 0.7
 }
 archetypes = Array[StringName]([&"regular_folks", &"commuter", &"student", &"business", &"date", &"tourists", &"critic"])
-stations = Array[StringName]([&"oven", &"oven", &"counter", &"coffee_machine", &"counter", &"counter", &"coffee_machine", &"counter"])
+stations = Array[StringName]([&"oven", &"oven", &"mixing_bowl", &"coffee_machine", &"counter", &"counter", &"coffee_machine", &"counter"])
 pantry = Array[Dictionary]([{
 "supply": "supply_croissants",
 "units": 6
 }, {
-"supply": "supply_muffins",
-"units": 6
+"supply": "supply_flour",
+"units": 4
 }, {
 "supply": "supply_jam",
 "units": 6
 }])
-supplies = Array[StringName]([&"supply_coffee", &"supply_milk", &"supply_croissants", &"supply_muffins", &"supply_jam"])
+supplies = Array[StringName]([&"supply_coffee", &"supply_milk", &"supply_croissants", &"supply_flour", &"supply_eggs", &"supply_jam"])
 opening = {
 "supply_coffee": 2,
 "supply_croissants": 1,
-"supply_milk": 1,
-"supply_muffins": 1
+"supply_eggs": 1,
+"supply_flour": 1,
+"supply_milk": 1
 }
 food_chance = 0.5
 extra_mugs = 4
@@ -46,4 +47,4 @@ accent = Color(0.5411765, 0.3529412, 0.23529412, 1)
 tagline = "Early mornings, lattes and warm croissants."
 default_name = "Bean There"
 sign_text = "CAFE"
-description = "Lots of small, quick orders. Keep the coffee machines loaded, bake croissants golden, and watch the morning rush."
+description = "Lots of small, quick orders. Keep the coffee machines loaded, bake croissants golden, whisk and bake trays of muffins, and watch the morning rush."

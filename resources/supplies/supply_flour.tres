@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_426a4"]
+
+[resource]
+script = ExtResource("1_426a4")
+id = &"supply_flour"
+display_name = "Flour"
+item_id = &"flour"
+quantity = 6
+price = 5.0
+container = "carton"
+default_order = 0
+description = "6 bags of flour (one tray of muffins each)."

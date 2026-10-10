@@ -10,5 +10,6 @@ floor_style = "concrete"
 floor_a = Color(0.68235296, 0.6666667, 0.627451, 1)
 floor_b = Color(0.59607846, 0.5803922, 0.54509807, 1)
 wall_color = Color(0.8901961, 0.827451, 0.73333335, 1)
+staff_only = true
 has_windows = false
 light_color = Color(1, 0.9137255, 0.7882353, 1)

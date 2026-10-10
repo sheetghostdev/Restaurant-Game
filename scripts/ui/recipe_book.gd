@@ -196,6 +196,12 @@ static func recipe_rows(r: RecipeDef) -> Array:
 			bake = {"id": id, "profile": d.cook_profile}
 	var together := []
 	for id in r.required + r.optional:
+		var batch := batch_rows(id)
+		if not batch.is_empty():
+			for row in batch:
+				row["extra"] = id in r.optional
+				rows.push_back(row)
+			continue
 		var steps := ingredient_steps(id, not bake.is_empty())
 		# When baking the whole plate, plain toppings share one "a + b + c" row.
 		if not bake.is_empty() and steps.size() == 1 and id in r.required:
@@ -261,6 +267,29 @@ static func _drink_rows(r: RecipeDef) -> Array:
 	main.push_back({"icon": "recipe:%s" % r.id, "text": r.display_name})
 	rows.push_front({"steps": main})
 	return rows
+
+
+## Food that comes out of a batch (a muffin from a tray): the batch is
+## whisked from its ingredients, baked, then taken out one at a time.
+static func batch_rows(id: StringName) -> Array:
+	var batch: ItemDef = null
+	for d in Content.items.values():
+		if (d as ItemDef).portion_item == id and (d as ItemDef).portions > 0:
+			batch = d
+	if batch == null or batch.mixed_from.is_empty():
+		return []
+	var mix := []
+	for ing in batch.mixed_from:
+		mix.push_back({"icon": "item:%s" % ing, "text": Content.display_name(ing), "plus": not mix.is_empty()})
+	mix.push_back({"icon": "station:mixing_bowl", "text": "Whisk"})
+	mix.push_back({"icon": "item:%s" % batch.id, "text": "Tray of batter"})
+	var bake := [{"icon": "item:%s" % batch.id, "text": "Batter"}]
+	if batch.cook_profile:
+		var prof := batch.cook_profile
+		bake.push_back({"icon": "station:%s" % HEAT_STATION.get(prof.heat, &"oven"), "text": "%s: %s" % [VERB.get(prof.heat, "Cook"), prof.stage_names[prof.perfect_stage]]})
+		bake.push_back({"icon": "cooked:%s" % batch.id, "text": "%d %ss" % [batch.portions, Content.display_name(id).to_lower()]})
+	bake.push_back({"icon": "cooked:%s" % id, "text": "USE: take one"})
+	return [{"steps": mix}, {"steps": bake}]
 
 
 ## The whole item `id` is chopped from (potato for fries), if any.

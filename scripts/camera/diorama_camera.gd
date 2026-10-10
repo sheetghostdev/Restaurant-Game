@@ -37,6 +37,11 @@ func _ready() -> void:
 	current = true
 
 
+## How far the camera is from the point it looks at.
+func distance() -> float:
+	return _dist
+
+
 func set_building_rect(r: Rect2) -> void:
 	building_rect = r
 

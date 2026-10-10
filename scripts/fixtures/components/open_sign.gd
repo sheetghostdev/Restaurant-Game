@@ -1,14 +1,17 @@
 class_name OpenSign
 extends FixtureComponent
-## The big OPEN/CLOSED sign. Opening and closing happen by themselves (the
-## restaurant keeps its hours); in the evening, holding USE here turns the
-## lights out and starts the next morning.
+## The big OPEN/CLOSED sign. The doors open by themselves when prep time runs
+## out, but holding USE here during prep opens them right away. Closing
+## happens by itself; in the evening, holding USE turns the lights out and
+## starts the next morning.
 
 @export var board_path: NodePath
 
 var _board: Node3D
 var _hold := 0.0
+var _cooldown := 0.0   ## after it fires: keeping the button held doesn't fire again
 const HOLD_TIME := 0.7
+const COOLDOWN := 2.0
 
 
 func _ready() -> void:
@@ -24,7 +27,7 @@ func query(_actor: Node, verb: int) -> Dictionary:
 		return {}
 	match w.day.phase:
 		GameConst.Phase.MORNING:
-			return {"label": "Opens by itself in %s" % GameConst.countdown(w.day.prep_left), "blocked": true}
+			return {"label": "Open now (or by itself in %s)" % GameConst.countdown(w.day.prep_left), "hold": true, "progress": _hold / HOLD_TIME}
 		GameConst.Phase.CLOSING:
 			return {"label": "Closing up once the last guests leave", "blocked": true}
 		GameConst.Phase.EVENING:
@@ -33,14 +36,21 @@ func query(_actor: Node, verb: int) -> Dictionary:
 
 
 func perform(_actor: Node, verb: int, delta: float) -> bool:
-	if verb != GameConst.Verb.USE or world().day.phase != GameConst.Phase.EVENING:
-		return false
 	var w := world()
+	if verb != GameConst.Verb.USE or not (w.day.phase in [GameConst.Phase.MORNING, GameConst.Phase.EVENING]):
+		return false
+	if _cooldown > 0.0:
+		# Still holding from "lights out": don't skip straight past the prep.
+		_cooldown = COOLDOWN
+		return true
 	_hold += delta
 	if _hold < HOLD_TIME:
 		return true
 	_hold = 0.0
-	if w.day.phase == GameConst.Phase.EVENING:
+	_cooldown = COOLDOWN
+	if w.day.phase == GameConst.Phase.MORNING:
+		w.day.open_early()
+	else:
 		w.day.start_next_day()
 	return true
 
@@ -48,6 +58,7 @@ func perform(_actor: Node, verb: int, delta: float) -> bool:
 func server_tick(delta: float) -> void:
 	# Decay partial holds when nobody is holding.
 	_hold = maxf(_hold - delta * 0.5, 0.0)
+	_cooldown = maxf(_cooldown - delta, 0.0)
 
 
 func _process(delta: float) -> void:

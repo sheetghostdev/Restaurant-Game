@@ -318,6 +318,7 @@ func serve(actor: Node, dish: DishItem, near_table: Fixture) -> bool:
 		world().fx.popup_text(m.global_position + Vector3(0, 2.0, 0), RecipeManager.quality_word(q), Pal.UI_GOOD if q >= 0.7 else Pal.UI_WARN)
 	m.anim = CharacterRig.Anim.EAT
 	m.eat_left = maxf(m.eat_left, r.eat_time / archetype.eat_speed / (1.0 + manager.decor_bonus("eat_speed")))
+	m.eat_total = m.eat_left
 	m.done_eating = false
 	_refresh_bubble(m)
 	if state == State.WAITING_FOOD:
@@ -345,6 +346,7 @@ func _tick_eating(delta: float) -> void:
 				waiting = true
 		if m.eat_left > 0.0:
 			m.eat_left -= delta
+			_sip(m)
 			if m.eat_left <= 0.0 and not waiting:
 				_finish_eating(m)
 		elif not waiting and not m.done_eating and not m.orders.is_empty():
@@ -353,6 +355,24 @@ func _tick_eating(delta: float) -> void:
 			all_done = false
 	if all_done:
 		_pay()
+
+
+## Drinks go down while a guest drinks them (in quarters, so the dish only
+## changes a few times).
+func _sip(m: Customer) -> void:
+	if m.eat_total <= 0.0 or m.seat_table == null:
+		return
+	var st := m.seat_table.get_component("SeatingTable") as SeatingTable
+	if st == null:
+		return
+	var lv := float(DishPlating.quarters(clampf(m.eat_left / m.eat_total, 0.0, 1.0))) / 4.0
+	for setting in 2:
+		var s := st.side_slot(m.seat_side, setting)
+		var d := s.item as DishItem if s else null
+		if d and d.is_mug() and not d.dirty and not d.contents.is_empty() and not is_equal_approx(d.level, lv):
+			d.level = lv
+			d.rebuild_visual()
+			d.mark_dirty()
 
 
 func _finish_eating(m: Customer) -> void:

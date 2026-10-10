@@ -133,6 +133,21 @@ func base_ingredient(id: StringName) -> StringName:
 	return id
 
 
+## Everything raw that `id` is made from: one ingredient usually, but
+## several for food baked in batches (a muffin: flour and an egg).
+func base_ingredients(id: StringName) -> Array[StringName]:
+	for other in items.values():
+		var b := other as ItemDef
+		if b.portion_item == id and b.portions > 0 and not b.mixed_from.is_empty():
+			var out: Array[StringName] = []
+			for m in b.mixed_from:
+				for raw in base_ingredients(m):
+					if not out.has(raw):
+						out.push_back(raw)
+			return out
+	return [base_ingredient(id)]
+
+
 ## Raw ingredients used by a format's menu, in menu order (menu board rows).
 func menu_ingredients(format: RestaurantFormatDef) -> Array[StringName]:
 	var out: Array[StringName] = []
@@ -141,9 +156,9 @@ func menu_ingredients(format: RestaurantFormatDef) -> Array[StringName]:
 		if r == null:
 			continue
 		for c in r.required + r.optional:
-			var b := base_ingredient(c)
-			if not out.has(b):
-				out.push_back(b)
+			for b in base_ingredients(c):
+				if not out.has(b):
+					out.push_back(b)
 	return out
 
 

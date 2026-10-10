@@ -307,44 +307,12 @@
    "rot": 0
   },
   {
-   "def": "chair",
-   "cell": [
-    1,
-    0
-   ],
-   "rot": 1
-  },
-  {
-   "def": "chair",
-   "cell": [
-    3,
-    0
-   ],
-   "rot": 3
-  },
-  {
    "def": "table",
    "cell": [
     2,
     1
    ],
    "rot": 0
-  },
-  {
-   "def": "chair",
-   "cell": [
-    1,
-    1
-   ],
-   "rot": 1
-  },
-  {
-   "def": "chair",
-   "cell": [
-    3,
-    1
-   ],
-   "rot": 3
   },
   {
    "def": "table",
@@ -355,22 +323,6 @@
    "rot": 0
   },
   {
-   "def": "chair",
-   "cell": [
-    1,
-    4
-   ],
-   "rot": 1
-  },
-  {
-   "def": "chair",
-   "cell": [
-    3,
-    4
-   ],
-   "rot": 3
-  },
-  {
    "def": "table",
    "cell": [
     2,
@@ -379,44 +331,12 @@
    "rot": 0
   },
   {
-   "def": "chair",
-   "cell": [
-    1,
-    5
-   ],
-   "rot": 1
-  },
-  {
-   "def": "chair",
-   "cell": [
-    3,
-    5
-   ],
-   "rot": 3
-  },
-  {
    "def": "table",
    "cell": [
     6,
     0
    ],
    "rot": 0
-  },
-  {
-   "def": "chair",
-   "cell": [
-    5,
-    0
-   ],
-   "rot": 1
-  },
-  {
-   "def": "chair",
-   "cell": [
-    7,
-    0
-   ],
-   "rot": 3
   },
   {
    "def": "table",
@@ -427,22 +347,6 @@
    "rot": 0
   },
   {
-   "def": "chair",
-   "cell": [
-    5,
-    1
-   ],
-   "rot": 1
-  },
-  {
-   "def": "chair",
-   "cell": [
-    7,
-    1
-   ],
-   "rot": 3
-  },
-  {
    "def": "table",
    "cell": [
     6,
@@ -451,44 +355,12 @@
    "rot": 0
   },
   {
-   "def": "chair",
-   "cell": [
-    5,
-    4
-   ],
-   "rot": 1
-  },
-  {
-   "def": "chair",
-   "cell": [
-    7,
-    4
-   ],
-   "rot": 3
-  },
-  {
    "def": "table",
    "cell": [
     6,
     5
    ],
    "rot": 0
-  },
-  {
-   "def": "chair",
-   "cell": [
-    5,
-    5
-   ],
-   "rot": 1
-  },
-  {
-   "def": "chair",
-   "cell": [
-    7,
-    5
-   ],
-   "rot": 3
   },
   {
    "def": "open_sign",

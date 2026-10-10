@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_ua31h"]
+
+[resource]
+script = ExtResource("1_ua31h")
+id = &"egg"
+display_name = "Egg"
+model = &"egg"
+color = Color(0.9372549, 0.8627451, 0.7529412, 1)
+tags = PackedStringArray("baking", "dairy")
+unit_cost = 0.25
+perishable = true
+spoil_seconds = 600.0
+description = "Goes in the mixing bowl with flour. Keep them in the fridge."

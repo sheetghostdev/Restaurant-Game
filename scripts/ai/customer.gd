@@ -19,7 +19,9 @@ var is_child := false
 var orders: Array = []            ## Server: order dicts for this member
 var menu_penalty := 0.0           ## Server: disappointment from crossed-off items
 var eat_left := 0.0
+var eat_total := 0.0              ## Server: eat_left when the latest dish arrived
 var done_eating := false
+var staff_access := false         ## Server: may walk back of house (the health inspector)
 
 var rig: CharacterRig
 var _bubble_node: Node3D
@@ -63,8 +65,19 @@ func held() -> Item:
 # Movement (authority)
 # -----------------------------------------------------------------------------
 
+## Guests stay front of house. If a layout leaves no other way (a walled-up
+## front door), they take the staff route rather than walk through walls.
+func _find_path(cell: Vector2i) -> Array[Vector3]:
+	if staff_access:
+		return world.grid.nav.find_path(global_position, cell)
+	var p := world.grid.guest_nav.find_path(global_position, cell)
+	if p.is_empty() and GameConst.world_to_cell(global_position) != cell:
+		p = world.grid.nav.find_path(global_position, cell)
+	return p
+
+
 func walk_to_cell(cell: Vector2i, on_arrive: Callable = Callable()) -> bool:
-	path = world.grid.nav.find_path(global_position, cell)
+	path = _find_path(cell)
 	_arrive_cb = on_arrive
 	_face_lock = false
 	seated = false
@@ -85,7 +98,7 @@ func walk_to_point(p: Vector3, on_arrive: Callable = Callable()) -> void:
 
 
 func walk_path_to(p: Vector3, on_arrive: Callable = Callable()) -> void:
-	path = world.grid.nav.find_path(global_position, GameConst.world_to_cell(p))
+	path = _find_path(GameConst.world_to_cell(p))
 	if path.is_empty() or path[path.size() - 1].distance_to(p) > 0.05:
 		path.push_back(p)
 	_arrive_cb = on_arrive

@@ -56,6 +56,11 @@ func _build() -> void:
 	ts.button_pressed = Settings.get_value("tilt_shift")
 	ts.toggled.connect(func(on): Settings.set_value("tilt_shift", on))
 	add_child(ts)
+	var sh := CheckBox.new()
+	sh.text = "Sharp shadows (turn off on slower PCs)"
+	sh.button_pressed = Settings.get_value("sharp_shadows")
+	sh.toggled.connect(func(on): Settings.set_value("sharp_shadows", on))
+	add_child(sh)
 	var help := UITheme.label(
 		"Keyboard A: WASD move · Space grab/drop · E use/chop/wash · Q rotate/ping · Shift sprint\n" +
 		"Keyboard B: Arrows · Enter grab · R-Shift use · / rotate · R-Ctrl sprint\n" +

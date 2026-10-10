@@ -9,6 +9,7 @@ var _values := {
 	"sfx_volume": 0.9,
 	"fullscreen": false,
 	"tilt_shift": true,
+	"sharp_shadows": true,     ## 8192 shadow map (more video memory) instead of 4096
 	"player_name": "Chef",
 	"last_address": "127.0.0.1",
 	"difficulty": 1,          ## Difficulty.RELAXED / NORMAL / HECTIC
@@ -57,3 +58,6 @@ func _apply(key: String) -> void:
 				w.camera.tilt_shift = _values[key]
 		"player_name":
 			Net.player_name = _values[key]
+		"sharp_shadows":
+			if DisplayServer.get_name() != "headless":
+				RenderingServer.directional_shadow_atlas_set_size(8192 if _values[key] else 4096, true)

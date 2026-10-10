@@ -26,9 +26,16 @@ static func build(key: StringName, b: MeshBuilder) -> bool:
 		&"mug": _mug(b, false)
 		&"mug_dirty": _mug(b, true)
 		&"glass": _glass(b, false)
+		&"muffin_tin": _muffin_tin(b)
 		&"glass_dirty": _glass(b, true)
 		&"soda_glass": _soda_glass(b)
+		&"soda_glass_3": _soda_glass(b, 3)
+		&"soda_glass_2": _soda_glass(b, 2)
+		&"soda_glass_1": _soda_glass(b, 1)
 		&"beer_pint": _beer_pint(b)
+		&"beer_pint_3": _beer_pint(b, 3)
+		&"beer_pint_2": _beer_pint(b, 2)
+		&"beer_pint_1": _beer_pint(b, 1)
 		&"mess_shards": _shards(b)
 		&"extinguisher": _extinguisher(b)
 		&"mop": _mop(b)
@@ -192,72 +199,124 @@ static func _plate(b: MeshBuilder, dirty: bool) -> void:
 			b.pop()
 
 
+## A four-cup steel muffin tin with paper liners. The batter (muffin_top)
+## sits in the cups and is the only part that browns in the oven.
+static func _muffin_tin(b: MeshBuilder) -> void:
+	b.block(Vector3(0, 0, 0), Vector3(0.34, 0.025, 0.34), Pal.STEEL, 0.008)
+	b.block(Vector3(0, 0.005, 0), Vector3(0.36, 0.012, 0.36), Pal.STEEL_DARK, 0.004)
+	# Same spots as FoodItem.PORTION_SPOTS.
+	for p in [Vector2(-0.075, -0.075), Vector2(0.075, -0.075), Vector2(-0.075, 0.075), Vector2(0.075, 0.075)]:
+		b.cyl(Vector3(p.x, 0.01, p.y), 0.055, 0.04, Color("f4efe6"), 10, 0.0, Color("e7dfd2"), 0.065)
+
+
+## A hollow ring of flat panels: the walls of a cup you can see down into.
+static func _tube(b: MeshBuilder, y: float, r: float, h: float, thick: float, col: Color, sides := 12) -> void:
+	var w := 2.0 * r * tan(PI / sides) * 1.06
+	for k in sides:
+		var a := TAU * k / sides
+		b.push_at(Vector3(sin(a) * (r - thick * 0.5), y, cos(a) * (r - thick * 0.5)), a)
+		b.block(Vector3.ZERO, Vector3(w, h, thick), col)
+		b.pop()
+
+
+## A hollow mug: you can see the cream inside, so an empty one looks empty.
+## Drinks are separate fill discs placed at their level (DishPlating).
+## A dirty mug has coffee dregs at the bottom, a ring and a drip.
 static func _mug(b: MeshBuilder, dirty: bool) -> void:
-	# The cream "inside" is the cap colour itself: a separate disc 1 mm above
-	# the cap flickered against it.
-	b.cyl(Vector3.ZERO, 0.072, 0.12, Pal.MUG, 10, 0.012, Pal.CREAM.darkened(0.05), 0.08)
-	b.box(Vector3(0.1, 0.06, 0), Vector3(0.03, 0.075, 0.025), Pal.MUG, 0.01)
-	b.box(Vector3(0.082, 0.096, 0), Vector3(0.04, 0.022, 0.025), Pal.MUG, 0.008)
-	b.box(Vector3(0.082, 0.026, 0), Vector3(0.04, 0.022, 0.025), Pal.MUG, 0.008)
+	var r := 0.076
+	var inside := Pal.CREAM.darkened(0.05)
+	b.cyl(Vector3.ZERO, r, 0.016, Pal.MUG, 12, 0.006)
+	b.cyl(Vector3(0, 0.016, 0), r - 0.012, 0.004, inside.darkened(0.1), 12)
+	_tube(b, 0.0, r, 0.12, 0.007, Pal.MUG)
+	_tube(b, 0.016, r - 0.007, 0.104, 0.006, inside)
+	b.box(Vector3(0.104, 0.06, 0), Vector3(0.03, 0.075, 0.025), Pal.MUG, 0.01)
+	b.box(Vector3(0.086, 0.096, 0), Vector3(0.04, 0.022, 0.025), Pal.MUG, 0.008)
+	b.box(Vector3(0.086, 0.026, 0), Vector3(0.04, 0.022, 0.025), Pal.MUG, 0.008)
 	if dirty:
-		b.cyl(Vector3(0, 0.12, 0), 0.06, 0.004, Pal.COFFEE.lightened(0.15), 8)
-		b.box(Vector3(0.02, 0.1, 0.072), Vector3(0.03, 0.03, 0.006), Pal.COFFEE)
+		b.cyl(Vector3(0, 0.02, 0), 0.05, 0.003, Pal.COFFEE, 10)
+		_tube(b, 0.07, r - 0.012, 0.01, 0.004, Pal.COFFEE.lightened(0.25))
+		b.box(Vector3(-0.02, 0.095, r + 0.002), Vector3(0.012, 0.035, 0.004), Pal.COFFEE)
 
 
-## A clear tumbler for cold drinks (pale blue so it reads as glass).
+## A clear, empty tumbler for cold drinks (pale blue so it reads as glass).
+## Dirty: a brown puddle at the bottom and streaks down the inside.
 static func _glass(b: MeshBuilder, dirty: bool) -> void:
 	var g := Color("cfe7ef")
-	b.cyl(Vector3.ZERO, 0.062, 0.018, g.lightened(0.3), 10, 0.006)
-	b.cyl(Vector3(0, 0.018, 0), 0.062, 0.135, g, 10, 0.0, g.darkened(0.12), 0.072)
-	# Highlight streak
-	b.box(Vector3(-0.02, 0.09, 0.064), Vector3(0.012, 0.09, 0.004), Color("ffffff"))
+	var r := 0.066
+	b.cyl(Vector3.ZERO, r - 0.004, 0.02, g.lightened(0.3), 12, 0.006, g.lightened(0.15))
+	_tube(b, 0.02, r, 0.145, 0.006, g)
+	b.box(Vector3(-0.024, 0.1, r + 0.002), Vector3(0.01, 0.09, 0.004), Color("ffffff"))
 	if dirty:
-		b.cyl(Vector3(0, 0.153, 0), 0.06, 0.004, Color("7a4a32"), 8)
-		b.box(Vector3(0.025, 0.07, 0.066), Vector3(0.03, 0.035, 0.005), Color("8a6a52"))
+		b.cyl(Vector3(0, 0.02, 0), 0.05, 0.004, Color("6a3a24"), 10)
+		for k in 3:
+			var a := 0.6 + k * 2.1
+			b.push_at(Vector3(sin(a) * (r - 0.009), 0.03, cos(a) * (r - 0.009)), a)
+			b.block(Vector3.ZERO, Vector3(0.008, 0.06 + k * 0.02, 0.003), Color("b08a6a"))
+			b.pop()
 
 
-## Cola in a tall glass: dark body, clear glass at the top, ice cubes, a
-## lemon slice on the rim and a red and white straw. Taller and slimmer than
-## a mug and it has no handle, so it never reads as hot chocolate.
-static func _soda_glass(b: MeshBuilder) -> void:
+## Cola in a tall glass, `quarters` full (4 = just poured): dark body with
+## clear glass above it, floating ice, a lemon slice and a striped straw. No
+## handle and taller than a mug, so it never reads as hot chocolate.
+static func _soda_glass(b: MeshBuilder, quarters := 4) -> void:
 	var cola := Color("4e1d10")
 	var g := Color("d8edf3")
-	b.cyl(Vector3.ZERO, 0.056, 0.02, g, 10, 0.006)
-	b.cyl(Vector3(0, 0.02, 0), 0.056, 0.13, cola, 10, 0.0, Color(0, 0, 0, 0), 0.064)
-	b.cyl(Vector3(0, 0.15, 0), 0.064, 0.035, g, 10, 0.0, cola.darkened(0.2), 0.068)
-	b.box(Vector3(-0.022, 0.09, 0.061), Vector3(0.01, 0.1, 0.004), Color("8a4a32"))
-	# Ice cubes floating at the top
-	for k in 3:
+	var r := 0.066
+	var full_h := 0.13
+	var h := full_h * quarters / 4.0
+	b.cyl(Vector3.ZERO, r - 0.004, 0.02, g.lightened(0.15), 12, 0.006)
+	b.cyl(Vector3(0, 0.02, 0), r - 0.002, h, cola, 12, 0.0, cola.darkened(0.25))
+	_tube(b, 0.02 + h, r, full_h + 0.015 - h, 0.005, g)
+	if h > 0.04:
+		b.box(Vector3(-0.022, 0.02 + h * 0.5, r + 0.001), Vector3(0.01, h * 0.7, 0.004), Color("8a4a32"))
+	# Ice floating on top
+	for k in mini(3, quarters):
 		var a := TAU * k / 3.0 + 0.3
-		b.push_at(Vector3(cos(a) * 0.03, 0.178, sin(a) * 0.03), a, Vector3.ONE, 0.25, 0.15)
+		b.push_at(Vector3(cos(a) * 0.03, 0.02 + h + 0.006, sin(a) * 0.03), a, Vector3.ONE, 0.25, 0.15)
 		b.box(Vector3.ZERO, Vector3(0.032, 0.028, 0.032), Color("bfe8ff"), 0.004)
 		b.pop()
 	# Lemon slice on the rim
-	b.push_at(Vector3(0.05, 0.19, 0.035), 0.6, Vector3.ONE, PI * 0.5)
+	b.push_at(Vector3(0.05, 0.168, 0.035), 0.6, Vector3.ONE, PI * 0.5)
 	b.cyl(Vector3(0, -0.006, 0), 0.03, 0.012, Color("f5d63a"), 8, 0.0, Color("fff3a0"))
 	b.pop()
 	# Red and white straw
-	b.push_at(Vector3(-0.015, 0.08, -0.01), 0.0, Vector3.ONE, 0.0, 0.2)
+	b.push_at(Vector3(-0.015, 0.03, -0.01), 0.0, Vector3.ONE, 0.0, 0.2)
 	for k in 4:
-		b.cyl(Vector3(0, k * 0.045, 0), 0.009, 0.045, Color("e8412f") if k % 2 == 0 else Color("fafafa"), 6)
+		b.cyl(Vector3(0, k * 0.047, 0), 0.009, 0.047, Color("e8412f") if k % 2 == 0 else Color("fafafa"), 6)
 	b.pop()
 
 
-## A pint of golden beer: a tall flared glass, amber body and a thick foam
-## head spilling over the rim.
-static func _beer_pint(b: MeshBuilder) -> void:
+## A pint of golden beer, `quarters` full: a flared glass, amber body and a
+## foam head that thins as it's drunk, leaving foam rings on the glass.
+static func _beer_pint(b: MeshBuilder, quarters := 4) -> void:
 	var amber := Color("eaa12a")
 	var foam := Color("fbf6e6")
-	b.cyl(Vector3.ZERO, 0.054, 0.018, Color("e4f1f5"), 10, 0.005)
-	b.cyl(Vector3(0, 0.018, 0), 0.054, 0.15, amber, 10, 0.0, Color(0, 0, 0, 0), 0.072)
-	# Light coming through the glass
-	b.box(Vector3(-0.022, 0.09, 0.062), Vector3(0.014, 0.11, 0.004), Color("f8cc66"))
-	for k in 4:
-		b.sphere(Vector3(0.014 + (k % 2) * 0.016, 0.04 + k * 0.026, 0.063), Vector3(0.006, 0.006, 0.004), Color("fde39a"))
-	# Foam head, spilling down one side
-	b.cyl(Vector3(0, 0.168, 0), 0.075, 0.036, foam, 10, 0.012, Color("fffaf0"))
-	b.sphere(Vector3(0.05, 0.168, 0.048), Vector3(0.02, 0.032, 0.02), foam)
-	b.sphere(Vector3(-0.02, 0.204, 0.01), Vector3(0.035, 0.014, 0.035), Color("fffaf0"))
+	var g := Color("cfe5ee")
+	var full_h := 0.15
+	var h := full_h * quarters / 4.0
+	var r_at := func(y: float) -> float: return lerpf(0.054, 0.074, clampf(y / full_h, 0.0, 1.0))
+	b.cyl(Vector3.ZERO, 0.054, 0.018, g, 12, 0.005)
+	var top := 0.018 + h
+	if quarters == 4:
+		b.cyl(Vector3(0, 0.018, 0), 0.054, h, amber, 12, 0.0, Color(0, 0, 0, 0), r_at.call(h))
+		b.cyl(Vector3(0, top, 0), r_at.call(h) + 0.002, 0.036, foam, 12, 0.012, Color("fffaf0"))
+		top += 0.036
+	else:
+		# Half drunk: golden surface with a thin ring of foam round the edge,
+		# and foam rings left on the glass where the level used to be.
+		b.cyl(Vector3(0, 0.018, 0), 0.054, h, amber, 12, 0.0, amber.lightened(0.15), r_at.call(h))
+		_tube(b, top, r_at.call(h) + 0.002, 0.008, 0.012, foam)
+		_tube(b, top, 0.077, 0.2 - top, 0.004, g)
+		for y in [0.16, 0.12, 0.08]:
+			if y > top + 0.012:
+				_tube(b, y, 0.073, 0.006, 0.002, foam)
+	if h > 0.05:
+		b.box(Vector3(-0.022, 0.018 + h * 0.5, r_at.call(h * 0.5) + 0.004), Vector3(0.014, h * 0.7, 0.004), Color("f8cc66"))
+		for k in quarters:
+			b.sphere(Vector3(0.014 + (k % 2) * 0.016, 0.04 + k * 0.024, r_at.call(0.04 + k * 0.024) + 0.003), Vector3(0.006, 0.006, 0.004), Color("fde39a"))
+	if quarters == 4:
+		b.sphere(Vector3(0.05, 0.168, 0.048), Vector3(0.02, 0.032, 0.02), foam)
+		b.sphere(Vector3(-0.02, 0.204, 0.01), Vector3(0.035, 0.014, 0.035), Color("fffaf0"))
 
 
 ## Broken dishes on the floor: angular white wedges and a few teal mug bits.

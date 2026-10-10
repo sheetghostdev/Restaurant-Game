@@ -15,6 +15,7 @@ extends FixtureComponent
 
 var beans := 0
 var _last_stage := -1
+var _last_fill := 0   ## quarters of the cup shown filled (it fills up while pouring)
 var _overflowed := false
 var _beans_vis: Node3D
 var _fx_t := 0.0
@@ -89,6 +90,11 @@ func server_tick(delta: float) -> void:
 	if prof.stage_index(float(c.get("ck", 0.0))) >= prof.perfect_stage:
 		rate *= Difficulty.factor("overcook")   # more time before it overflows
 	c["ck"] = float(c.get("ck", 0.0)) + rate * delta
+	var fill := DishPlating.quarters(DishPlating.drink_level(m.contents))
+	if fill != _last_fill:
+		_last_fill = fill
+		m.rebuild_visual()
+		m.mark_dirty()
 	var st := prof.stage_index(c["ck"])
 	if st != _last_stage:
 		if _last_stage >= 0 and st == prof.perfect_stage:

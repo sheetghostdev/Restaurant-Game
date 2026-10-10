@@ -1,6 +1,19 @@
 [gd_resource type="Resource" script_class="ItemDef" format=3]
 
+[ext_resource type="Script" path="res://scripts/resources/cook_profile.gd" id="1_btngo"]
 [ext_resource type="Script" path="res://scripts/resources/item_def.gd" id="1_fumlr"]
+
+[sub_resource type="Resource" id="Resource_hweua"]
+script = ExtResource("1_btngo")
+heat = &"oven"
+rate = 0.1111111111111111
+stage_names = PackedStringArray("Batter", "Golden", "Dark", "Burnt")
+stage_ends = PackedFloat32Array(0.5, 1.05, 1.35, 99)
+stage_quality = PackedFloat32Array(0, 1, 0.55, 0)
+stage_colors = PackedColorArray(1, 1, 1, 1, 0.8509804, 0.6039216, 0.33333334, 1, 0.627451, 0.3764706, 0.17254902, 1, 0.2901961, 0.1882353, 0.1254902, 1)
+perfect_stage = 1
+smoke_from = 1.2
+fire_at = 2.0
 
 [resource]
 script = ExtResource("1_fumlr")
@@ -9,5 +22,6 @@ display_name = "Muffin"
 model = &"muffin"
 color = Color(0.6901961, 0.45490196, 0.2509804, 1)
 tags = PackedStringArray("plateable", "bread")
-unit_cost = 0.6
-description = "Ready to serve: just plate it."
+unit_cost = 0.15
+cook_profile = SubResource("Resource_hweua")
+description = "Take one from a baked muffin tray."

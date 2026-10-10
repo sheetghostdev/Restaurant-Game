@@ -350,7 +350,7 @@ func _refresh_forecast() -> void:
 			l.custom_minimum_size = Vector2(270, 0)
 			_forecast_body.add_child(l)
 		var mode := world.location.supply_mode if world.location else "truck"
-		var morning_tip := "Unload the truck, stock the fridge and prep food: the doors open by themselves when the countdown runs out."
+		var morning_tip := "Unload the truck, stock the fridge and prep food. Ready early? Hold USE on the OPEN sign. Otherwise the doors open by themselves when the countdown runs out."
 		if mode == "market":
 			morning_tip = "Shop at the depot market on the platform, stock the fridges and prep food: the train leaves when the countdown runs out."
 		elif mode == "grow":

@@ -1,8 +1,10 @@
 class_name SeatingTable
 extends FixtureComponent
 ## A dining table. Adjacent tables form a cluster that seats one group, so
-## players can push tables together for big families. Chairs facing a table
-## side become seats; each side has a food and a drink place setting (slots).
+## players can push tables together for big families. Like PlateUp, chairs
+## come with the table: every side facing free dining-room floor gets one
+## (not the sides joined to another table, against a wall or blocked by
+## something solid). Each side has a food and a drink place setting (slots).
 ##
 ## Players interact with tables to take orders (USE), serve dishes (GRAB),
 ## clear dirty dishes (GRAB) and wipe crumbs (hold USE).
@@ -16,6 +18,8 @@ var _view := {}        ## seated group as clients see it (see _group_view)
 var _crumbs: Node3D
 var _cloth: Node3D
 var _painted := -1
+var _chairs: Node3D    ## chair models, placed in world space around the table
+var _chairs_key := ""
 
 ## Table colours, in table-number order. Tickets name tables by colour
 ## ("Red table") instead of numbers nobody wants to memorise.
@@ -84,16 +88,66 @@ func chair_cell(side: int) -> Vector2i:
 	return fixture.cell + SIDES[side]
 
 
-## Returns the sides that have a chair facing this table.
+## The sides that get a chair: free dining-room floor next to the table.
 func seated_sides() -> Array[int]:
 	var out: Array[int] = []
-	var g := world().grid
+	var w := world()
+	if w == null or w.grid == null or fixture.lifted:
+		return out
+	var g := w.grid
 	for i in 4:
-		var c := g.fixture_at(chair_cell(i))
-		if c and c.def_id == &"chair" and c.front_cell() == fixture.cell and not c.lifted:
-			if not g.wall_between(fixture.cell, chair_cell(i)):
-				out.push_back(i)
+		var c := chair_cell(i)
+		if g.wall_between(fixture.cell, c) or not g.is_customer_area(c):
+			continue
+		var f := g.fixture_at(c)
+		if f and not f.lifted and f != fixture:
+			# Joined to another table, or something solid is in the way. (A
+			# rug or wall art doesn't stop a chair.)
+			if f.get_component("SeatingTable") or (f.def and f.def.blocks_movement):
+				continue
+		if _claimed_by_other(c):
+			continue
+		out.push_back(i)
 	return out
+
+
+## Two tables one cell apart would both put a chair in the cell between them:
+## the one nearer the top-left keeps it.
+func _claimed_by_other(c: Vector2i) -> bool:
+	var g := world().grid
+	for d in SIDES:
+		var n: Vector2i = c + d
+		if n == fixture.cell:
+			continue
+		var t := g.fixture_at(n)
+		if t == null or t.lifted or t.get_component("SeatingTable") == null or g.wall_between(n, c):
+			continue
+		if n.x < fixture.cell.x or (n.x == fixture.cell.x and n.y < fixture.cell.y):
+			return true
+	return false
+
+
+## Chair models on the seated sides, rebuilt when the sides change (a table
+## pushed alongside, a plant put in the way, the table picked up).
+func _update_chairs() -> void:
+	var sides := seated_sides()
+	var key := "%s|%s|%s" % [fixture.cell, sides, fixture.lifted]
+	if key == _chairs_key:
+		return
+	_chairs_key = key
+	if _chairs == null:
+		_chairs = Node3D.new()
+		_chairs.top_level = true
+		fixture.add_child(_chairs)
+	for c in _chairs.get_children():
+		c.queue_free()
+	_chairs.global_transform = Transform3D.IDENTITY
+	for side in sides:
+		var m := Models.instance(&"chair")
+		var d: Vector2i = SIDES[side]
+		m.position = GameConst.cell_center(chair_cell(side))
+		m.rotation.y = atan2(-d.x, -d.y)   # facing the table
+		_chairs.add_child(m)
 
 
 func has_dirty_dishes() -> bool:
@@ -270,6 +324,8 @@ func _process(_delta: float) -> void:
 		_crumbs.queue_free()
 		_crumbs = null
 	_paint_cloth()
+	if fixture.is_inside_tree():
+		_update_chairs()
 
 
 func status_text() -> String:

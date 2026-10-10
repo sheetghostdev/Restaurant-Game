@@ -73,8 +73,9 @@ func _begin_morning(first_day: bool, from_load := false) -> void:
 	phase = GameConst.Phase.MORNING
 	hour = morning_hour()
 	elapsed = 0.0
-	# A bit longer on day one, while everyone finds their way around.
-	prep_total = Difficulty.factor("prep_seconds") + (30.0 if day == 1 else 0.0)
+	# A bit longer on day one, while everyone finds their way around. (The
+	# OPEN sign opens early whenever you're ready.)
+	prep_total = Difficulty.factor("prep_seconds") + (20.0 if day == 1 else 0.0)
 	prep_left = prep_total
 	_warned.clear()
 	_reset_stats()
@@ -93,6 +94,17 @@ func _begin_morning(first_day: bool, from_load := false) -> void:
 	if day > 1 or not first_day:
 		Events.notify("Day %d — the delivery truck is here" % day, &"info")
 	Saves.autosave(world)
+
+
+## Someone flipped the sign before the countdown ran out: the first guests
+## are already at the door, and in they come.
+func open_early() -> void:
+	if phase != GameConst.Phase.MORNING:
+		return
+	if not _warned.has("guests"):
+		_warned["guests"] = true
+		world.customers.early_arrival()
+	open_restaurant()
 
 
 func open_restaurant() -> void:

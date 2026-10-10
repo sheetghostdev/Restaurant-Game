@@ -308,6 +308,7 @@ func _spawn_inspector() -> void:
 	if _inspector == null:
 		return
 	_inspector.speed = 1.8
+	_inspector.staff_access = true   # the one guest who checks the kitchen
 	var kitchen := world.grid.cells_of_type(&"kitchen")
 	var target := Vector2i(door.x, door.y)
 	if not kitchen.is_empty():

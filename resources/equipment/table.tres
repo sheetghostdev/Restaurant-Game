@@ -12,4 +12,4 @@ category = "furniture"
 model = &"table"
 collision_height = 0.72
 allowed_outdoors = true
-description = "Push tables together to seat bigger groups."
+description = "Chairs come with it: every free side seats a guest. Push tables together to seat bigger groups."

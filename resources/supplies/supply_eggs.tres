@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SupplyDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/supply_def.gd" id="1_138at"]
+
+[resource]
+script = ExtResource("1_138at")
+id = &"supply_eggs"
+display_name = "Eggs"
+item_id = &"egg"
+quantity = 12
+price = 5.0
+container = "crate_cold"
+needs_cold = true
+default_order = 0
+description = "A dozen eggs. Keep cold."

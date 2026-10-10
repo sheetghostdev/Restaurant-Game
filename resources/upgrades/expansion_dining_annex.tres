@@ -14,24 +14,8 @@ starter_fixtures = Array[Dictionary]([{
 "def": "table",
 "rot": 0
 }, {
-"cell": Vector2i(2, -4),
-"def": "chair",
-"rot": 0
-}, {
-"cell": Vector2i(2, -2),
-"def": "chair",
-"rot": 2
-}, {
 "cell": Vector2i(6, -3),
 "def": "table",
 "rot": 0
-}, {
-"cell": Vector2i(6, -4),
-"def": "chair",
-"rot": 0
-}, {
-"cell": Vector2i(6, -2),
-"def": "chair",
-"rot": 2
 }])
 description = "More tables behind the dining room. More guests, longer walks."

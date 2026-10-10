@@ -24,10 +24,19 @@ var locked := {}                           ## opening type -> true while those d
 var _cell_room := {}                       ## Vector2i -> room index
 var _fixtures := {}                        ## Vector2i -> Fixture
 var nav: GridNav
+## Paths for guests: the same grid, but back-of-house rooms (kitchen,
+## storage, cooler...) are closed to them, so they never cut through.
+var guest_nav: GridNav
 
 
 func _init() -> void:
 	nav = GridNav.new(self)
+	guest_nav = GridNav.new(self, true)
+
+
+func _nav_dirty() -> void:
+	nav.mark_dirty()
+	guest_nav.mark_dirty()
 
 
 # -----------------------------------------------------------------------------
@@ -96,7 +105,7 @@ func set_locked(type: String, on: bool) -> void:
 		locked[type] = true
 	else:
 		locked.erase(type)
-	nav.mark_dirty()
+	_nav_dirty()
 
 
 func add_room(id: StringName, type: StringName, rect: Rect2i) -> void:
@@ -110,7 +119,7 @@ func set_opening(a: Vector2i, b: Vector2i, type: String) -> void:
 		openings.erase(edge_key(a, b))
 	else:
 		openings[edge_key(a, b)] = type
-	nav.mark_dirty()
+	_nav_dirty()
 	layout_changed.emit()
 
 
@@ -121,7 +130,7 @@ func _rebuild_index() -> void:
 		for x in range(r.position.x, r.end.x):
 			for z in range(r.position.y, r.end.y):
 				_cell_room[Vector2i(x, z)] = i
-	nav.mark_dirty()
+	_nav_dirty()
 
 
 static func edge_key(a: Vector2i, b: Vector2i) -> Vector4i:
@@ -162,6 +171,12 @@ func is_building(c: Vector2i) -> bool:
 func is_cold_cell(c: Vector2i) -> bool:
 	var rt := room_type_at(c)
 	return rt != null and rt.cold
+
+
+## Back of house: guests never walk through these rooms.
+func is_staff_only(c: Vector2i) -> bool:
+	var rt := room_type_at(c)
+	return rt != null and rt.staff_only
 
 
 func is_customer_area(c: Vector2i) -> bool:
@@ -243,14 +258,14 @@ func fixture_at(c: Vector2i) -> Fixture:
 
 func occupy(f: Fixture) -> void:
 	_fixtures[f.cell] = f
-	nav.mark_dirty()
+	_nav_dirty()
 	occupancy_changed.emit()
 
 
 func vacate(f: Fixture) -> void:
 	if _fixtures.get(f.cell) == f:
 		_fixtures.erase(f.cell)
-	nav.mark_dirty()
+	_nav_dirty()
 	occupancy_changed.emit()
 
 

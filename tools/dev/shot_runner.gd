@@ -228,8 +228,15 @@ func _stage_kitchen(w: GameWorld) -> void:
 			&"oven":
 				if w.format.menu.has(&"pizza"):
 					w.spawn_item(&"dishware", {"p": 1, "m": 0, "c": [{"id": "dough", "ck": raw}, {"id": "sauce"}, {"id": "cheese"}, {"id": "pepperoni"}]}, {"slot": [f.net_id, 0]})
+				elif w.format.menu.has(&"muffin") and k % 2 == 0:
+					w.spawn_item(&"muffin_tray", {"ck": raw}, {"slot": [f.net_id, 0]})
 				else:
 					w.spawn_item(&"croissant", {"ck": raw}, {"slot": [f.net_id, 0]})
+	for f in w.grid.fixtures_of(&"mixing_bowl"):
+		var mx := f.get_component("Mixer") as Mixer
+		mx.added.assign([&"flour", &"egg"])
+		mx.work = 1.2
+		f.mark_dirty()
 	var boards := w.grid.fixtures_of(&"cutting_board")
 	var raw_veg := [&"tomato", &"lettuce"] if not w.format.menu.has(&"pizza") else [&"mushroom", &"tomato"]
 	for i in mini(boards.size(), 2):

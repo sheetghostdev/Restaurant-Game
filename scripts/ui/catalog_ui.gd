@@ -235,10 +235,10 @@ func _build_menu() -> void:
 			if r == null:
 				continue
 			for c in r.required:
-				if Content.base_ingredient(c) == id:
+				if Content.base_ingredients(c).has(id) and not uses.has(r.ticket_name()):
 					uses.push_back(r.ticket_name())
 			for c in r.optional:
-				if Content.base_ingredient(c) == id:
+				if Content.base_ingredients(c).has(id):
 					uses.push_back("%s (extra)" % r.ticket_name())
 		var b := UITheme.button("Crossed off — put back" if off else "On the menu — cross off", func():
 			Net.request("strike", [String(id), not off])

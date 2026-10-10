@@ -72,6 +72,12 @@ Then add its id to a format's `menu` (`resources/formats/*.tres`).
 It now shows in the catalog and arrives boxed at the dock. Players place it,
 and staff and automation can use it.
 
+**Baked batches.** Give an item `mixed_from` (its ingredients, repeats
+allowed), `mix_work`, `portions`, `portion_item` and usually a
+`cook_profile` and `base_model`: it can then be whisked in any mixing bowl,
+baked, and served a portion at a time. The recipe book and the menu board
+pick it up automatically.
+
 **Decor** is a fixture with `category = "decor"`, a `decor` kind
 (`"patience"`, `"eat_speed"`, `"tips"` or `"tidy"`) and a `decor_amount`
 per piece; it only counts in customer areas. A **safety** version of a

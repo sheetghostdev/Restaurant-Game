@@ -29,7 +29,7 @@ func _physics_process(delta: float) -> void:
 		elif since > 0.4:
 			_tip(&"prep", "Prep ahead: USE a crate to take one ingredient, chop on a cutting board (hold USE). Prepped food doesn't keep overnight.")
 		if since > 1.0:
-			_tip(&"open", "The doors open by themselves when the prep clock runs out (top left), ready or not!")
+			_tip(&"open", "Ready? Hold USE on the OPEN sign to open now. Otherwise the doors open by themselves when the prep clock (top left) runs out, ready or not!")
 	elif phase == GameConst.Phase.SERVICE:
 		for g in world.customers.groups:
 			if g.state == CustomerGroup.State.READY:

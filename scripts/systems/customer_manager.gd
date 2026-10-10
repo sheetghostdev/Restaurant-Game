@@ -411,7 +411,7 @@ func _rebuild_clusters() -> void:
 			var st2 := tf.get_component("SeatingTable") as SeatingTable
 			for side in st2.seated_sides():
 				# Skip chairs nobody can walk to (boxed in, or a walled-up room).
-				if not world.grid.nav.reachable(entry, tf.cell + SeatingTable.SIDES[side]):
+				if not world.grid.guest_nav.reachable(entry, tf.cell + SeatingTable.SIDES[side]):
 					continue
 				cluster["seats"].push_back({"table": tf, "side": side})
 		_clusters.push_back(cluster)

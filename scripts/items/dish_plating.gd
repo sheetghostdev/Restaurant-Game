@@ -23,18 +23,38 @@ static func cup_word(plural := false) -> String:
 
 ## The model for a single drink vessel holding `contents`: a pint for beer,
 ## a tall iced glass for soda, a mug for coffee and milk, otherwise the
-## restaurant's empty cup.
-static func vessel_key(contents: Array, dirty := false) -> StringName:
+## restaurant's empty cup. `level` (0..1) is how much is left: glasses come
+## in quarter steps.
+static func vessel_key(contents: Array, dirty := false, level := 1.0) -> StringName:
 	var ids := []
 	for c in contents:
 		ids.push_back(c["id"])
+	var q := quarters(minf(level, drink_level(contents)))
+	var sfx := "" if q >= 4 else "_%d" % q
 	if ids.has(&"beer"):
-		return &"beer_pint"
+		return StringName("beer_pint" + sfx)
 	if ids.has(&"soda"):
-		return &"soda_glass"
+		return StringName("soda_glass" + sfx)
 	if not ids.is_empty():
 		return &"mug"
 	return StringName(String(cup) + ("_dirty" if dirty else ""))
+
+
+## 1..4: how many quarters of a drink to show for `level`.
+static func quarters(level: float) -> int:
+	return clampi(ceili(level * 4.0 - 0.001), 1, 4)
+
+
+## How full a cup is while the machine is still pouring: it fills up during
+## the first cooking stage ("Pouring", "Weak").
+static func drink_level(contents: Array) -> float:
+	var lv := 1.0
+	for c in contents:
+		var d := Content.item(c["id"])
+		if d and d.cook_profile and (d.cook_profile.heat == &"pour" or d.cook_profile.heat == &"brew"):
+			var first: float = d.cook_profile.stage_ends[0]
+			lv = minf(lv, clampf(float(c.get("ck", 0.0)) / maxf(first, 0.01), 0.25, 1.0))
+	return lv
 
 
 static func build(dish: DishItem, parent: Node3D, parts: Array[Node3D]) -> void:
@@ -188,7 +208,7 @@ static func make_order_model(r: RecipeDef, extras: Array) -> Node3D:
 ## The drink in a mug, just above the mug's cap: coffee (coloured by how far
 ## it brewed), latte, or milk waiting for its coffee. (Beer and soda have
 ## their own glasses.)
-static func fill_mug(contents: Array, parent: Node3D, parts: Array[Node3D]) -> void:
+static func fill_mug(contents: Array, parent: Node3D, parts: Array[Node3D], level := 1.0) -> void:
 	var ids := []
 	var coffee := {}
 	for c in contents:
@@ -209,7 +229,9 @@ static func fill_mug(contents: Array, parent: Node3D, parts: Array[Node3D]) -> v
 	if key == &"":
 		return
 	var fill := Models.instance(key)
-	fill.position = Vector3(0, 0.122, 0)
+	# The mug is hollow: the drink's surface sits at its level inside.
+	var lv := float(quarters(minf(level, drink_level(contents)))) / 4.0
+	fill.position = Vector3(0, 0.02 + 0.086 * lv, 0)
 	parent.add_child(fill)
 	if key == &"coffee_fill" and not coffee.is_empty():
 		fill.set_meta(&"content", coffee)

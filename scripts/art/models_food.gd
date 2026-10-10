@@ -33,6 +33,9 @@ static func build(key: StringName, b: MeshBuilder) -> bool:
 		&"soda_fill": _soda_fill(b)
 		&"croissant": _croissant(b)
 		&"muffin": _muffin(b)
+		&"muffin_top": _muffin_top(b)
+		&"flour_bag": _flour_bag(b)
+		&"egg": _egg(b)
 		&"jam": _jam(b)
 		&"dough": _dough(b)
 		&"sauce": _sauce_jar(b)
@@ -277,15 +280,48 @@ static func _croissant(b: MeshBuilder) -> void:
 		b.sphere(Vector3.ZERO, Vector3(r * 0.85, r, r * 1.25), col if k % 2 == 0 else ridge, 1, Color(0, 0, 0, 0), 0.0, k)
 		b.pop()
 
+## One muffin in its paper cup. Pale like raw batter: the oven's cook colour
+## browns it (muffins come off a baked tray already golden).
 static func _muffin(b: MeshBuilder) -> void:
-	b.cyl(Vector3.ZERO, 0.06, 0.06, Color("e7e1d4"), 10, 0.0, Color(0, 0, 0, 0), 0.075)
-	b.sphere(Vector3(0, 0.07, 0), Vector3(0.085, 0.05, 0.085), Color("b07440"), 1, Color(0, 0, 0, 0), 0.08, 7)
+	b.cyl(Vector3.ZERO, 0.06, 0.06, Color("f3eee6"), 10, 0.0, Color(0, 0, 0, 0), 0.075)
+	for k in 10:
+		var a := TAU * k / 10.0
+		b.box(Vector3(cos(a) * 0.069, 0.03, sin(a) * 0.069), Vector3(0.006, 0.055, 0.012), Color("e4ddd0"))
+	b.sphere(Vector3(0, 0.07, 0), Vector3(0.085, 0.05, 0.085), Color("f6e6c2"), 1, Color(0, 0, 0, 0), 0.08, 7)
+	_berries(b, 0.105, 0.05)
+
+
+## The batter in one cup of a muffin tin (the tin itself isn't tinted).
+static func _muffin_top(b: MeshBuilder) -> void:
+	b.sphere(Vector3(0, 0.012, 0), Vector3(0.058, 0.036, 0.058), Color("f6e6c2"), 1, Color(0, 0, 0, 0), 0.05, 3)
+	_berries(b, 0.044, 0.035)
+
+
+static func _berries(b: MeshBuilder, y: float, spread: float) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 5
 	for k in 6:
 		var a := rng.randf() * TAU
-		var rr := rng.randf_range(0.01, 0.05)
-		b.sphere(Vector3(cos(a) * rr, 0.105, sin(a) * rr), Vector3(0.011, 0.011, 0.011), Color("3f3a7a"))
+		var rr := rng.randf_range(0.01, spread)
+		b.sphere(Vector3(cos(a) * rr, y, sin(a) * rr), Vector3(0.011, 0.011, 0.011), Color("4a4690"))
+
+
+## A small paper sack of flour with a blue band and a folded top.
+static func _flour_bag(b: MeshBuilder) -> void:
+	var paper := Color("f4efe3")
+	b.block(Vector3(0, 0, 0), Vector3(0.13, 0.15, 0.09), paper, 0.02)
+	b.block(Vector3(0, 0.05, 0), Vector3(0.134, 0.04, 0.094), Color("4f7fc4"))
+	b.push_at(Vector3(0, 0.15, 0), 0.0, Vector3.ONE, 0.25)
+	b.block(Vector3.ZERO, Vector3(0.13, 0.035, 0.05), paper.darkened(0.05), 0.01)
+	b.pop()
+	# A dusting of flour on top
+	b.sphere(Vector3(0.03, 0.155, 0.03), Vector3(0.025, 0.006, 0.02), Color("fffdf8"))
+
+
+## A hen's egg, brown-ish white.
+static func _egg(b: MeshBuilder) -> void:
+	b.sphere(Vector3(0, 0.045, 0), Vector3(0.036, 0.046, 0.036), Color("efdcc0"), 1, Color(0, 0, 0, 0), 0.0, 1)
+	b.sphere(Vector3(0, 0.07, 0), Vector3(0.027, 0.022, 0.027), Color("f3e3ca"))
 
 
 static func _jam(b: MeshBuilder) -> void:

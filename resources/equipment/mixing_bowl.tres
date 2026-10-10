@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FixtureDef" format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/appliances/mixing_bowl.tscn" id="1_y2evh"]
+[ext_resource type="Script" path="res://scripts/resources/fixture_def.gd" id="2_ftuey"]
+
+[resource]
+script = ExtResource("2_ftuey")
+id = &"mixing_bowl"
+display_name = "Mixing Bowl"
+scene = ExtResource("1_y2evh")
+price = 90.0
+model = &"mixing_bowl"
+collision_height = 1.0
+description = "Put the ingredients in and hold USE to whisk: flour + egg makes a tray of muffin batter."

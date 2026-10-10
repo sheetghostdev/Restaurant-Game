@@ -197,8 +197,9 @@ preps slowly without hands. They all use the same insertion rules as players
 *shelf → grabber → auto-chopper → conveyor → pass counter.*
 
 ### Build mode
-In calm phases, GRAB picks up an empty fixture (hold GRAB if something is on
-it: whatever sits in its slots rides along). Carry it with a green or red
+In calm phases, GRAB picks up an empty fixture (a table's chairs come with
+it); hold GRAB if something is on it, and whatever sits in its slots rides
+along. Carry it with a green or red
 ghost preview showing where it will land, rotate with ALT, and place on the
 grid. Placement never blocks a doorway or the dock pads. Wall handles let you
 knock doorways through or wall them up. Expansions are rooms bought at plots
@@ -227,9 +228,35 @@ The recipe book (`RecipeBook`, R) builds each dish's card from the data:
 chopped-from, cook profile (station and perfect stage), refills and
 "bake the whole plate" recipes.
 
+### Round 6: baking, tables and guests
+* **Batches.** `ItemDef.mixed_from` makes an item from ingredients in a
+  mixing bowl (`Mixer`: GRAB adds, hold USE whisks). A batch (`portions` > 0,
+  e.g. the muffin tray) bakes like any food, then USE takes one
+  `portion_item` at a time, keeping the batch's cooking; the empty tin goes.
+  `base_model` is the part of a model the cook colour doesn't tint (the tin).
+  `Content.base_ingredients` follows batches back to their raw ingredients
+  (muffin → flour, egg) for the menu board and the supplier check.
+* **Tables bring their chairs.** `SeatingTable.seated_sides` is every side
+  facing free customer-area floor (not joined to another table, not walled
+  off, not blocked by a solid fixture; a cell between two tables goes to the
+  one nearer the top-left). The table draws its chairs. Old saves' separate
+  chair fixtures are dropped on load.
+* **Front of house.** `RoomTypeDef.staff_only` rooms (kitchen, galleys,
+  storage, cooler, baggage, cargo, hydroponics) are closed in
+  `RestaurantGrid.guest_nav`, a second `GridNav` used by customers. The
+  health inspector (`Customer.staff_access`) uses the full grid, and guests
+  fall back to it only if a layout leaves no other way.
+* **Drinks.** `DishItem.level` drops in quarters while a guest drinks
+  (`CustomerGroup._sip`); cups also fill up during the first ("Pouring")
+  stage. Mugs and glasses are hollow so empty ones read as empty.
+* **Opening early.** Holding USE on the OPEN sign during prep opens at once
+  (the first guests are already waiting); a short cooldown stops the
+  lights-out hold from skipping the next prep.
+
 ### Pressure and stakes
 
-* **The clock runs the day.** Morning prep is timed (about two minutes) and
+* **The clock runs the day.** Morning prep is timed (100 s on Normal; flip
+  the OPEN sign to start sooner) and
   the doors open by themselves; after closing the day ends once the last
   guests leave. Nobody gets to stall.
 * **Easy hands, tight clock.** Chopping and cooking are quick with generous

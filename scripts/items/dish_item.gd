@@ -8,6 +8,7 @@ var plates := 1
 var mugs := 0
 var dirty := false
 var contents: Array = []   # [{ "id": StringName, "ck": float, "sd": bool }]
+var level := 1.0           ## How much of a drink is left while a guest drinks it.
 
 var _parts: Array[Node3D] = []
 var _wobble_t := 0.0
@@ -203,6 +204,7 @@ func take_one() -> Item:
 
 func make_dirty() -> void:
 	contents.clear()
+	level = 1.0
 	dirty = true
 	rebuild_visual()
 	mark_dirty()
@@ -211,6 +213,7 @@ func make_dirty() -> void:
 func clear_contents() -> Array:
 	var old := contents.duplicate()
 	contents.clear()
+	level = 1.0
 	rebuild_visual()
 	mark_dirty()
 	return old
@@ -226,10 +229,10 @@ func _build_model() -> void:
 		_build_stack()
 		return
 	if is_mug():
-		var key := DishPlating.vessel_key(contents, dirty)
+		var key := DishPlating.vessel_key(contents, dirty, level)
 		visual.add_child(Models.instance(key))
 		if key == &"mug":
-			DishPlating.fill_mug(contents, visual, _parts)
+			DishPlating.fill_mug(contents, visual, _parts, level)
 		return
 	visual.add_child(Models.instance(&"plate_dirty" if dirty else &"plate"))
 	if not contents.is_empty():
@@ -279,6 +282,8 @@ func get_state() -> Dictionary:
 	d["m"] = mugs
 	if dirty:
 		d["dt"] = true
+	if level < 1.0:
+		d["lv"] = snappedf(level, 0.01)
 	if not contents.is_empty():
 		var arr := []
 		for c in contents:
@@ -295,6 +300,7 @@ func set_state(d: Dictionary) -> void:
 	plates = d.get("p", 1)
 	mugs = d.get("m", 0)
 	dirty = d.get("dt", false)
+	level = float(d.get("lv", 1.0))
 	contents.clear()
 	for e in d.get("c", []):
 		var c := {"id": StringName(e["id"]), "ck": float(e.get("ck", 0.0))}
