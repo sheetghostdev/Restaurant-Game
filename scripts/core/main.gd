@@ -12,6 +12,7 @@ var _pending_client := false
 func _ready() -> void:
 	add_to_group(&"main")
 	Net.world_init_received.connect(_on_world_init)
+	Net.world_reinit_received.connect(_on_world_reinit)
 	Net.join_failed.connect(func(reason):
 		_pending_client = false
 		show_menu()
@@ -37,7 +38,7 @@ func _ready() -> void:
 static func setup_from_args() -> Dictionary:
 	var out := {}
 	for a in OS.get_cmdline_user_args():
-		for k in ["format", "location"]:
+		for k in ["format", "location", "mode"]:
 			if a.begins_with("--%s=" % k):
 				out[k] = a.split("=", true, 1)[1]
 	return out
@@ -103,6 +104,12 @@ func start_join(address: String) -> void:
 		menu.set_status("Connecting to %s…" % address)
 
 
+## The host moved on (the next tour leg): rebuild from its new restaurant.
+func _on_world_reinit(meta: Dictionary, layout: Dictionary) -> void:
+	var w := _new_world()
+	w.start_client(meta, layout)
+
+
 func _on_world_init(meta: Dictionary, layout: Dictionary) -> void:
 	if not _pending_client:
 		return
@@ -120,14 +127,46 @@ func _launch(continue_save: bool, setup := {}) -> void:
 	else:
 		var fmt := StringName(setup.get("format", "diner"))
 		var loc := StringName(setup.get("location", "main_street"))
+		var tour: Dictionary = setup.get("tour", {})
+		if setup.get("mode", "") == "tour" and tour.is_empty():
+			tour = Tour.start(bool(setup.get("strike", false)))
+		if not tour.is_empty():
+			loc = Tour.location(tour)
 		if not Content.formats.has(fmt):
 			fmt = &"diner"
 		if not Content.locations.has(loc):
 			loc = &"main_street"
-		w.start_new(loc, fmt, String(setup.get("name", "")))
+		w.start_new(loc, fmt, String(setup.get("name", "")), tour)
 	w.add_local_player(Inputs.KB_A)
 	if "--coop-test" in OS.get_cmdline_user_args():
 		w.add_local_player(Inputs.KB_B)
+
+
+## Franchise Tour: the leg was won, so open at the next place, with the
+## same crew (local players and anyone connected online).
+func start_next_leg() -> void:
+	if world == null or world.tour.is_empty() or not Net.is_authority():
+		return
+	var t := Tour.next_leg(world.tour, world.economy.money, world.economy.reputation)
+	var setup := {"format": String(world.format.id), "name": world.restaurant_name, "tour": t}
+	var devices := []
+	for p in world.players():
+		if p.is_local() and p.device != Inputs.KB_A:
+			devices.push_back(p.device)
+	_launch(false, setup)
+	for dev in devices:
+		world.add_local_player(dev)
+	if Net.is_online():
+		Net.reinit_peers()
+	Events.notify("Franchised! Welcome to %s" % Tour.place_name(Tour.location(t)), &"big", Pal.UI_GOOD)
+
+
+## The tour is over (won or lost): the run's save goes, back to the title.
+func end_tour() -> void:
+	Saves.delete()
+	_teardown_world()
+	Net.leave()
+	show_menu()
 
 
 func return_to_menu() -> void:

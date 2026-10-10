@@ -16,6 +16,10 @@ var _name: LineEdit
 var _name_edited := false
 var _status: Label
 var _confirm := false
+var mode := "career"          ## "career" or "tour"
+var _mode_btns := {}
+var _strike: CheckBox
+var _where: Label
 
 
 static func make() -> NewGamePanel:
@@ -35,7 +39,30 @@ func _ready() -> void:
 	head.add_child(sp)
 	head.add_child(UITheme.button("Back ✕", func(): closed.emit(), 18))
 	v.add_child(head)
-	v.add_child(UITheme.label("WHERE?", 18, "bold", Pal.UI_INK_SOFT))
+	# How to play: one restaurant for as long as you like, or the tour.
+	var how := HBoxContainer.new()
+	how.add_theme_constant_override("separation", 10)
+	v.add_child(how)
+	for m in [["career", "Career", "One restaurant, as long as you like"], ["tour", "Franchise Tour", "%d places × %d days: hit the star goal to move on" % [Tour.LEGS.size(), Tour.DAYS]]]:
+		var mid: String = m[0]
+		var b := Button.new()
+		b.toggle_mode = true
+		b.text = "%s — %s" % [m[1], m[2]]
+		b.add_theme_font_size_override("font_size", 17)
+		var on := UITheme.card(Pal.UI_ACCENT, Pal.UI_INK, 10, 3, false)
+		b.add_theme_stylebox_override("pressed", on)
+		b.add_theme_stylebox_override("hover_pressed", on)
+		b.add_theme_color_override("font_pressed_color", Color.WHITE)
+		b.add_theme_color_override("font_hover_pressed_color", Color.WHITE)
+		b.pressed.connect(func(): _pick_mode(mid))
+		how.add_child(b)
+		_mode_btns[mid] = b
+	_strike = CheckBox.new()
+	_strike.text = "One Strike: a single walkout ends the tour"
+	_strike.visible = false
+	how.add_child(_strike)
+	_where = UITheme.label("WHERE?", 18, "bold", Pal.UI_INK_SOFT)
+	v.add_child(_where)
 	var locs := HBoxContainer.new()
 	locs.add_theme_constant_override("separation", 12)
 	v.add_child(locs)
@@ -83,6 +110,7 @@ func _ready() -> void:
 	v.add_child(_status)
 	_pick_location(location_id)
 	_pick_format(format_id)
+	_pick_mode(mode)
 
 
 func _sorted(table: Dictionary, order: Array) -> Array:
@@ -168,7 +196,22 @@ func _card(accent: Color, title: String, tagline: String, detail: String, size_p
 	return b
 
 
+func _pick_mode(m: String) -> void:
+	mode = m
+	for k in _mode_btns:
+		(_mode_btns[k] as Button).set_pressed_no_signal(k == m)
+	var tour := m == "tour"
+	_strike.visible = tour
+	_where.text = "WHERE? The tour starts on %s, then the train, then the space station" % Tour.place_name(Tour.LEGS[0]) if tour else "WHERE?"
+	for k in _loc_cards:
+		(_loc_cards[k] as Button).disabled = tour and k != Tour.LEGS[0]
+	if tour:
+		_pick_location(Tour.LEGS[0])
+
+
 func _pick_location(id: StringName) -> void:
+	if mode == "tour" and id != Tour.LEGS[0]:
+		return
 	location_id = id
 	for k in _loc_cards:
 		(_loc_cards[k] as Button).set_pressed_no_signal(k == id)
@@ -196,7 +239,7 @@ func _go(host: bool) -> void:
 		_status.text = "This replaces your current restaurant. Press again to confirm."
 		Audio.play_ui(&"error")
 		return
-	var setup := {"location": String(location_id), "format": String(format_id), "name": _name.text.strip_edges()}
+	var setup := {"location": String(location_id), "format": String(format_id), "name": _name.text.strip_edges(), "mode": mode, "strike": _strike.button_pressed}
 	started.emit(setup, host)
 
 

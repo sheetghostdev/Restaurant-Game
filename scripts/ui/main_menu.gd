@@ -216,6 +216,9 @@ func refresh() -> void:
 		var m := Saves.meta()
 		var where: LocationDef = Content.locations.get(StringName(m.get("location", "main_street")))
 		var label := "Continue — %s, Day %d (%s)" % [String(m.get("name", "Restaurant")), int(m.get("day", 1)), GameConst.money(m.get("money", 0.0))]
+		var t: Dictionary = m.get("tour", {})
+		if not t.is_empty():
+			label = "Continue Tour — %s, %s day %d" % [String(m.get("name", "Restaurant")), Tour.place_name(Tour.location(t)), int(m.get("day", 1))]
 		var cont := UITheme.button(label, func(): main.start_offline(true), 24)
 		if where:
 			cont.tooltip_text = where.display_name

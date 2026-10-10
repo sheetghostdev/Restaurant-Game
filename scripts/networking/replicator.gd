@@ -197,5 +197,6 @@ func apply_shared(key: StringName, data: Dictionary) -> void:
 			if world.theme_node and world.theme_node.has_method("apply_shared"):
 				world.theme_node.apply_shared(data)
 		&"results": Events.day_results.emit(data)
+		&"tour": world.tour = data
 		&"layout":
 			world.grid.load_layout(data)

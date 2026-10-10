@@ -36,6 +36,8 @@ var entities := {}               ## net_id -> Node
 var location: LocationDef
 var format: RestaurantFormatDef
 var restaurant_name := "The Corner Diner"
+## Franchise Tour state (see Tour); empty in Career.
+var tour := {}
 var theme_node: Node             ## Train timetable / space station extras, if any.
 var unlocks: Array[StringName] = []
 var _next_id := 1
@@ -71,7 +73,10 @@ func _ready() -> void:
 # -----------------------------------------------------------------------------
 
 ## Starts a brand new restaurant from a location's starting layout.
-func start_new(location_id: StringName, format_id: StringName, name_text := "") -> void:
+func start_new(location_id: StringName, format_id: StringName, name_text := "", tour_state := {}) -> void:
+	tour = tour_state.duplicate()
+	tour.erase("money")
+	tour.erase("rep")
 	location = Content.locations.get(location_id)
 	format = Content.formats.get(format_id)
 	if name_text != "":
@@ -93,7 +98,10 @@ func start_new(location_id: StringName, format_id: StringName, name_text := "") 
 		for it in layout.get("items", []):
 			_spawn_layout_item(it)
 		_spawn_format_kitchen(layout)
-		economy.setup_new(layout.get("money", 250.0), layout.get("reputation", 1.0))
+		# A franchised tour leg brings its money and reputation along.
+		economy.setup_new(float(tour_state.get("money", layout.get("money", 250.0))), float(tour_state.get("rep", layout.get("reputation", 1.0))))
+		if not tour.is_empty():
+			replicator.publish(&"tour", tour)
 		build.setup_plots()
 		day.setup_new()
 	_after_start()
@@ -105,6 +113,9 @@ func load_save(data: Dictionary) -> void:
 	location = Content.locations.get(StringName(meta.get("location", "main_street")))
 	format = Content.formats.get(StringName(meta.get("format", "diner")))
 	restaurant_name = meta.get("name", restaurant_name)
+	tour = meta.get("tour", {})
+	if not tour.is_empty():
+		replicator.publish(&"tour", tour)
 	RecipeManager.menu = format.menu.duplicate()
 	DishPlating.set_format(format)
 	_layout = _read_json(location.layout_path)
@@ -478,6 +489,7 @@ func make_save() -> Dictionary:
 			"money": economy.money,
 			"reputation": economy.reputation,
 			"saved_at": Time.get_datetime_string_from_system(),
+			"tour": tour,
 		},
 		"layout": grid.save_layout(),
 		"entities": ents,

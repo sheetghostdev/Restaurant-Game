@@ -14,6 +14,7 @@ signal disconnected(reason: String)
 signal peer_connected(id: int)
 signal peer_disconnected(id: int)
 signal world_init_received(meta: Dictionary, layout: Dictionary)
+signal world_reinit_received(meta: Dictionary, layout: Dictionary)
 
 const DEFAULT_PORT := 24680
 const MAX_CLIENTS := 5
@@ -210,6 +211,9 @@ func _do_request(action: String, args: Array, _from: int) -> void:
 		"auto_order": w.deliveries.set_auto(StringName(args[0]), bool(args[1]))
 		"strike": w.orders.set_struck(StringName(args[0]), bool(args[1]))
 		"continue_results": w.day.continue_from_results()
+		# Franchise Tour: on to the next place, or back to the title.
+		"tour_next": get_tree().call_group.call_deferred(&"main", "start_next_leg")
+		"tour_end": get_tree().call_group.call_deferred(&"main", "end_tour")
 		"save": Saves.save_game(w)
 		"debug": w.debug_command(String(args[0]), args.slice(1))
 
@@ -242,6 +246,23 @@ func _s_open_catalog(net_id: int, tab: String) -> void:
 @rpc("authority", "reliable")
 func _s_world_init(meta: Dictionary, layout: Dictionary) -> void:
 	world_init_received.emit(meta, layout)
+
+
+## Host: the restaurant was replaced (the next Franchise Tour leg). Everyone
+## connected gets the new one and their player back.
+func reinit_peers() -> void:
+	var w := GameWorld.current
+	if w == null or not multiplayer.is_server():
+		return
+	for id in _peer_names:
+		_s_world_reinit.rpc_id(id, w.client_init_meta(), w.grid.save_layout())
+		w.replicator.send_snapshot(id)
+		w.add_remote_player(id, _peer_names[id])
+
+
+@rpc("authority", "reliable")
+func _s_world_reinit(meta: Dictionary, layout: Dictionary) -> void:
+	world_reinit_received.emit(meta, layout)
 
 
 func relay_fx(method: StringName, args: Array) -> void:

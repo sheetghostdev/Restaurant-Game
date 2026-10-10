@@ -143,11 +143,39 @@ func finish_day() -> void:
 	world.staff.pay_wages()
 	_check_goals(true)
 	var r := build_results()
+	_tour_results(r)
 	last_results = r
 	phase = GameConst.Phase.RESULTS
 	world.replicator.publish(&"results", r)
 	Events.day_results.emit(r)
 	_phase_changed()
+
+
+## Franchise Tour: count the day toward the run and, on a leg's last day
+## (or a struck run), give the verdict.
+func _tour_results(r: Dictionary) -> void:
+	var t := world.tour
+	if t.is_empty():
+		return
+	t["earned"] = float(t.get("earned", 0.0)) + maxf(float(r.get("revenue", 0.0)), 0.0)
+	var rep := world.economy.reputation
+	var v := Tour.verdict(t, day, rep)
+	r["tour"] = {
+		"leg": Tour.leg(t), "legs": Tour.LEGS.size(), "day": day, "days": Tour.DAYS,
+		"target": Tour.target(t), "rep": snappedf(rep, 0.01), "verdict": v,
+		"place": Tour.place_name(Tour.location(t)), "next": Tour.place_name(Tour.next_location(t)) if Tour.next_location(t) != &"" else "",
+		"score": Tour.score(t, rep), "strike": t.get("strike", false),
+	}
+	world.replicator.publish(&"tour", t)
+
+
+## One Strike: a table walked out, so the tour ends tonight.
+func _strike_out() -> void:
+	if phase == GameConst.Phase.SERVICE:
+		world.customers.send_everyone_home()
+		_begin_closing()
+	if phase == GameConst.Phase.CLOSING:
+		finish_day()
 
 
 func continue_from_results() -> void:
@@ -320,6 +348,10 @@ func record_group(g: CustomerGroup, satisfaction: float, upset: bool) -> void:
 		Events.notify(msg, &"error")
 		streak = 0
 		_publish()
+		if world.tour.get("strike", false) and not world.tour.get("struck", false):
+			world.tour["struck"] = true
+			Events.notify("One strike! The tour ends tonight.", &"big", Pal.UI_BAD)
+			_strike_out.call_deferred()
 		Events.customer_left.emit(false, g.members[0].global_position if not g.members.is_empty() else Vector3.ZERO)
 		return
 	if satisfaction >= 0.6:

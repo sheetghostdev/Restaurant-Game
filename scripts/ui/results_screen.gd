@@ -74,7 +74,16 @@ func show_results(r: Dictionary) -> void:
 	verdict.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	verdict.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_body.add_child(verdict)
-	_continue = UITheme.button("Continue to the evening  ▸", func(): Net.request("continue_results"), 24)
+	var tour: Dictionary = r.get("tour", {})
+	if not tour.is_empty():
+		_tour_banner(tour)
+	var v := String(tour.get("verdict", ""))
+	if v == "franchised":
+		_continue = UITheme.button("Franchise to %s  ▸" % String(tour.get("next", "")), func(): Net.request("tour_next"), 24)
+	elif Tour.is_over(v):
+		_continue = UITheme.button("Back to the title", func(): Net.request("tour_end"), 24)
+	else:
+		_continue = UITheme.button("Continue to the evening  ▸", func(): Net.request("continue_results"), 24)
 	_continue.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_body.add_child(_continue)
 	visible = true
@@ -83,6 +92,56 @@ func show_results(r: Dictionary) -> void:
 	create_tween().tween_property(_card, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_continue.grab_focus.call_deferred()
 	Audio.play_ui(&"day_end")
+
+
+## Franchise Tour: where the run stands, and the verdict on a leg's last day.
+func _tour_banner(t: Dictionary) -> void:
+	var v := String(t.get("verdict", ""))
+	var rep := float(t.get("rep", 0.0))
+	var target := float(t.get("target", 0.0))
+	var place := String(t.get("place", ""))
+	var title := ""
+	var line := ""
+	var col := Pal.UI_ACCENT
+	match v:
+		"franchised":
+			title = "Franchised!"
+			line = "%.1f★ in %s (goal %.1f★). %s is next, and your money and name come with you." % [rep, place, target, String(t.get("next", ""))]
+			col = Pal.UI_GOOD
+		"complete":
+			title = "Tour complete!"
+			line = "All three places conquered, finishing on %.1f★." % rep
+			col = Pal.UI_GOOD
+		"missed":
+			title = "The tour ends here"
+			line = "%.1f★ in %s, short of the %.1f★ goal." % [rep, place, target]
+			col = Pal.UI_BAD
+		"struck":
+			title = "One strike, you're out"
+			line = "A table walked out, so the tour ends tonight."
+			col = Pal.UI_BAD
+		_:
+			title = "Franchise Tour · %s" % place
+			var left := int(t.get("days", 0)) - int(t.get("day", 0))
+			line = "%.1f★ now; reach %.1f★ by the end of day %d (%d day%s to go)." % [rep, target, int(t.get("days", 0)), left, "" if left == 1 else "s"]
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", UITheme.card(Color("fffaf0"), col, 10, 3, false))
+	var vb := VBoxContainer.new()
+	box.add_child(vb)
+	var h := UITheme.heading(title, 28, col)
+	h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(h)
+	var l := UITheme.label(line, 18, "bold", Pal.UI_INK)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vb.add_child(l)
+	if Tour.is_over(v):
+		var score := int(t.get("score", 0))
+		var best := Tour.record(score)
+		var sl := UITheme.label("Score %d%s" % [score, "  ·  new best!" if best else "  ·  best %d" % Tour.best_score()], 20, "bold", Pal.UI_MONEY)
+		sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vb.add_child(sl)
+	_body.add_child(box)
 
 
 ## What today means for tomorrow, in plain words: walkouts cost stars and

@@ -248,6 +248,8 @@ func _process(delta: float) -> void:
 	_phase_label.text = phase_text
 	var tn := world.theme_node
 	var tl: String = tn.status_line() if tn and tn.has_method("status_line") else ""
+	if not world.tour.is_empty():
+		tl = Tour.status_line(world.tour, d.day) + ("\n" + tl if tl != "" else "")
 	_theme_label.visible = tl != ""
 	_theme_label.text = tl
 	_day_bar.queue_redraw()
