@@ -341,7 +341,7 @@ func _fixtures() -> void:
 	_fixture("market_stall", "Market Stall", F + "market_stall.tscn", "service", 0.0, "Sells crates on a station platform.", {"purchasable": false, "movable": false, "allowed_outdoors": true, "collision_height": 1.0})
 	_fixture("open_sign", "Open Sign", F + "open_sign.tscn", "service", 0.0, "Hold USE to open the restaurant.", {"purchasable": false, "collision_height": 1.6})
 	_fixture("register", "Cash Register", F + "register.tscn", "service", 80.0, "Ka-ching. Purely for the vibes (and a spare counter).")
-	# Decor works like PlateUp's: each piece in a dining area has an effect.
+	# Decor: each piece in a dining area has an effect.
 	_fixture("plant_pot", "Potted Plant", F + "plant_pot.tscn", "decor", 25.0, "Calming: guests wait 5% longer for each plant (up to 30%).", {"decor": "patience", "decor_amount": 0.05, "collision_height": 1.0, "allowed_outdoors": true})
 	_fixture("jukebox", "Jukebox", F + "jukebox.tscn", "decor", 180.0, "Lively: guests eat 15% faster, so tables free up sooner (up to 45%).", {"decor": "eat_speed", "decor_amount": 0.15, "collision_height": 1.2, "unlock_day": 2})
 	_fixture("painting", "Wall Art", F + "painting.tscn", "decor", 70.0, "Charming: tips +8% for each piece (up to 40%). Hangs on the wall behind its spot.", {"decor": "tips", "decor_amount": 0.08, "blocks_movement": false, "collision_height": 0.1})

@@ -235,7 +235,7 @@ func t_input_targeting() -> void:
 	var t := w.interaction.target_of(p)
 	check(t == board, "targeting picks the cutting board in front (%s)" % (t.display_name() if t else "none"))
 	# During prep, GRAB on the empty board with empty hands picks the board
-	# up (like PlateUp); a second press puts it back where it was.
+	# up; a second press puts it back where it was.
 	var board_cell := board.cell
 	check(w.interaction.hint_for(p).get("grab", "") == "Move", "the hint offers to move the empty board")
 	p.set_input(Vector2.ZERO, true, false, false, false)
@@ -447,7 +447,7 @@ func t_build_mode() -> void:
 	await press_grab(0.05)
 	check(p.carried_fixture == null and tom.slot and tom.slot.owner_entity == c2, "put down with the tomato still on it")
 	w.despawn(tom)
-	# Tables bring their own chairs: rearrange the dining room like PlateUp.
+	# Tables bring their own chairs: rearrange the dining room freely.
 	var cm := w.customers
 	var t1 := fixture(&"table", 0)
 	var home := t1.cell
@@ -757,7 +757,7 @@ func t_round5() -> void:
 			joined += 1
 		nums[first] = true
 	check(same and nums.size() == cm.clusters().size(), "each set of joined tables has one colour (%d joined sets)" % joined)
-	# Decor in the dining room does something (like PlateUp's furniture).
+	# Decor in the dining room does something.
 	var used := []
 	for pair in [[&"painting", "tips"], [&"rug", "tidy"], [&"plant_pot", "patience"], [&"jukebox", "eat_speed"]]:
 		var before := cm.decor_bonus(pair[1])

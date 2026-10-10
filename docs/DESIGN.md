@@ -31,7 +31,10 @@ are deliberate departures from it:
 | Logistics | Deliveries arrive on a timetable and as physical obstacles. Storage location matters (cold vs. warm). Empty crates are clutter. |
 | Day structure | An untimed prep phase with a demand forecast, then a timed service, then an evening build phase. |
 | Progression | One persistent restaurant that grows physically: rooms, doorways, layouts, staff, machines. Failure costs reputation and stock, not the whole run. |
-| Purchases | A supplier catalog at the manager's desk. Equipment arrives boxed at the loading dock and you carry it into place. No card drafting. |
+| Purchases | A supplier catalog at the manager's desk: the whole catalog is always for sale, three pieces suited to your menu are on a deal each day, and the supplier's rep can swap the deals for a fee. Equipment arrives boxed at the loading dock and you carry it into place. No card drafting. |
+| Daily choices | The Morning Paper: three stories, pick one. Each is a trade-off that changes the day itself (a booked coach party, a critic, rain with big tips, a dish craze, an equipment sale), not a permanent card. |
+| Runs | The Franchise Tour takes one restaurant across all three places (street, train, orbit), carrying money and reputation, with star goals per leg and an optional One Strike rule. Career mode keeps one restaurant for good. |
+| Space | The kitchen itself grows (Kitchen Extension, Big Kitchen, galley extensions) so automation has room, instead of only adding side rooms. |
 | Customers | Archetypes with real operational differences in size, timing, appetite, spend, mess and strictness, plus visible queues outside and seating clusters you can build. |
 | Look | A miniature diorama: a model on a display plinth, cutaway walls with section-cut caps, tilt-shift blur, chamfered block characters (no bean shapes), and a warm terracotta/teal/cream palette with saturated food. |
 | UI | Warm paper cards with ink outlines and slab-serif headings. The restaurant itself carries most of the information. |
@@ -207,7 +210,7 @@ next to the building. They add walls automatically, open doorways, and move
 any fixture that blocks a new door.
 
 ### Decor, benches and equipment upgrades
-Decor in a customer area has an effect, like PlateUp's furniture:
+Decor in a customer area has an effect:
 `FixtureDef.decor` names the kind ("patience", "eat_speed", "tips", "tidy")
 and `decor_amount` how much each piece adds. `CustomerManager.decor_bonus`
 sums the pieces in the dining areas and caps each kind (`DECOR_CAP`).
@@ -252,6 +255,33 @@ chopped-from, cook profile (station and perfect stage), refills and
 * **Opening early.** Holding USE on the OPEN sign during prep opens at once
   (the first guests are already waiting); a short cooldown stops the
   lights-out hold from skipping the next prep.
+
+### Round 7: our own identity
+* **Bigger kitchens.** `ExpansionDef.grows_room` names a layout room id
+  ("kitchen", "galley"): `RestaurantGrid.grow_room` extends that room over
+  the expansion's rect (rooms wholly inside it are knocked through), so there
+  is no wall in between. `BuildManager._open_way_into` moves an edge counter
+  if the station row would wall off the new space. Scenery props that would
+  end up inside a room aren't placed (`RestaurantBuilder._prop_fits`).
+* **The Franchise Tour** (`Tour`, state in `GameWorld.tour`, saved and
+  shared). Four days per leg; `DayManager._tour_results` gives the verdict on
+  a leg's last day. Franchising relaunches the world at the next location
+  with the money and reputation carried over (`Main.start_next_leg`; online,
+  `Net.reinit_peers` rebuilds every client's world). One Strike ends the run
+  on the first walkout.
+* **The Morning Paper** (`MorningPaper`, `PaperUI`). From day 2 the morning
+  offers three seeded stories of different kinds; the prep clock waits until
+  one is picked (`Net.request("headline", [i])`, -1 bins it) and opening the
+  doors bins it. A story is a Dictionary `{id, kind, title, text, fx}`; the
+  chosen `fx` lives in `DayManager.today` and is read through small helpers
+  (`rep_mult`, `tips_mult`, `equip_mult`, `recipe_weight`, `price_mult`).
+  Bookings are extra schedule entries `[hour, archetype, tag]`; their bonus is
+  paid in `_headline_results`. The pick survives save and load.
+* **Supplier deals** (`BuildManager.deals`, `roll_deals`, `call_rep`). Each
+  morning three seeded deals at `DEAL_MULT`, preferring different categories
+  and only cooking gear the format's stations use; the rep's fee rises with
+  each call that day. `BuildManager.price_of` is the one place prices come
+  from.
 
 ### Pressure and stakes
 
@@ -322,6 +352,10 @@ the number of guests.
 * **Bigger automation:** dish-return belts, dumbwaiters for upstairs seating,
   ingredient chutes from the loading dock.
 * **Upstairs and rooftop seating** (multi-level grid).
-* **Cosmetics** unlocked through progression.
+* **Cosmetics** unlocked through progression, and a weekly seeded challenge.
+* **Courses and desserts:** starters, mains and a dessert per table, with
+  dishes unlocked through the tour.
+* **Automation depth:** filtering grabbers, an auto-plater, staff routes, and
+  a test kitchen to try layouts with no guests.
+* **Co-op tricks:** tossing items to each other and meaningful pings.
 * **Restrooms** (and the clogged-toilet disaster).
-* **Hardcore mode:** roguelike runs on top of the persistent restaurant.

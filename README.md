@@ -26,7 +26,9 @@ plays through a whole day.
 | ![The Dining Car Express stopped at a station, market stalls on the platform](docs/screenshots/train.jpg) | ![The Orbital Galley space station above a planet](docs/screenshots/space.jpg) |
 | *The Dining Car Express between stations: locomotive in front, passenger cars behind* | *A bar in orbit: planters grow, the printer prints* |
 | ![The new-game screen: pick a place and a kind of restaurant](docs/screenshots/newgame.jpg) | ![The recipe book: every dish as pictures, from raw to ready](docs/screenshots/recipes.jpg) |
-| *Pick where and what when you open a new restaurant* | |
+| *Career or Franchise Tour; pick where and what* | *The recipe book: every dish from raw to ready* |
+| ![The Morning Paper: three stories to pick from before prep](docs/screenshots/paper.jpg) | ![The kitchen grown twice, with room for automation](docs/screenshots/bigkitchen.jpg) |
+| *The Morning Paper: the crew picks today's story* | *Kitchen Extension and Big Kitchen: room for conveyor lines* |
 
 ---
 
@@ -89,10 +91,31 @@ All verbs are contextual. **GRAB** moves things and **USE** operates things.
 
 ---
 
+## What makes it its own game
+
+* **Logistics, not just cooking.** Every ingredient is a physical unit in a
+  physical crate that has to be ordered, unloaded, kept cold and used before
+  it spoils. Dishware runs out. The building itself is what you design.
+* **Three very different places.** A storefront fed by a delivery truck, a
+  restaurant train that shops at station markets between stops, and a space
+  station that grows and prints its own food.
+* **The Morning Paper.** Every morning the crew picks one of three stories
+  that reshapes the day: a coach party, a food critic, a rainy day with big
+  tips, a dish craze, an equipment clearance.
+* **The Franchise Tour.** A run that takes one restaurant across all three
+  places, carrying its money and reputation, with an optional One Strike rule.
+* **Paper tickets, the menu board and readable cooking.** One slip per table
+  showing exactly what to make; cross out ingredients you've run out of;
+  doneness you can read from colour, steam and a ring.
+
+---
+
 ## How a day works
 
 ```
 MORNING PREP (against the clock: 100 seconds on Normal, a bit longer on day one)
+  From day 2: the Morning Paper. The crew picks one of three stories for the
+  day (the prep clock waits until you do), or bins it for an ordinary day.
   The delivery truck reverses to the loading dock and drops what you ordered.
   Carry crates inside (cold stock goes in the fridge), chop, arrange.
   The forecast card shows expected guests, rush hours and today's two goals.
@@ -115,8 +138,9 @@ RESULTS
         ↓
 EVENING (calm, build mode)
   Order tomorrow's supplies (the truck brings nothing else), buy equipment (it
-  arrives boxed at the dock), hire staff, build expansions at the FOR SALE
-  signs, knock doorways through walls, and rearrange.
+  arrives boxed at the dock; three pieces are on a supplier deal each day),
+  hire staff, build expansions at the FOR SALE signs (including a bigger
+  kitchen), knock doorways through walls, and rearrange.
         ↓  hold USE on the OPEN sign when you're ready: lights out → next morning (autosave)
 ```
 
@@ -146,6 +170,17 @@ through readable stages: raw → rare → **medium** → well done → overcooke
 burnt, then fire. You can read the stage from colour, steam and
 smoke, a chime, and a ring with a marked perfect zone. Customers refuse raw,
 burnt or spoiled food.
+
+### Career or Franchise Tour
+
+On the new-game screen, **Career** is one restaurant that keeps going for as
+long as you like. The **Franchise Tour** is a run: four days on Main Street,
+then you franchise to the Dining Car Express, then to the Orbital Galley. End
+each leg's last day at or above its star goal (1.5★, 2.0★, 2.5★) to move on,
+taking your money and your reputation with you (plus an opening budget for
+the new place). Miss a goal and the tour ends there with a score; the best
+score is kept. Tick **One Strike** for a harder run: a single table walking
+out ends the tour that night.
 
 ---
 
@@ -179,7 +214,22 @@ burnt or spoiled food.
 * **Build mode.** Move and rotate any fixture on a grid, knock doorways through
   walls or wall them up, and buy expansions: Dining Annex, Dish Room, Walk-in
   Cooler (everything inside stays fresh) and Sidewalk Patio.
-* **Tables come with chairs** (like PlateUp): every side of a table that faces
+* **Bigger kitchens.** The kitchen itself can grow, so there's floor space for
+  conveyor lines and more stations: a Kitchen Extension (three more rows,
+  no wall in between) and, from day 3, the Big Kitchen on top of it on Main
+  Street; a Galley Extension on the train and a Galley Module in orbit.
+* **The Morning Paper.** From day 2, a newspaper with three stories arrives
+  every morning and the crew picks one: a coach party or a birthday booking
+  (bonus if they all leave happy), a food critic (reviews count double), a
+  glowing write-up (more guests), rain (fewer guests, double tips), a
+  heatwave or a craze for one dish (ordered more, sells for more), a supplier
+  clearance (equipment 30% off), a farmer's surplus (free crates) or a paid
+  ad. Any player can pick; it's shared online and shown on the results.
+* **Supplier deals.** Each day the supplier puts three pieces of equipment
+  that suit your menu at 35% off. Not what you need? Call the rep to swap
+  them (the fee goes up with each call). The full catalog is always there
+  at the normal price.
+* **Tables come with chairs**: every side of a table that faces
   free dining-room floor gets a chair. Pick a table up with one GRAB press
   before opening or in the evening, put it anywhere, and push tables together
   to seat bigger groups; joined tables share one cloth colour and lose the
@@ -188,7 +238,7 @@ burnt or spoiled food.
   patio, the street (and the train's coaches and the station's airlock), never
   through the kitchen, storage or cooler. Only the health inspector goes back
   there.
-* **Decor that does something** (like PlateUp's furniture). In the dining room,
+* **Decor that does something.** In the dining room,
   plants make guests wait longer, the jukebox makes them eat faster, wall art
   raises tips and rugs mean less mess. Each kind is capped, and the catalog
   shows what your decor adds up to.
@@ -285,9 +335,13 @@ More detail:
 ```bash
 # Full-day gameplay test: delivery, prep, cooking, plating, customers, washing,
 # build mode, disasters, staff, automation, spoilage, closing, results,
-# expansions, patio fences, power cut, save/load, difficulty, regressions
-# (about 220 checks; the exact number depends on what the guests order).
+# expansions (including the bigger kitchen), patio fences, power cut, the
+# Morning Paper, supplier deals, save/load, difficulty, regressions (about
+# 250 checks; the exact number depends on what the guests order).
 godot --headless --path . res://tests/test_runner.tscn
+
+# The Franchise Tour: franchising to the next place, a missed goal, One Strike.
+godot --headless --path . res://tests/tour_test.tscn
 
 # Every kind of restaurant: its kitchen, pantry, supplier, hours and
 # signature dishes (latte, croissant, pizza in the oven, pints, wings).
@@ -305,6 +359,10 @@ godot --headless --path . res://tests/net_test.tscn -- --net-host &
 godot --headless --path . res://tests/net_test.tscn -- --net-client
 godot --headless --path . res://tests/net_theme_test.tscn -- --net-host &
 godot --headless --path . res://tests/net_theme_test.tscn -- --net-client
+godot --headless --path . res://tests/net_tour_test.tscn -- --net-host &
+godot --headless --path . res://tests/net_tour_test.tscn -- --net-client
+godot --headless --path . res://tests/net_paper_test.tscn -- --net-host &
+godot --headless --path . res://tests/net_paper_test.tscn -- --net-client
 
 # Compile every script.
 godot --headless --path . res://tools/dev/check_all.tscn

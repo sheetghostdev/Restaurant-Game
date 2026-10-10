@@ -131,7 +131,25 @@ Inspections are announced in the morning forecast via `warning_text`.
 a `rect` on the grid, a price, `doors` (each a `Vector4i(ax, az, bx, bz)`
 pair of adjacent cells), `starter_fixtures` and `requires`. Add its id to the
 location's `expansions`. A plot with a FOR SALE sign appears next to the
-building.
+building. `unlock_day` keeps it for later days.
+
+To make an existing room bigger instead (a kitchen extension), set
+`grows_room` to the room's layout id (e.g. `"kitchen"`) and make `rect` the
+added area, touching that room. There's no wall in between; rooms wholly
+inside the rect are knocked through. The purchase is refused if the rect
+would cut through another room.
+
+## A new Morning Paper story
+
+Stories are written in code, in `MorningPaper._pool()`: each is a Dictionary
+`{id, kind, title, text, fx}` (plus an optional `icon` key such as
+`"recipe:latte"`). `kind` is the section it's printed under (Booking, News,
+Weather, Trend, Deal, Local); no two stories of the same kind are offered on
+one morning when the pool allows. The `fx` keys `DayManager` understands are
+`cash`, `free` + `crates`, `groups_mult`, `burst` / `party` / `critic` with
+`hour` and `bonus`, `rep_mult`, `tips_mult`, `drinks` / `drink_price`,
+`recipe` + `weight` + `price`, and `equip_mult`. Add a picture for the
+story's `id` in `PaperUI.PaperArt._draw()`.
 
 ## A new room type
 

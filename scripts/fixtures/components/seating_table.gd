@@ -1,8 +1,8 @@
 class_name SeatingTable
 extends FixtureComponent
 ## A dining table. Adjacent tables form a cluster that seats one group, so
-## players can push tables together for big families. Like PlateUp, chairs
-## come with the table: every side facing free dining-room floor gets one
+## players can push tables together for big families. Chairs come with the
+## table: every side facing free dining-room floor gets one
 ## (not the sides joined to another table, against a wall or blocked by
 ## something solid). Each side has a food and a drink place setting (slots).
 ##

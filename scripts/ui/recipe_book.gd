@@ -2,7 +2,7 @@ class_name RecipeBook
 extends Control
 ## The optional recipe book (R / right stick, or from the pause menu): one card
 ## per dish on today's menu, showing each ingredient's journey as pictures,
-## raw › station › ready, like PlateUp's recipe cards. It doesn't pause or
+## raw › station › ready. It doesn't pause or
 ## block anyone: the kitchen keeps running behind it.
 
 var hud: HUD

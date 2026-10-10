@@ -40,12 +40,12 @@ Autoloads: `Events` (signal bus), `Content` (ContentDB), `Settings`, `Inputs`
 | Node | Class | Owns |
 |---|---|---|
 | Grid | `RestaurantGrid` | rooms, openings, walls (derived), fixture occupancy, `GridNav` |
-| Day | `DayManager` | phases, clock, daily stats, results |
+| Day | `DayManager` | phases, clock, daily stats, results, the Morning Paper's pick and its effects (`today`), the Franchise Tour verdict |
 | Economy | `EconomyManager` | money, reputation, ledger |
 | Orders | `OrderManager` | active tickets (replicated as a compact list) |
 | Customers | `CustomerManager` | arrival schedule, queue, table clusters, seating |
 | Deliveries | `DeliveryManager` | supply orders (one-off / auto), rush orders, packages, trucks |
-| Build | `BuildManager` | lifting and placing, unpacking, purchases, expansions, wall edits |
+| Build | `BuildManager` | lifting and placing, unpacking, purchases and prices (`price_of`), supplier deals, expansions (new rooms or a grown kitchen), wall edits |
 | Disasters | `EventManager` | daily events, fires, mess, hand tools, inspections |
 | Staff | `StaffManager` | hiring, wages |
 | Inventory | `InventoryManager` | stock counts from crates, low-stock alerts |
@@ -224,7 +224,17 @@ Tested by `tests/net_test.tscn`: one host and one client process. The client
 checks entity parity, players, phase, money, items held by the host, customer
 movement, and a grab performed by the client itself. `tests/net_theme_test.tscn` hosts a train
 and checks the client sees the market stalls, the timetable and the doors
-locking when it leaves.
+locking when it leaves. `tests/net_tour_test.tscn` franchises a Tour to the
+next place and checks the client follows.
+
+* Rebuilding the world mid-session (the Franchise Tour moving to its next
+  place): the host relaunches its own world, then `Net.reinit_peers()` sends
+  `_s_world_reinit` and every client tears down and redoes the late-join
+  handshake.
+* Shared channels added in round 7: `tour` (the run's state), `paper` (the
+  Morning Paper's offers and pick, plus today's effects) and `deals` (the
+  supplier's deals and the rep's calls). Requests: `headline`, `call_rep`,
+  `tour_next`, `tour_end`.
 
 ---
 
